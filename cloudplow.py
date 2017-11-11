@@ -4,6 +4,7 @@ import time
 from logging.handlers import RotatingFileHandler
 
 from utils import config, lock
+from utils import decorators
 from utils.rclone import Rclone
 from utils.unionfs import UnionfsHiddenFolder
 
@@ -49,6 +50,7 @@ lock.ensure_lock_folder()
 # DOER FUNCS
 ############################################################
 
+@decorators.timed
 def do_upload():
     lock_file = lock.upload()
     if lock_file.is_locked():
@@ -61,6 +63,7 @@ def do_upload():
     log.info("Finished upload")
 
 
+@decorators.timed
 def do_sync():
     lock_file = lock.sync()
     if lock_file.is_locked():
@@ -73,6 +76,7 @@ def do_sync():
     log.info("Finished sync")
 
 
+@decorators.timed
 def do_hidden():
     lock_file = lock.hidden()
     if lock_file.is_locked():

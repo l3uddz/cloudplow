@@ -24,3 +24,6 @@ __pycache__/
 
 # generators
 *.bat
+
+# locks
+locks/*

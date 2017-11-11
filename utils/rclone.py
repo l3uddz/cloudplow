@@ -20,7 +20,15 @@ class Rclone:
     def delete_file(self, path):
         try:
             log.debug("Deleting file '%s' from remote %s", path, self.name)
-
+            # build cmd
+            cmd = "rclone delete %s" % cmd_quote(path)
+            if self.dry_run:
+                cmd += ' --dry-run'
+            log.debug("Using: %s", cmd)
+            # exec
+            resp = self.__exec(cmd)
+            if 'Failed to delete' in resp:
+                return False
             return True
         except:
             log.exception("Exception deleting file '%s' from remote %s: ", path, self.name)
@@ -29,7 +37,15 @@ class Rclone:
     def delete_folder(self, path):
         try:
             log.debug("Deleting folder '%s' from remote %s", path, self.name)
-
+            # build cmd
+            cmd = "rclone rmdir %s" % cmd_quote(path)
+            if self.dry_run:
+                cmd += ' --dry-run'
+            log.debug("Using: %s", cmd)
+            # exec
+            resp = self.__exec(cmd)
+            if 'Failed to rmdir' in resp:
+                return False
             return True
         except:
             log.exception("Exception deleting folder '%s' from remote %s: ", path, self.name)
@@ -54,7 +70,7 @@ class Rclone:
                 if callback:
                     callback(output)
                 else:
-                    total_output += output
+                    total_output += "%s\n" % output
 
         if not callback:
             return total_output

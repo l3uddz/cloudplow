@@ -21,6 +21,8 @@ class UnionfsHiddenFolder:
         :param remote: rclone remote item from config.json
         :return: True or False based on whether or not clean was successful
         """
+        delete_success = 0
+        delete_failed = 0
 
         try:
             rclone = Rclone(name, remote, self.dry_run)
@@ -32,6 +34,9 @@ class UnionfsHiddenFolder:
                     remote_file = self.__hidden2remote(remote, hidden_file)
                     if remote_file and rclone.delete_file(remote_file):
                         log.info("Removed file '%s'", remote_file)
+                        delete_success += 1
+                    else:
+                        delete_failed += 1
 
             # clean hidden folders from remote
             if self.hidden_folders:
@@ -40,7 +45,13 @@ class UnionfsHiddenFolder:
                     remote_folder = self.__hidden2remote(remote, hidden_folder)
                     if remote_folder and rclone.delete_folder(remote_folder):
                         log.info("Removed folder '%s'", remote_folder)
+                        delete_success += 1
+                    else:
+                        delete_failed += 1
 
+            if self.hidden_files or self.hidden_folders:
+                log.info("Completed cleaning hidden(s) from remote: %s", name)
+                log.info("%d items were deleted, %d items failed to delete", delete_success, delete_failed)
             return True
         except:
             log.exception("Exception cleaning hidden(s) from %r: ", self.unionfs_fuse)
