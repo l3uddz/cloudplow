@@ -40,7 +40,7 @@ class Config(object):
                 'hidden_remote': 'google:',
                 'rclone_excludes': [
                     '**partial~',
-                    '**_HIDDEN',
+                    '**_HIDDEN~',
                     '.unionfs/**',
                     '.unionfs-fuse/**',
                 ],
@@ -62,7 +62,7 @@ class Config(object):
                 'hidden_remote': 'encdb:',
                 'rclone_excludes': [
                     '**partial~',
-                    '**_HIDDEN',
+                    '**_HIDDEN~',
                     '.unionfs/**',
                     '.unionfs-fuse/**',
                 ],
@@ -221,9 +221,10 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('clean', 'run'),
+                            choices=('clean', 'upload', 'run'),
                             help=(
-                                '"clean": clean unionfs mounts\n'
+                                '"clean": clean HIDDEN files from configured unionfs mounts and rclone remotes\n'
+                                '"upload": perform clean and upload local content to configured chosen unionfs rclone remotes\n'
                                 '"run": starts the application'
                             )
                             )

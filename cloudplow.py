@@ -5,7 +5,6 @@ from logging.handlers import RotatingFileHandler
 
 from utils import config, lock
 from utils import decorators
-from utils.rclone import Rclone
 from utils.unionfs import UnionfsHiddenFolder
 
 ############################################################
@@ -114,15 +113,14 @@ def do_hidden():
 ############################################################
 
 if __name__ == "__main__":
-    do_hidden()
-    exit(0)
+    # show latest version info from git
 
-    log.info("Starting...")
-    log.debug("lol")
-    test = Rclone('google', conf.configs['remotes']['google'], True)
-    log.debug(test.extras)
-
-    hidden_folder = UnionfsHiddenFolder('Y:\\Shared Videos\\TV')
-    hidden_folder.clean_remote('google', conf.configs['remotes']['google'])
-    hidden_folder.clean_remote('dropbox', conf.configs['remotes']['dropbox'])
-    hidden_folder.remove_local_hidden()
+    # do chosen mode
+    if conf.args['cmd'] == 'clean':
+        do_hidden()
+    elif conf.args['cmd'] == 'upload':
+        do_upload()
+    elif conf.args['cmd'] == 'run':
+        log.info("Starting in longrunning mode")
+    else:
+        log.error("Unknown command: %r", conf.args['cmd'])
