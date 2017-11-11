@@ -21,12 +21,19 @@ class Rclone:
         try:
             log.debug("Deleting file '%s' from remote %s", path, self.name)
 
+            return True
         except:
             log.exception("Exception deleting file '%s' from remote %s: ", path, self.name)
         return False
 
     def delete_folder(self, path):
-        log.debug("Deleting folder '%s' from remote %s", path, self.name)
+        try:
+            log.debug("Deleting folder '%s' from remote %s", path, self.name)
+
+            return True
+        except:
+            log.exception("Exception deleting folder '%s' from remote %s: ", path, self.name)
+        return False
 
     # internals
     def __extras2string(self):

@@ -1,13 +1,15 @@
 import logging
 
 from . import path
+from .rclone import Rclone
 
 log = logging.getLogger('unionfs')
 
 
 class UnionfsHiddenFolder:
-    def __init__(self, hidden_folder):
+    def __init__(self, hidden_folder, dry_run):
         self.unionfs_fuse = hidden_folder
+        self.dry_run = dry_run
         self.hidden_files = self.__files()
         self.hidden_folders = self.__folders()
 
@@ -21,21 +23,23 @@ class UnionfsHiddenFolder:
         """
 
         try:
+            rclone = Rclone(name, remote, self.dry_run)
+
             # clean hidden files from remote
             if self.hidden_files:
                 log.info("Cleaning %d hidden file(s) from remote: %s", len(self.hidden_files), name)
                 for hidden_file in self.hidden_files:
                     remote_file = self.__hidden2remote(remote, hidden_file)
-                    if remote_file:
-                        log.info("Removing file '%s'", remote_file)
+                    if remote_file and rclone.delete_file(remote_file):
+                        log.info("Removed file '%s'", remote_file)
 
             # clean hidden folders from remote
             if self.hidden_folders:
                 log.info("Cleaning %d hidden folder(s) from remote: %s", len(self.hidden_folders), name)
                 for hidden_folder in self.hidden_folders:
                     remote_folder = self.__hidden2remote(remote, hidden_folder)
-                    if remote_folder:
-                        log.info("Removing folder '%s'", remote_folder)
+                    if remote_folder and rclone.delete_folder(remote_folder):
+                        log.info("Removed folder '%s'", remote_folder)
 
             return True
         except:
@@ -45,10 +49,10 @@ class UnionfsHiddenFolder:
     def remove_local_hidden(self):
         if len(self.hidden_files):
             path.delete(self.hidden_files)
-            log.info("Removed %d local hidden file(s)", len(self.hidden_files))
+            log.info("Removed %d local hidden file(s) from disk", len(self.hidden_files))
         if len(self.hidden_folders):
             path.delete(self.hidden_folders)
-            log.info("Removed %d local hidden folder(s)", len(self.hidden_folders))
+            log.info("Removed %d local hidden folder(s) from disk", len(self.hidden_folders))
         return
 
     # internals

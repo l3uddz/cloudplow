@@ -83,7 +83,7 @@ def do_hidden():
         try:
             # loop each supplied hidden folder
             for hidden_folder, hidden_config in conf.configs['unionfs'].items():
-                hidden = UnionfsHiddenFolder(hidden_folder)
+                hidden = UnionfsHiddenFolder(hidden_folder, conf.configs['dry_run'])
 
                 # loop the chosen remotes for this hidden config cleaning files
                 for hidden_remote_name in hidden_config['hidden_remotes']:
