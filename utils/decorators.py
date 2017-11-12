@@ -13,7 +13,7 @@ def timed(method):
         result = method(*args, **kw)
         time_taken = timeit.default_timer() - start_time
         try:
-            log.info("%r from %r completed in %s", method.__name__,
+            log.info("%r from %r finished in %s", method.__name__,
                      os.path.basename(method.__code__.co_filename),
                      misc.seconds_to_string(time_taken))
         except:

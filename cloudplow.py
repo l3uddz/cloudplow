@@ -85,7 +85,7 @@ def do_upload():
                 resp = uploader.upload()
                 if resp:
                     # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
-                    log.warning(
+                    log.info(
                         "Upload aborted due to triggers being met, %s will continue automatic uploading normally in "
                         "%d hours", uploader_remote, resp)
                     # add remote to uploader_delay
