@@ -69,8 +69,8 @@ def do_upload():
                 if resp:
                     # a non 0 result indicates trigger was met and result is how many hours to sleep this remote
                     log.info(
-                        "Upload aborted due to triggers being met, %s will continue uploading normally in %d hours",
-                        uploader_remote, resp)
+                        "Upload aborted due to triggers being met, %s will continue automatic uploading normally in "
+                        "%d hours", uploader_remote, resp)
                     # TODO : RESPECT THESE TRIGGER DELAYS
 
                 # remove leftover empty directories from disk
