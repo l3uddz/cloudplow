@@ -33,31 +33,31 @@ class Uploader:
     def __logic(self, data):
         # loop sleep triggers
         for trigger_text, trigger_config in self.rclone_config['rclone_sleep'].items():
+            # check/reset trigger timeout
+            if trigger_text in self.trigger_tracks and self.trigger_tracks[trigger_text]['expires'] != '':
+                if time.time() >= self.trigger_tracks[trigger_text]['expires']:
+                    log.info("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
+                             trigger_text)
+                    self.trigger_tracks[trigger_text] = {'count': 0, 'expires': ''}
+
             # check if trigger_text is in data
             if trigger_text.lower() in data.lower():
                 # check / increase tracking count of trigger_text
                 if trigger_text not in self.trigger_tracks or self.trigger_tracks[trigger_text]['count'] == 0:
-                    # trigger_text was not seen before - set initial tracking info
+                    # set initial tracking info for trigger
                     self.trigger_tracks[trigger_text] = {'count': 1, 'expires': time.time() + trigger_config['timeout']}
                     log.info("Tracked first occurrence of trigger: %r, expires in %d seconds", trigger_text,
                              trigger_config['timeout'])
                 else:
-                    # trigger_text WAS seen before
-                    # check timeout
-                    if time.time() >= self.trigger_tracks[trigger_text]['expires']:
-                        log.info("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
-                                 trigger_text)
-                        self.trigger_tracks[trigger_text]['count'] = 0
-                    else:
-                        # trigger_text was found before the first occurrence had expired, increase count
-                        self.trigger_tracks[trigger_text]['count'] += 1
-                        log.info("Tracked trigger: %r has occurred %d/%d times", trigger_text,
-                                 self.trigger_tracks[trigger_text]['count'], trigger_config['count'])
-                        # check if trigger_text was found the required amount of times to abort
-                        if self.trigger_tracks[trigger_text]['count'] >= trigger_config['count']:
-                            log.info(
-                                "Tracked trigger %r has reached the maximum limit of %d occurrences within %d seconds,"
-                                " aborting...", trigger_text, trigger_config['count'], trigger_config['timeout'])
-                            self.delayed_check = trigger_config['sleep']
-                            return True
+                    # trigger_text WAS seen before increase count
+                    self.trigger_tracks[trigger_text]['count'] += 1
+                    log.info("Tracked trigger: %r has occurred %d/%d times", trigger_text,
+                             self.trigger_tracks[trigger_text]['count'], trigger_config['count'])
+                    # check if trigger_text was found the required amount of times to abort
+                    if self.trigger_tracks[trigger_text]['count'] >= trigger_config['count']:
+                        log.info(
+                            "Tracked trigger %r has reached the maximum limit of %d occurrences within %d seconds,"
+                            " aborting...", trigger_text, trigger_config['count'], trigger_config['timeout'])
+                        self.delayed_check = trigger_config['sleep']
+                        return True
         return False
