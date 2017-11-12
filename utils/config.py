@@ -62,10 +62,10 @@ class Config(object):
                     '--no-traverse': None
                 },
                 'rclone_sleep': {
-                    '403: userRateLimit exceeded': {
+                    'Error 403: User rate limit exceeded': {
                         'count': 5,
                         'timeout': 300,
-                        'sleep': 6
+                        'sleep': 25
                     }
                 },
                 'remove_empty_dir_depth': 2
