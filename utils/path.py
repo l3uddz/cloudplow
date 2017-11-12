@@ -2,6 +2,8 @@ import hashlib
 import os
 from pathlib import Path
 
+from . import process
+
 try:
     from shlex import quote as cmd_quote
 except ImportError:
@@ -109,3 +111,20 @@ def delete(path):
                 log.exception("Exception deleting '%s': ", path)
         else:
             log.debug("Skipping deletion of '%s' as it does not exist", path)
+
+
+def remove_empty_dirs(path, depth):
+    if os.path.exists(path):
+        log.debug("Removing empty directories from '%s' with mindepth %d", path, depth)
+        cmd = 'find %s -mindepth %d -type d -empty' % (cmd_quote(path), depth)
+        try:
+            log.debug("Using: %s", cmd)
+            find_output = process.execute(cmd)
+            delete(find_output.splitlines())
+            return True
+        except:
+            log.exception("Exception while removing empty directories from '%s': ", path)
+            return False
+    else:
+        log.error("Cannot remove empty directories from '%s' as it does not exist", path)
+    return False

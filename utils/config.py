@@ -67,7 +67,8 @@ class Config(object):
                         'timeout': 300,
                         'sleep': 6
                     }
-                }
+                },
+                'remove_empty_dir_depth': 2
             },
             'dropbox': {
                 'upload_folder': '/mnt/local/Media',
@@ -93,7 +94,8 @@ class Config(object):
                         'timeout': 300,
                         'sleep': 6
                     }
-                }
+                },
+                'remove_empty_dir_depth': 2
             }
         },
         # notification settings

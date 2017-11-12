@@ -68,7 +68,7 @@ def do_upload():
                 uploader.upload()
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
-                    pass
+                    uploader.remove_empty_dirs()
 
         except:
             log.exception("Exception occurred while uploading: ")
@@ -109,9 +109,11 @@ def do_hidden():
                     # clean remote
                     hidden.clean_remote(hidden_remote_name, hidden_remote_config)
 
-                # remove the HIDDEN~ files from disk
+                # remove the HIDDEN~ files from disk and empty directories from unionfs-fuse folder
                 if not conf.configs['core']['dry_run']:
                     hidden.remove_local_hidden()
+                    hidden.remove_empty_dirs()
+
         except:
             log.exception("Exception occurred while cleaning hiddens: ")
 

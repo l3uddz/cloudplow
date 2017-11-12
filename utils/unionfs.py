@@ -66,6 +66,10 @@ class UnionfsHiddenFolder:
             log.info("Removed %d local hidden folder(s) from disk", len(self.hidden_folders))
         return
 
+    def remove_empty_dirs(self):
+        path.remove_empty_dirs(self.unionfs_fuse, 2)
+        log.debug("Removed empty directories from '%s'", self.unionfs_fuse)
+
     # internals
     def __files(self):
         hidden_files = []

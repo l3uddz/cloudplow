@@ -1,5 +1,6 @@
 import logging
 
+from . import path
 from .rclone import Rclone
 
 log = logging.getLogger("uploader")
@@ -19,6 +20,13 @@ class Uploader:
         log.info("Finished uploading to remote: %s", self.name)
         return resp
 
+    def remove_empty_dirs(self):
+        path.remove_empty_dirs(self.rclone_config['upload_folder'], self.rclone_config['remove_empty_dir_depth'])
+        log.info("Removed empty directories from '%s' with mindepth: %d", self.rclone_config['upload_folder'],
+                 self.rclone_config['remove_empty_dir_depth'])
+        return
+
+    # internals
     def __upload_logic(self, data):
         log.debug("Logic processing: %s", data)
         return False
