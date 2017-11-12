@@ -1,6 +1,6 @@
 import logging
-import shlex
-import subprocess
+
+from . import process
 
 try:
     from shlex import quote as cmd_quote
@@ -26,7 +26,7 @@ class Rclone:
                 cmd += ' --dry-run'
             log.debug("Using: %s", cmd)
             # exec
-            resp = self.__exec(cmd)
+            resp = process.execute(cmd)
             if 'Failed to delete' in resp:
                 return False
             return True
@@ -43,7 +43,7 @@ class Rclone:
                 cmd += ' --dry-run'
             log.debug("Using: %s", cmd)
             # exec
-            resp = self.__exec(cmd)
+            resp = process.execute(cmd)
             if 'Failed to rmdir' in resp:
                 return False
             return True
@@ -56,23 +56,3 @@ class Rclone:
         return ' '.join(
             "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in
             self.config['rclone_extras'].items()).replace('=None', '').strip()
-
-    @staticmethod
-    def __exec(command, callback=None):
-        total_output = ''
-        process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        while True:
-            output = str(process.stdout.readline()).lstrip('b').replace('\\n', '')
-            if process.poll() is not None:
-                break
-            if output and len(output) > 6:
-                log.debug(output)
-                if callback:
-                    callback(output)
-                else:
-                    total_output += "%s\n" % output
-
-        if not callback:
-            return total_output
-        rc = process.poll()
-        return rc

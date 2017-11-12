@@ -85,7 +85,7 @@ def do_hidden():
         log.info("Starting hidden cleaning")
         try:
             # loop each supplied hidden folder
-            for hidden_folder, hidden_config in conf.configs['unionfs'].items():
+            for hidden_folder, hidden_config in conf.configs['hidden'].items():
                 hidden = UnionfsHiddenFolder(hidden_folder, conf.configs['core']['dry_run'])
 
                 # loop the chosen remotes for this hidden config cleaning files

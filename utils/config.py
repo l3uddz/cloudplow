@@ -24,14 +24,21 @@ class Config(object):
         # core settings
         'core': {
             'dry_run': True,
-            'upload_interval': 30,
-            'sync_interval': 24,
         },
         # hidden cleaner settings
-        'unionfs': {
+        'hidden': {
             '/mnt/local/.unionfs-fuse': {
-                'upload_remote': 'google',
                 'hidden_remotes': ['google', 'dropbox']
+            }
+        },
+        # uploader settings
+        'uploader': {
+            'google': {
+                'check_interval': 30,
+                'max_size_gb': 450,
+                'size_excludes': [
+                    'downloads/*'
+                ]
             }
         },
         # mount settings
