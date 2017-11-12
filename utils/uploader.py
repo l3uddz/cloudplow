@@ -54,8 +54,10 @@ class Uploader:
                 else:
                     # trigger_text WAS seen before increase count
                     self.trigger_tracks[trigger_text]['count'] += 1
-                    log.warning("Tracked trigger: %r has occurred %d/%d times", trigger_text,
-                                self.trigger_tracks[trigger_text]['count'], trigger_config['count'])
+                    log.warning("Tracked trigger: %r has occurred %d/%d times within %d seconds", trigger_text,
+                                self.trigger_tracks[trigger_text]['count'], trigger_config['count'],
+                                trigger_config['timeout'])
+
                     # check if trigger_text was found the required amount of times to abort
                     if self.trigger_tracks[trigger_text]['count'] >= trigger_config['count']:
                         log.warning(
