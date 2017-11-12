@@ -86,7 +86,7 @@ def do_hidden():
         try:
             # loop each supplied hidden folder
             for hidden_folder, hidden_config in conf.configs['unionfs'].items():
-                hidden = UnionfsHiddenFolder(hidden_folder, conf.configs['dry_run'])
+                hidden = UnionfsHiddenFolder(hidden_folder, conf.configs['core']['dry_run'])
 
                 # loop the chosen remotes for this hidden config cleaning files
                 for hidden_remote_name in hidden_config['hidden_remotes']:
@@ -96,7 +96,7 @@ def do_hidden():
                     hidden.clean_remote(hidden_remote_name, hidden_remote_config)
 
                 # remove the HIDDEN~ files from disk
-                if not conf.configs['dry_run']:
+                if not conf.configs['core']['dry_run']:
                     hidden.remove_local_hidden()
         except:
             log.exception("Exception occurred while cleaning hiddens: ")

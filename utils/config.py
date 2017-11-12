@@ -22,9 +22,11 @@ class Config(object):
 
     base_config = {
         # core settings
-        'dry_run': True,
-        'upload_interval': 30,
-        'sync_interval': 24,
+        'core': {
+            'dry_run': True,
+            'upload_interval': 30,
+            'sync_interval': 24,
+        },
         # hidden cleaner settings
         'unionfs': {
             '/mnt/local/.unionfs-fuse': {
