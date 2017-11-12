@@ -41,7 +41,7 @@ class Config(object):
                 ]
             }
         },
-        # mount settings
+        # rclone settings
         'remotes': {
             'google': {
                 'upload_folder': '/mnt/local/Media',

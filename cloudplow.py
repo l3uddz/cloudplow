@@ -6,6 +6,7 @@ from logging.handlers import RotatingFileHandler
 from utils import config, lock
 from utils import decorators
 from utils.unionfs import UnionfsHiddenFolder
+from utils.uploader import Uploader
 
 ############################################################
 # INIT
@@ -57,7 +58,20 @@ def do_upload():
 
     with lock_file:
         log.info("Starting upload")
-        time.sleep(10)
+        try:
+            # loop each supplied uploader config
+            for uploader_remote, uploader_config in conf.configs['uploader'].items():
+                # retrieve rclone config for this remote
+                rclone_config = conf.configs['remotes'][uploader_remote]
+                # perform the upload
+                uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'])
+
+                # remove leftover empty directories from disk
+                if not conf.configs['core']['dry_run']:
+                    pass
+
+        except:
+            log.exception("Exception occurred while uploading: ")
 
     log.info("Finished upload")
 
