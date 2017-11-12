@@ -45,6 +45,9 @@ conf.load()
 # Ensure lock folder exists
 lock.ensure_lock_folder()
 
+# Logic vars
+uploader_delay = {}
+
 
 ############################################################
 # DOER FUNCS
@@ -63,15 +66,30 @@ def do_upload():
             for uploader_remote, uploader_config in conf.configs['uploader'].items():
                 # retrieve rclone config for this remote
                 rclone_config = conf.configs['remotes'][uploader_remote]
+                # check if this remote is delayed
+                if uploader_remote in uploader_delay:
+                    if time.time() < uploader_delay[uploader_remote]:
+                        # this remote is still delayed due to a previous abort due to triggers
+                        log.warning(
+                            "%s is delayed due to a previously aborted upload. Normal operation in %d seconds at %s",
+                            uploader_remote, int(uploader_delay[uploader_remote] - time.time()),
+                            time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(uploader_delay[uploader_remote])))
+                        continue
+                    else:
+                        log.warning("%s is no longer delayed due to a previous aborted upload, proceeding!",
+                                    uploader_remote)
+                        uploader_delay.pop(uploader_remote, None)
+
                 # perform the upload
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'])
                 resp = uploader.upload()
                 if resp:
-                    # a non 0 result indicates trigger was met and result is how many hours to sleep this remote
-                    log.info(
+                    # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
+                    log.warning(
                         "Upload aborted due to triggers being met, %s will continue automatic uploading normally in "
                         "%d hours", uploader_remote, resp)
-                    # TODO : RESPECT THESE TRIGGER DELAYS
+                    # add remote to uploader_delay
+                    uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
 
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
