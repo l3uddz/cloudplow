@@ -52,6 +52,7 @@ class Config(object):
                 'rclone_sleep': {
                     '403: userRateLimit exceeded': {
                         'count': 5,
+                        'timeout': 300,
                         'sleep': 6
                     }
                 }
@@ -74,6 +75,7 @@ class Config(object):
                 'rclone_sleep': {
                     'insufficient space': {
                         'count': 5,
+                        'timeout': 300,
                         'sleep': 6
                     }
                 }
