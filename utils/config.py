@@ -56,7 +56,10 @@ class Config(object):
                 'rclone_extras': {
                     '--drive-chunk-size': '64M',
                     '--transfers': 8,
-                    '--checkers': 16
+                    '--checkers': 16,
+                    '--stats': '60s',
+                    '--verbose': 1,
+                    '--no-traverse': None
                 },
                 'rclone_sleep': {
                     '403: userRateLimit exceeded': {
@@ -79,7 +82,10 @@ class Config(object):
                 'rclone_extras': {
                     '--dropbox-chunk-size': '128M',
                     '--transfers': 8,
-                    '--checkers': 16
+                    '--checkers': 16,
+                    '--stats': '60s',
+                    '--verbose': 1,
+                    '--no-traverse': None
                 },
                 'rclone_sleep': {
                     'insufficient space': {

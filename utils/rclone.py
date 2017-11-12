@@ -15,7 +15,6 @@ class Rclone:
         self.name = name
         self.config = config
         self.dry_run = dry_run
-        self.extras = self.__extras2string()
 
     def delete_file(self, path):
         try:
@@ -24,11 +23,13 @@ class Rclone:
             cmd = "rclone delete %s" % cmd_quote(path)
             if self.dry_run:
                 cmd += ' --dry-run'
-            log.debug("Using: %s", cmd)
+
             # exec
+            log.debug("Using: %s", cmd)
             resp = process.execute(cmd)
             if 'Failed to delete' in resp:
                 return False
+
             return True
         except:
             log.exception("Exception deleting file '%s' from remote %s: ", path, self.name)
@@ -41,14 +42,41 @@ class Rclone:
             cmd = "rclone rmdir %s" % cmd_quote(path)
             if self.dry_run:
                 cmd += ' --dry-run'
-            log.debug("Using: %s", cmd)
+
             # exec
+            log.debug("Using: %s", cmd)
             resp = process.execute(cmd)
             if 'Failed to rmdir' in resp:
                 return False
+
             return True
         except:
             log.exception("Exception deleting folder '%s' from remote %s: ", path, self.name)
+        return False
+
+    def upload(self, callback):
+        try:
+            log.debug("Uploading '%s' to '%s'", self.config['upload_folder'], self.config['upload_remote'])
+            # build cmd
+            cmd = "rclone move %s %s" % (
+                cmd_quote(self.config['upload_folder']), cmd_quote(self.config['upload_remote']))
+
+            extras = self.__extras2string()
+            if len(extras) > 2:
+                cmd += ' %s' % extras
+            excludes = self.__excludes2string()
+            if len(excludes) > 2:
+                cmd += ' %s' % excludes
+            if self.dry_run:
+                cmd += ' --dry-run'
+
+            # exec
+            log.debug("Using: %s", cmd)
+            process.execute(cmd, callback)
+            return True
+        except:
+            log.exception("Exception occurred while uploading '%s' to remote: %s", self.config['upload_folder'],
+                          self.name)
         return False
 
     # internals
@@ -56,3 +84,8 @@ class Rclone:
         return ' '.join(
             "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in
             self.config['rclone_extras'].items()).replace('=None', '').strip()
+
+    def __excludes2string(self):
+        return ' '.join(
+            "--exclude=%s" % (cmd_quote(value) if isinstance(value, str) else value) for value in
+            self.config['rclone_excludes']).replace('=None', '').strip()

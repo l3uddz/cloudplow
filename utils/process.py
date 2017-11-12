@@ -13,9 +13,12 @@ def execute(command, callback=None):
         if process.poll() is not None:
             break
         if output and len(output) > 6:
-            log.debug(output)
+            log.info(output)
             if callback:
-                callback(output)
+                cancel = callback(output)
+                if cancel:
+                    log.info("Callback requested cancellation, cancelling...")
+                    process.kill()
             else:
                 total_output += "%s\n" % output
 

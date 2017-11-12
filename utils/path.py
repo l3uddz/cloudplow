@@ -80,7 +80,7 @@ def opened_files(path):
 
     except:
         log.exception("Exception retrieving open files from %r: ", path)
-        return None
+    return []
 
 
 def delete(path):

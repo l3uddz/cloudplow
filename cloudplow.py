@@ -65,7 +65,7 @@ def do_upload():
                 rclone_config = conf.configs['remotes'][uploader_remote]
                 # perform the upload
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'])
-
+                uploader.upload()
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
                     pass
