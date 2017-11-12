@@ -46,7 +46,7 @@ class Uploader:
                 if trigger_text not in self.trigger_tracks or self.trigger_tracks[trigger_text]['count'] == 0:
                     # set initial tracking info for trigger
                     self.trigger_tracks[trigger_text] = {'count': 1, 'expires': time.time() + trigger_config['timeout']}
-                    log.info("Tracked first occurrence of trigger: %r, expires in %d seconds at %s", trigger_text,
+                    log.info("Tracked first occurrence of trigger: %r. Expiring in %d seconds at %s", trigger_text,
                              trigger_config['timeout'], time.strftime('%Y-%m-%d %H:%M:%S',
                                                                       time.localtime(self.trigger_tracks[trigger_text][
                                                                                          'expires'])))
