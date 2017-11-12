@@ -17,7 +17,7 @@ def execute(command, callback=None):
             if callback:
                 cancel = callback(output)
                 if cancel:
-                    log.info("Callback requested cancellation, cancelling...")
+                    log.info("Callback requested termination, terminating...")
                     process.kill()
             else:
                 total_output += "%s\n" % output
