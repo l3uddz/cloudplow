@@ -65,7 +65,14 @@ def do_upload():
                 rclone_config = conf.configs['remotes'][uploader_remote]
                 # perform the upload
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'])
-                uploader.upload()
+                resp = uploader.upload()
+                if resp:
+                    # a non 0 result indicates trigger was met and result is how many hours to sleep this remote
+                    log.info(
+                        "Upload aborted due to triggers being met, %s will continue uploading normally in %d hours",
+                        uploader_remote, resp)
+                    # TODO : RESPECT THESE TRIGGER DELAYS
+
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
                     uploader.remove_empty_dirs()
