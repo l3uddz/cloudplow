@@ -96,7 +96,8 @@ def do_hidden():
                     hidden.clean_remote(hidden_remote_name, hidden_remote_config)
 
                 # remove the HIDDEN~ files from disk
-                hidden.remove_local_hidden()
+                if not conf.configs['dry_run']:
+                    hidden.remove_local_hidden()
         except:
             log.exception("Exception occurred while cleaning hiddens: ")
 
