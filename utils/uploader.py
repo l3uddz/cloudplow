@@ -36,8 +36,8 @@ class Uploader:
             # check/reset trigger timeout
             if trigger_text in self.trigger_tracks and self.trigger_tracks[trigger_text]['expires'] != '':
                 if time.time() >= self.trigger_tracks[trigger_text]['expires']:
-                    log.info("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
-                             trigger_text)
+                    log.warning("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
+                                trigger_text)
                     self.trigger_tracks[trigger_text] = {'count': 0, 'expires': ''}
 
             # check if trigger_text is in data
@@ -46,18 +46,19 @@ class Uploader:
                 if trigger_text not in self.trigger_tracks or self.trigger_tracks[trigger_text]['count'] == 0:
                     # set initial tracking info for trigger
                     self.trigger_tracks[trigger_text] = {'count': 1, 'expires': time.time() + trigger_config['timeout']}
-                    log.info("Tracked first occurrence of trigger: %r. Expiring in %d seconds at %s", trigger_text,
-                             trigger_config['timeout'], time.strftime('%Y-%m-%d %H:%M:%S',
-                                                                      time.localtime(self.trigger_tracks[trigger_text][
-                                                                                         'expires'])))
+                    log.warning("Tracked first occurrence of trigger: %r. Expiring in %d seconds at %s", trigger_text,
+                                trigger_config['timeout'], time.strftime('%Y-%m-%d %H:%M:%S',
+                                                                         time.localtime(
+                                                                             self.trigger_tracks[trigger_text][
+                                                                                 'expires'])))
                 else:
                     # trigger_text WAS seen before increase count
                     self.trigger_tracks[trigger_text]['count'] += 1
-                    log.info("Tracked trigger: %r has occurred %d/%d times", trigger_text,
-                             self.trigger_tracks[trigger_text]['count'], trigger_config['count'])
+                    log.warning("Tracked trigger: %r has occurred %d/%d times", trigger_text,
+                                self.trigger_tracks[trigger_text]['count'], trigger_config['count'])
                     # check if trigger_text was found the required amount of times to abort
                     if self.trigger_tracks[trigger_text]['count'] >= trigger_config['count']:
-                        log.info(
+                        log.warning(
                             "Tracked trigger %r has reached the maximum limit of %d occurrences within %d seconds,"
                             " aborting upload...", trigger_text, trigger_config['count'], trigger_config['timeout'])
                         self.delayed_check = trigger_config['sleep']
