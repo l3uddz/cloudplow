@@ -59,7 +59,7 @@ class Uploader:
                     if self.trigger_tracks[trigger_text]['count'] >= trigger_config['count']:
                         log.info(
                             "Tracked trigger %r has reached the maximum limit of %d occurrences within %d seconds,"
-                            " aborting...", trigger_text, trigger_config['count'], trigger_config['timeout'])
+                            " aborting upload...", trigger_text, trigger_config['count'], trigger_config['timeout'])
                         self.delayed_check = trigger_config['sleep']
                         return True
         return False
