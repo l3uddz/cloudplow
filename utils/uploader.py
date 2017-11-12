@@ -32,7 +32,7 @@ class Uploader:
     # internals
     def __logic(self, data):
         # loop sleep triggers
-        for trigger_text, trigger_config in self.rclone_config['rclone_sleeps'].items():
+        for trigger_text, trigger_config in self.rclone_config['rclone_sleep'].items():
             # check if trigger_text is in data
             if trigger_text.lower() in data.lower():
                 # check / increase tracking count of trigger_text
