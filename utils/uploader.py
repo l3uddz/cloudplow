@@ -45,7 +45,8 @@ class Uploader:
                     # trigger_text WAS seen before
                     # check timeout
                     if time.time() >= self.trigger_tracks[trigger_text]['expires']:
-                        log.info("Tracking of trigger: %r has expired, resetting occurrences and timeout", trigger_text)
+                        log.info("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
+                                 trigger_text)
                         self.trigger_tracks[trigger_text]['count'] = 0
                     else:
                         # trigger_text was found before the first occurrence had expired, increase count
