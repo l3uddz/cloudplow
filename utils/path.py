@@ -42,8 +42,8 @@ def find_files(folder, extension=None, depth=None):
             if not extension:
                 file_list.append(file)
             else:
-                file_extension = get_file_extension(file)
-                if file_extension.lower().endswith(extension.lower()):
+                # file_extension = get_file_extension(file)
+                if file.lower().endswith(extension.lower()):
                     file_list.append(file)
 
     return file_list
