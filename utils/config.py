@@ -132,7 +132,7 @@ class Config(object):
         'loglevel': {
             'argv': '--loglevel',
             'env': 'CLOUDPLOW_LOGLEVEL',
-            'default': 'DEBUG'
+            'default': 'INFO'
         }
     }
 
