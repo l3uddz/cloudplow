@@ -20,7 +20,7 @@ class Uploader:
         rclone_config = self.rclone_config
 
         # should we exclude open files
-        if self.rclone_config['exclude_open_files']:
+        if self.uploader_config['exclude_open_files']:
             files_to_exclude = self.__opened_files()
             if len(files_to_exclude):
                 log.info("Excluding these files from being uploaded because they were open: %r", files_to_exclude)
