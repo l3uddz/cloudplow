@@ -170,7 +170,7 @@ def scheduled_uploader(uploader_name, uploader_settings):
         rclone_settings = conf.configs['remotes'][uploader_name]
 
         # check used disk space
-        used_space = path.get_size(rclone_settings['upload_folder'], rclone_settings['rclone_excludes'])
+        used_space = path.get_size(rclone_settings['upload_folder'], uploader_settings['size_excludes'])
 
         # if disk space is above the limit, clean hidden files then upload
         if used_space > uploader_settings['max_size_gb']:
