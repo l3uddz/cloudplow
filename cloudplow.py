@@ -66,9 +66,6 @@ def do_upload(remote=None):
     with lock_file:
         log.info("Starting upload")
         try:
-            # clean hidden files
-            do_hidden()
-
             # loop each supplied uploader config
             for uploader_remote, uploader_config in conf.configs['uploader'].items():
                 # if remote is not None, skip this remote if it is not == remote
@@ -177,6 +174,8 @@ def scheduled_uploader(uploader_name, uploader_settings):
             log.info("%s is %d GB over the maximum limit of %d GB", uploader_name,
                      used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
 
+            # clean hidden files
+            do_hidden()
             # upload
             do_upload(uploader_name)
 
@@ -203,6 +202,7 @@ if __name__ == "__main__":
             do_hidden()
         elif conf.args['cmd'] == 'upload':
             log.info("Started in upload mode")
+            do_hidden()
             do_upload()
         elif conf.args['cmd'] == 'run':
             log.info("Started in run mode")
