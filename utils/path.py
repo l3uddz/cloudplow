@@ -74,7 +74,7 @@ def opened_files(path):
         process = os.popen('lsof -wFn +D %s | tail -n +2 | cut -c2-' % cmd_quote(path))
         data = process.read()
         for item in data.split('\n'):
-            if not item or len(item) <= 3 or os.path.isdir(item) or item.isdigit():
+            if not item or len(item) <= 3 or item.isdigit() or not os.path.isfile(item):
                 continue
             files.append(item)
 
