@@ -5,9 +5,9 @@ import subprocess
 log = logging.getLogger("process")
 
 
-def execute(command, callback=None, logs=True):
+def execute(command, callback=None, logs=True, shell=False):
     total_output = ''
-    process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    process = subprocess.Popen(shlex.split(command), shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while True:
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '')
         if process.poll() is not None:
