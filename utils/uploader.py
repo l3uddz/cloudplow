@@ -47,7 +47,7 @@ class Uploader:
         rclone_excludes = []
         for item in open_files:
             if not self.__is_opened_file_excluded(item):
-                rclone_excludes.append(item)
+                rclone_excludes.append(item.lstrip(self.rclone_config['upload_folder']))
         return rclone_excludes
 
     def __is_opened_file_excluded(self, file_path):
