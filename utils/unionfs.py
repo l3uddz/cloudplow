@@ -36,6 +36,7 @@ class UnionfsHiddenFolder:
                         log.info("Removed file '%s'", remote_file)
                         delete_success += 1
                     else:
+                        log.error("Failed removing file '%s'", remote_file)
                         delete_failed += 1
 
             # clean hidden folders from remote
@@ -47,6 +48,7 @@ class UnionfsHiddenFolder:
                         log.info("Removed folder '%s'", remote_folder)
                         delete_success += 1
                     else:
+                        log.error("Failed removing folder '%s'", remote_folder)
                         delete_failed += 1
 
             if self.hidden_files or self.hidden_folders:

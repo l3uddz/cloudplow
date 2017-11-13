@@ -119,7 +119,7 @@ def remove_empty_dirs(path, depth):
         cmd = 'find %s -mindepth %d -type d -empty -delete' % (cmd_quote(path), depth)
         try:
             log.debug("Using: %s", cmd)
-            process.execute(cmd)
+            process.execute(cmd, logs=False)
             return True
         except Exception:
             log.exception("Exception while removing empty directories from '%s': ", path)

@@ -13,7 +13,7 @@ def execute(command, callback=None, logs=True, shell=False):
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '')
         if process.poll() is not None:
             break
-        if output and len(output):
+        if output and len(output) and output != "''":
             if logs:
                 log.info(output)
             if callback:

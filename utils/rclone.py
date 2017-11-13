@@ -26,7 +26,7 @@ class Rclone:
 
             # exec
             log.debug("Using: %s", cmd)
-            resp = process.execute(cmd)
+            resp = process.execute(cmd, logs=False)
             if 'Failed to delete' in resp:
                 return False
 
@@ -45,7 +45,7 @@ class Rclone:
 
             # exec
             log.debug("Using: %s", cmd)
-            resp = process.execute(cmd)
+            resp = process.execute(cmd, logs=False)
             if 'Failed to rmdir' in resp:
                 return False
 
