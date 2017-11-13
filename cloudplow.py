@@ -166,22 +166,26 @@ def do_hidden():
 
 def scheduled_uploader(uploader_name, uploader_settings):
     log.debug("Checking used disk space for uploader: %s", uploader_name)
-    rclone_settings = conf.configs['remotes'][uploader_name]
+    try:
+        rclone_settings = conf.configs['remotes'][uploader_name]
 
-    # check used disk space
-    used_space = path.get_size(uploader_settings['upload_folder'], rclone_settings['rclone_excludes'])
+        # check used disk space
+        used_space = path.get_size(rclone_settings['upload_folder'], rclone_settings['rclone_excludes'])
 
-    # if disk space is above the limit, clean hidden files then upload
-    if used_space > uploader_settings['max_size_gb']:
-        log.info("%s is %d GB over the maximum limit of %d GB.", uploader_name,
-                 used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
+        # if disk space is above the limit, clean hidden files then upload
+        if used_space > uploader_settings['max_size_gb']:
+            log.info("%s is %d GB over the maximum limit of %d GB.", uploader_name,
+                     used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
 
-        # upload
-        do_upload(uploader_name)
+            # upload
+            do_upload(uploader_name)
 
-    else:
-        log.info("%s still has %d GB before it is over the limit of %d GB", uploader_name,
-                 uploader_settings['max_size_gb'] - used_space, uploader_settings['max_size_gb'])
+        else:
+            log.info("%s still has %d GB before it is over the limit of %d GB", uploader_name,
+                     uploader_settings['max_size_gb'] - used_space, uploader_settings['max_size_gb'])
+
+    except Exception:
+        log.exception("Unexpected exception occurred while processing uploader %s: ", uploader_name)
 
 
 ############################################################
@@ -214,7 +218,7 @@ if __name__ == "__main__":
                 try:
                     schedule.run_pending()
                 except Exception:
-                    log.exception("Unexpected exception occurred while processing scheduled tasks: ")
+                    log.exception("Unhandled exception occurred while processing scheduled tasks: ")
                 time.sleep(1)
         else:
             log.error("Unknown command: %r", conf.args['cmd'])
