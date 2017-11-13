@@ -174,7 +174,7 @@ def scheduled_uploader(uploader_name, uploader_settings):
 
         # if disk space is above the limit, clean hidden files then upload
         if used_space > uploader_settings['max_size_gb']:
-            log.info("%s is %d GB over the maximum limit of %d GB.", uploader_name,
+            log.info("%s is %d GB over the maximum limit of %d GB", uploader_name,
                      used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
 
             # upload
