@@ -5,8 +5,7 @@ from logging.handlers import RotatingFileHandler
 
 import schedule
 
-from utils import config, lock
-from utils import decorators
+from utils import config, lock, path, decorators
 from utils.unionfs import UnionfsHiddenFolder
 from utils.uploader import Uploader
 
@@ -67,13 +66,18 @@ def do_upload(remote=None):
     with lock_file:
         log.info("Starting upload")
         try:
+            # clean hidden files
+            do_hidden()
+
             # loop each supplied uploader config
             for uploader_remote, uploader_config in conf.configs['uploader'].items():
                 # if remote is not None, skip this remote if it is not == remote
                 if remote and uploader_remote != remote:
                     continue
+
                 # retrieve rclone config for this remote
                 rclone_config = conf.configs['remotes'][uploader_remote]
+
                 # check if this remote is delayed
                 if uploader_remote in uploader_delay:
                     if time.time() < uploader_delay[uploader_remote]:
@@ -91,11 +95,13 @@ def do_upload(remote=None):
                 # perform the upload
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'])
                 resp = uploader.upload()
+
                 if resp:
                     # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
                     log.info(
                         "Upload aborted due to triggers being met, %s will continue automatic uploading normally in "
                         "%d hours", uploader_remote, resp)
+
                     # add remote to uploader_delay
                     uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
 
@@ -139,6 +145,7 @@ def do_hidden():
                 for hidden_remote_name in hidden_config['hidden_remotes']:
                     # retrieve rclone config for this remote
                     hidden_remote_config = conf.configs['remotes'][hidden_remote_name]
+
                     # clean remote
                     hidden.clean_remote(hidden_remote_name, hidden_remote_config)
 
@@ -157,11 +164,23 @@ def do_hidden():
 # SCHEDULED FUNCS
 ############################################################
 
-def scheduled_uploader(name, settings):
+def scheduled_uploader(uploader_name, uploader_settings):
+    log.debug("Checking used disk space for uploader: %s", uploader_name)
+    rclone_settings = conf.configs['remotes'][uploader_name]
+
     # check used disk space
-    log.info("Checking available disk space for uploader: %s", name)
+    used_space = path.get_size(uploader_settings['upload_folder'], rclone_settings['rclone_excludes'])
 
     # if disk space is above the limit, clean hidden files then upload
+    if used_space >= uploader_settings['max_size_gb']:
+        log.info("%s is %d GB over the maximum limit of %d GB.", uploader_name,
+                 used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
+
+        # upload
+        do_upload(uploader_name)
+    else:
+        log.info("%s still has %d GB before it is over the limit of %d GB", uploader_name,
+                 uploader_settings['max_size_gb'] - used_space, uploader_settings['max_size_gb'])
 
 
 ############################################################

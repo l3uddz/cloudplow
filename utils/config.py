@@ -65,7 +65,7 @@ class Config(object):
                     '--verbose': 1,
                     '--no-traverse': None
                 },
-                'rclone_sleep': {
+                'rclone_sleeps': {
                     'Error 403: User rate limit exceeded': {
                         'count': 5,
                         'timeout': 300,
@@ -92,7 +92,7 @@ class Config(object):
                     '--verbose': 1,
                     '--no-traverse': None
                 },
-                'rclone_sleep': {
+                'rclone_sleeps': {
                     'insufficient space': {
                         'count': 5,
                         'timeout': 300,

@@ -58,7 +58,7 @@ class Uploader:
 
     def __logic(self, data):
         # loop sleep triggers
-        for trigger_text, trigger_config in self.rclone_config['rclone_sleep'].items():
+        for trigger_text, trigger_config in self.rclone_config['rclone_sleeps'].items():
             # check/reset trigger timeout
             if trigger_text in self.trigger_tracks and self.trigger_tracks[trigger_text]['expires'] != '':
                 if time.time() >= self.trigger_tracks[trigger_text]['expires']:

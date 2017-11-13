@@ -127,3 +127,17 @@ def remove_empty_dirs(path, depth):
     else:
         log.error("Cannot remove empty directories from '%s' as it does not exist", path)
     return False
+
+
+def get_size(path, excludes=None):
+    try:
+        cmd = "du -s --block-size=1G"
+        if excludes:
+            for item in excludes:
+                cmd += ' --exclude=%s' % cmd_quote(item)
+        cmd += ' %s | cut -f1' % cmd_quote(path)
+        size = process.execute(cmd, logs=False)
+        return int(size)
+    except Exception:
+        log.exception("Exception getting size of %r: ", path)
+    return 0
