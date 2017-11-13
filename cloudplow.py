@@ -54,7 +54,7 @@ uploader_delay = {}
 ############################################################
 
 @decorators.timed
-def do_upload():
+def do_upload(remote=None):
     lock_file = lock.upload()
     if lock_file.is_locked():
         log.info("Waiting for running upload to finish before proceeding...")
@@ -64,6 +64,9 @@ def do_upload():
         try:
             # loop each supplied uploader config
             for uploader_remote, uploader_config in conf.configs['uploader'].items():
+                # if remote is not None, skip this remote if it is not == remote
+                if remote and uploader_remote != remote:
+                    continue
                 # retrieve rclone config for this remote
                 rclone_config = conf.configs['remotes'][uploader_remote]
                 # check if this remote is delayed
