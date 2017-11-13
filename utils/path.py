@@ -137,8 +137,11 @@ def get_size(path, excludes=None):
                 cmd += ' --exclude=%s' % cmd_quote(item)
         cmd += ' %s | cut -f1' % cmd_quote(path)
         log.debug("Using: %s", cmd)
-        size = process.execute(cmd, logs=False, shell=True)
-        return int(size.strip("'\n"))
+        # get size
+        proc = os.popen(cmd)
+        data = proc.read()
+        proc.close()
+        return int(data) if data.isdigit() else 0
     except Exception:
         log.exception("Exception getting size of %r: ", path)
     return 0
