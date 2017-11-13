@@ -38,7 +38,11 @@ class Config(object):
                 'max_size_gb': 450,
                 'size_excludes': [
                     'downloads/*'
-                ]
+                ],
+                'opened_excludes': [
+                    '/downloads/'
+                ],
+                'exclude_open_files': True
             }
         },
         # rclone settings

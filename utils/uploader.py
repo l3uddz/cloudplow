@@ -15,11 +15,23 @@ class Uploader:
         self.dry_run = dry_run
         self.trigger_tracks = {}
         self.delayed_check = 0
-        self.rclone = Rclone(name, rclone_config, dry_run)
 
     def upload(self):
-        log.info("Uploading '%s' to remote: %s", self.rclone_config['upload_folder'], self.name)
-        self.rclone.upload(self.__logic)
+        rclone_config = self.rclone_config
+
+        # should we exclude open files
+        if self.rclone_config['exclude_open_files']:
+            files_to_exclude = self.__opened_files()
+            if len(files_to_exclude):
+                log.info("Excluding these files from being uploaded because they were open: %r", files_to_exclude)
+                # add files_to_exclude to rclone_config
+                for item in files_to_exclude:
+                    rclone_config['rclone_excludes'].append(item)
+
+        # do upload
+        rclone = Rclone(self.name, rclone_config, self.dry_run)
+        log.info("Uploading '%s' to remote: %s", rclone_config['upload_folder'], self.name)
+        rclone.upload(self.__logic)
         log.info("Finished uploading to remote: %s", self.name)
         return self.delayed_check
 
@@ -30,6 +42,20 @@ class Uploader:
         return
 
     # internals
+    def __opened_files(self):
+        open_files = path.opened_files(self.rclone_config['upload_folder'])
+        rclone_excludes = []
+        for item in open_files:
+            if not self.__is_opened_file_excluded(item):
+                rclone_excludes.append(item)
+        return rclone_excludes
+
+    def __is_opened_file_excluded(self, file_path):
+        for item in self.uploader_config['opened_excludes']:
+            if item.lower() in file_path.lower():
+                return True
+        return False
+
     def __logic(self, data):
         # loop sleep triggers
         for trigger_text, trigger_config in self.rclone_config['rclone_sleep'].items():
