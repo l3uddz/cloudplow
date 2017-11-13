@@ -139,7 +139,7 @@ def get_size(path, excludes=None):
         log.debug("Using: %s", cmd)
         # get size
         proc = os.popen(cmd)
-        data = proc.read()
+        data = proc.read().strip("\n")
         proc.close()
         return int(data) if data.isdigit() else 0
     except Exception:
