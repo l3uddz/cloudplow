@@ -175,11 +175,13 @@ if __name__ == "__main__":
     try:
 
         if conf.args['cmd'] == 'clean':
+            log.info("Started in clean mode")
             do_hidden()
         elif conf.args['cmd'] == 'upload':
+            log.info("Started in upload mode")
             do_upload()
         elif conf.args['cmd'] == 'run':
-            log.info("Starting in run mode")
+            log.info("Started in run mode")
 
             # add uploader to schedule
             for uploader, uploader_conf in conf.configs['uploader'].items():
