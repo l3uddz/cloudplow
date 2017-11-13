@@ -24,7 +24,7 @@ def seconds_to_string(seconds):
             if len(resp):
                 resp += ' and '
             resp += '%d seconds' % seconds
-    except:
+    except Exception:
         log.exception("Exception occurred converting %d seconds to readable string: ", seconds)
         resp = '%d seconds' % seconds
     return resp

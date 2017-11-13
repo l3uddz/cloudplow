@@ -53,7 +53,7 @@ class UnionfsHiddenFolder:
                 log.info("Completed cleaning hidden(s) from remote: %s", name)
                 log.info("%d items were deleted, %d items failed to delete", delete_success, delete_failed)
             return True
-        except:
+        except Exception:
             log.exception("Exception cleaning hidden(s) from %r: ", self.unionfs_fuse)
         return False
 
@@ -76,7 +76,7 @@ class UnionfsHiddenFolder:
         try:
             hidden_files = path.find_files(self.unionfs_fuse, '_HIDDEN~')
             log.info("Found %d hidden files in %r", len(hidden_files), self.unionfs_fuse)
-        except:
+        except Exception:
             log.exception("Exception finding hidden files for %r: ", self.unionfs_fuse)
             hidden_files = None
         return hidden_files
@@ -86,7 +86,7 @@ class UnionfsHiddenFolder:
         try:
             hidden_folders = path.find_folders(self.unionfs_fuse, '_HIDDEN~')
             log.info("Found %d hidden folders in %r", len(hidden_folders), self.unionfs_fuse)
-        except:
+        except Exception:
             log.exception("Exception finding hidden folders for %r: ", self.unionfs_fuse)
             hidden_folders = None
         return hidden_folders
@@ -96,6 +96,6 @@ class UnionfsHiddenFolder:
             remote_path = hidden_path.replace(self.unionfs_fuse, remote['hidden_remote']).rstrip('_HIDDEN~')
             log.debug("Mapped '%s' to '%s'", hidden_path, remote_path)
             return remote_path
-        except:
+        except Exception:
             log.exception("Exception mapping hidden file '%s' to its rclone remote path", hidden_path)
         return None

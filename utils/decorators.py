@@ -16,7 +16,7 @@ def timed(method):
             log.info("%r from %r finished in %s", method.__name__,
                      os.path.basename(method.__code__.co_filename),
                      misc.seconds_to_string(time_taken))
-        except:
+        except Exception:
             log.exception("Exception while logging time taken to run function: ")
         return result
 

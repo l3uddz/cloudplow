@@ -3,6 +3,8 @@ import logging
 import time
 from logging.handlers import RotatingFileHandler
 
+import schedule
+
 from utils import config, lock
 from utils import decorators
 from utils.unionfs import UnionfsHiddenFolder
@@ -17,6 +19,9 @@ log_formatter = logging.Formatter(
     '%(asctime)s - %(levelname)-10s - %(name)-20s -  %(funcName)-30s- %(message)s')
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
+
+# Set schedule logger to ERROR
+logging.getLogger('schedule').setLevel(logging.ERROR)
 
 # Set console logger
 console_handler = logging.StreamHandler()
@@ -37,7 +42,7 @@ root_logger.addHandler(file_handler)
 
 # Set chosen logging level
 root_logger.setLevel(conf.settings['loglevel'])
-log = root_logger.getChild('cloud_plow')
+log = root_logger.getChild('cloudplow')
 
 # Load config from disk
 conf.load()
@@ -98,7 +103,7 @@ def do_upload(remote=None):
                 if not conf.configs['core']['dry_run']:
                     uploader.remove_empty_dirs()
 
-        except:
+        except Exception:
             log.exception("Exception occurred while uploading: ")
 
     log.info("Finished upload")
@@ -142,15 +147,21 @@ def do_hidden():
                     hidden.remove_local_hidden()
                     hidden.remove_empty_dirs()
 
-        except:
+        except Exception:
             log.exception("Exception occurred while cleaning hiddens: ")
 
     log.info("Finished hidden cleaning")
 
 
 ############################################################
-# LOGIC FUNCS
+# SCHEDULED FUNCS
 ############################################################
+
+def scheduled_uploader(name, settings):
+    # check used disk space
+    log.info("Checking available disk space for uploader: %s", name)
+
+    # if disk space is above the limit, clean hidden files then upload
 
 
 ############################################################
@@ -161,11 +172,32 @@ if __name__ == "__main__":
     # show latest version info from git
 
     # do chosen mode
-    if conf.args['cmd'] == 'clean':
-        do_hidden()
-    elif conf.args['cmd'] == 'upload':
-        do_upload()
-    elif conf.args['cmd'] == 'run':
-        log.info("Starting in longrunning mode")
-    else:
-        log.error("Unknown command: %r", conf.args['cmd'])
+    try:
+
+        if conf.args['cmd'] == 'clean':
+            do_hidden()
+        elif conf.args['cmd'] == 'upload':
+            do_upload()
+        elif conf.args['cmd'] == 'run':
+            log.info("Starting in run mode")
+
+            # add uploader to schedule
+            for uploader, uploader_conf in conf.configs['uploader'].items():
+                schedule.every(uploader_conf['check_interval']).minutes.do(scheduled_uploader, uploader, uploader_conf)
+                log.info("Added %s uploader to schedule, checking available disk space every %d minutes", uploader,
+                         uploader_conf['check_interval'])
+
+            # run schedule
+            while True:
+                try:
+                    schedule.run_pending()
+                except Exception:
+                    log.exception("Unexpected exception occurred while processing scheduled tasks: ")
+                time.sleep(1)
+        else:
+            log.error("Unknown command: %r", conf.args['cmd'])
+
+    except KeyboardInterrupt:
+        log.info("cloudplow was interrupted by Ctrl + C")
+    except Exception:
+        log.exception("Unexpected fatal exception occurred: ")

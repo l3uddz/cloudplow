@@ -14,7 +14,7 @@ def ensure_lock_folder():
         if not os.path.exists(lock_folder):
             os.mkdir(lock_folder)
             log.info("Created lock folder: %r", lock_folder)
-    except:
+    except Exception:
         log.exception("Exception verifying/creating lock folder %r: ", lock_folder)
         sys.exit(1)
 

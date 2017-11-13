@@ -225,7 +225,7 @@ class Config(object):
 
                 setts[name] = value
 
-            except:
+            except Exception:
                 log.exception("Exception retrieving setting value: %r" % name)
 
         return setts

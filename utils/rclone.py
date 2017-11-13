@@ -31,7 +31,7 @@ class Rclone:
                 return False
 
             return True
-        except:
+        except Exception:
             log.exception("Exception deleting file '%s' from remote %s: ", path, self.name)
         return False
 
@@ -50,7 +50,7 @@ class Rclone:
                 return False
 
             return True
-        except:
+        except Exception:
             log.exception("Exception deleting folder '%s' from remote %s: ", path, self.name)
         return False
 
@@ -74,7 +74,7 @@ class Rclone:
             log.debug("Using: %s", cmd)
             process.execute(cmd, callback)
             return True
-        except:
+        except Exception:
             log.exception("Exception occurred while uploading '%s' to remote: %s", self.config['upload_folder'],
                           self.name)
         return False

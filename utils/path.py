@@ -25,7 +25,7 @@ def get_file_hash(file):
     file_size = 0
     try:
         file_size = os.path.getsize(file)
-    except:
+    except Exception:
         log.exception("Exception getting file size of %r: ", file)
     # set basic string to use for hash
     key = "{filename}-{size}".format(filename=os.path.basename(file), size=file_size)
@@ -80,7 +80,7 @@ def opened_files(path):
 
         return files
 
-    except:
+    except Exception:
         log.exception("Exception retrieving open files from %r: ", path)
     return []
 
@@ -95,7 +95,7 @@ def delete(path):
                         os.remove(item)
                     else:
                         os.rmdir(item)
-                except:
+                except Exception:
                     log.exception("Exception deleting '%s': ", item)
             else:
                 log.debug("Skipping deletion of '%s' as it does not exist", item)
@@ -107,7 +107,7 @@ def delete(path):
                     os.remove(path)
                 else:
                     os.rmdir(path)
-            except:
+            except Exception:
                 log.exception("Exception deleting '%s': ", path)
         else:
             log.debug("Skipping deletion of '%s' as it does not exist", path)
@@ -121,7 +121,7 @@ def remove_empty_dirs(path, depth):
             log.debug("Using: %s", cmd)
             process.execute(cmd)
             return True
-        except:
+        except Exception:
             log.exception("Exception while removing empty directories from '%s': ", path)
             return False
     else:
