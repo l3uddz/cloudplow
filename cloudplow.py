@@ -178,6 +178,7 @@ def scheduled_uploader(uploader_name, uploader_settings):
 
         # upload
         do_upload(uploader_name)
+
     else:
         log.info("%s still has %d GB before it is over the limit of %d GB", uploader_name,
                  uploader_settings['max_size_gb'] - used_space, uploader_settings['max_size_gb'])
