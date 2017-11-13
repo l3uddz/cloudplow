@@ -172,7 +172,7 @@ def scheduled_uploader(uploader_name, uploader_settings):
     used_space = path.get_size(uploader_settings['upload_folder'], rclone_settings['rclone_excludes'])
 
     # if disk space is above the limit, clean hidden files then upload
-    if used_space >= uploader_settings['max_size_gb']:
+    if used_space > uploader_settings['max_size_gb']:
         log.info("%s is %d GB over the maximum limit of %d GB.", uploader_name,
                  used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
 
