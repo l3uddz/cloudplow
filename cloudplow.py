@@ -105,10 +105,16 @@ def do_upload(remote=None):
                         log.warning("%s is no longer delayed due to a previous aborted upload, proceeding!",
                                     uploader_remote)
                         uploader_delay.pop(uploader_remote, None)
+                        # send notification that remote is no longer timed out
+                        notify.send(message="Upload suspension has expired for remote: %s" % uploader_remote)
+
+                # send notification that upload is starting
+                notify.send(message="Upload of %d GB has begun for remote: %s" % (
+                    path.get_size(rclone_config['upload_folder'], uploader_config['size_excludes']), uploader_remote))
 
                 # perform the upload
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'])
-                resp = uploader.upload()
+                resp, resp_trigger = uploader.upload()
 
                 if resp:
                     # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
@@ -118,6 +124,13 @@ def do_upload(remote=None):
 
                     # add remote to uploader_delay
                     uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
+                    # send aborted upload notification
+                    notify.send(
+                        message="Upload was aborted for remote: %s due to trigger %r, uploads suspended for %d hours" %
+                                (uploader_remote, resp_trigger, resp))
+                else:
+                    # send successful upload notification
+                    notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
 
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:

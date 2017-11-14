@@ -15,6 +15,7 @@ class Uploader:
         self.dry_run = dry_run
         self.trigger_tracks = {}
         self.delayed_check = 0
+        self.delayed_trigger = None
 
     def upload(self):
         rclone_config = self.rclone_config
@@ -33,7 +34,7 @@ class Uploader:
         log.info("Uploading '%s' to remote: %s", rclone_config['upload_folder'], self.name)
         rclone.upload(self.__logic)
         log.info("Finished uploading to remote: %s", self.name)
-        return self.delayed_check
+        return self.delayed_check, self.delayed_trigger
 
     def remove_empty_dirs(self):
         path.remove_empty_dirs(self.rclone_config['upload_folder'], self.rclone_config['remove_empty_dir_depth'])
@@ -90,5 +91,6 @@ class Uploader:
                             "Tracked trigger %r has reached the maximum limit of %d occurrences within %d seconds,"
                             " aborting upload...", trigger_text, trigger_config['count'], trigger_config['timeout'])
                         self.delayed_check = trigger_config['sleep']
+                        self.delayed_trigger = trigger_text
                         return True
         return False
