@@ -224,7 +224,7 @@ def scheduled_uploader(uploader_name, uploader_settings):
 if __name__ == "__main__":
     # show latest version info from git
 
-    # do chosen mode
+    # run chosen mode
     try:
         # init notifications
         init_notifications()
