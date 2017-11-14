@@ -3,7 +3,7 @@ import logging
 import requests
 
 logging.getLogger("requests").setLevel(logging.WARNING)
-log = logging.getLogger("Pushover")
+log = logging.getLogger("pushover")
 
 
 class Pushover:
@@ -12,6 +12,7 @@ class Pushover:
     def __init__(self, app_token, user_token):
         self.app_token = app_token
         self.user_token = user_token
+        log.info("Initialized Pushover notification agent")
 
     def send(self, **kwargs):
         if not self.app_token or not self.user_token:

@@ -31,7 +31,7 @@ class Notifications:
             service = chosen_service(**kwargs)
             self.services.append(service)
 
-        except:
+        except Exception:
             log.exception("Exception while loading service, kwargs=%r: ", kwargs)
 
     def send(self, **kwargs):

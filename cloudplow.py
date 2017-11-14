@@ -6,6 +6,7 @@ from logging.handlers import RotatingFileHandler
 import schedule
 
 from utils import config, lock, path, decorators
+from utils.notifications import Notifications
 from utils.unionfs import UnionfsHiddenFolder
 from utils.uploader import Uploader
 
@@ -46,11 +47,27 @@ log = root_logger.getChild('cloudplow')
 # Load config from disk
 conf.load()
 
+# Init Notifications class
+notify = Notifications()
+
 # Ensure lock folder exists
 lock.ensure_lock_folder()
 
 # Logic vars
 uploader_delay = {}
+
+
+############################################################
+# MISC FUNCS
+############################################################
+
+def init_notifications():
+    try:
+        for notification_name, notification_config in conf.configs['notifications'].items():
+            notify.load(**notification_config)
+    except Exception:
+        log.exception("Exception initializing notification agents: ")
+    return
 
 
 ############################################################
@@ -196,6 +213,8 @@ if __name__ == "__main__":
 
     # do chosen mode
     try:
+        # init notifications
+        init_notifications()
 
         if conf.args['cmd'] == 'clean':
             log.info("Started in clean mode")

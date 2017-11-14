@@ -105,15 +105,15 @@ class Config(object):
         # notification settings
         'notifications': {
             'Slackchat': {
-                'type': 'slack',
+                'service': 'slack',
                 'webhook_url': 'http://webhook-url-goes-here',
                 'sender_name': 'CloudPlow',
                 'sender_icon': ':ghost:'
             },
             'Pushover': {
-                'type': 'pushover',
-                'app_secret': 'app secret goes here',
-                'app_key': 'app key goes here'
+                'service': 'pushover',
+                'app_token': 'app token goes here',
+                'user_token': 'user token goes here'
             }
         }
     }

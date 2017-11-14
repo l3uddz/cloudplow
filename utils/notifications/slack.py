@@ -14,6 +14,7 @@ class Slack:
         self.sender_name = sender_name
         self.sender_icon = sender_icon
         self.channel = channel
+        log.info("Initialized Slack notification agent")
 
     def send(self, **kwargs):
         if not self.webhook_url or not self.sender_name or not self.sender_icon:
