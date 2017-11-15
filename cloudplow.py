@@ -174,7 +174,12 @@ def do_hidden():
                     hidden_remote_config = conf.configs['remotes'][hidden_remote_name]
 
                     # clean remote
-                    hidden.clean_remote(hidden_remote_name, hidden_remote_config)
+                    clean_resp, deleted_ok, deleted_fail = hidden.clean_remote(hidden_remote_name, hidden_remote_config)
+
+                    # send notification
+                    if deleted_ok or deleted_fail:
+                        notify.send(message="Cleaned %d hidden file(s) with %d failure(s) from remote: %s" % (
+                            deleted_ok, deleted_fail, hidden_remote_name))
 
                 # remove the HIDDEN~ files from disk and empty directories from unionfs-fuse folder
                 if not conf.configs['core']['dry_run']:

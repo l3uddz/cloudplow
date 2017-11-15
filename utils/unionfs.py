@@ -54,10 +54,10 @@ class UnionfsHiddenFolder:
             if self.hidden_files or self.hidden_folders:
                 log.info("Completed cleaning hidden(s) from remote: %s", name)
                 log.info("%d items were deleted, %d items failed to delete", delete_success, delete_failed)
-            return True
+            return True, delete_success, delete_failed
         except Exception:
             log.exception("Exception cleaning hidden(s) from %r: ", self.unionfs_fuse)
-        return False
+        return False, delete_success, delete_failed
 
     def remove_local_hidden(self):
         if len(self.hidden_files):
