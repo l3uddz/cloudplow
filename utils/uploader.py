@@ -18,7 +18,7 @@ class Uploader:
         self.delayed_trigger = None
 
     def upload(self):
-        rclone_config = self.rclone_config
+        rclone_config = self.rclone_config.copy()
 
         # should we exclude open files
         if self.uploader_config['exclude_open_files']:
