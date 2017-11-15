@@ -5,7 +5,7 @@ import sys
 try:
     import git
 except ImportError:
-    sys.exit("You are missing the GitPython requirement, e.g. sudo python3 -m install GitPython")
+    sys.exit("You are missing the GitPython requirement.")
 
 log = logging.getLogger("git")
 
