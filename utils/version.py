@@ -32,7 +32,7 @@ def latest_version():
         return str(fetch_info[0].commit)
 
     except Exception as ex:
-        log.exception("Exception retrieving the latest version commit id: ")
+        log.exception("Exception retrieving the latest commit id: ")
     return 'Unknown'
 
 
@@ -44,7 +44,7 @@ def current_version():
         return str(result)
 
     except Exception as ex:
-        log.exception("Exception retrieving the current version commit id: ")
+        log.exception("Exception retrieving the current commit id: ")
     return 'Unknown'
 
 
@@ -72,7 +72,7 @@ def check_version():
         return
 
     if current != latest:
-        log.warning("You are NOT using the latest %s version: %s", active_branch(), latest)
+        log.warning("You are NOT using the latest %s: %s", active_branch(), latest)
     else:
-        log.info("You are using the latest %s version: %s", active_branch(), latest)
+        log.info("You are using the latest %s: %s", active_branch(), latest)
     return
