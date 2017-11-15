@@ -28,14 +28,14 @@ class Config(object):
         # hidden cleaner settings
         'hidden': {
             '/mnt/local/.unionfs-fuse': {
-                'hidden_remotes': ['google', 'dropbox']
+                'hidden_remotes': ['google']
             }
         },
         # uploader settings
         'uploader': {
             'google': {
                 'check_interval': 30,
-                'max_size_gb': 450,
+                'max_size_gb': 400,
                 'size_excludes': [
                     'downloads/*'
                 ],
@@ -73,43 +73,10 @@ class Config(object):
                     }
                 },
                 'remove_empty_dir_depth': 2
-            },
-            'dropbox': {
-                'upload_folder': '/mnt/local/Media',
-                'upload_remote': 'encdb:/Media',
-                'hidden_remote': 'encdb:',
-                'rclone_excludes': [
-                    '**partial~',
-                    '**_HIDDEN~',
-                    '.unionfs/**',
-                    '.unionfs-fuse/**',
-                ],
-                'rclone_extras': {
-                    '--dropbox-chunk-size': '128M',
-                    '--transfers': 8,
-                    '--checkers': 16,
-                    '--stats': '60s',
-                    '--verbose': 1,
-                    '--no-traverse': None
-                },
-                'rclone_sleeps': {
-                    'insufficient space': {
-                        'count': 5,
-                        'timeout': 300,
-                        'sleep': 6
-                    }
-                },
-                'remove_empty_dir_depth': 2
             }
         },
         # notification settings
         'notifications': {
-            'Slackchat': {
-                'service': 'slack',
-                'webhook_url': 'http://webhook-url-goes-here',
-                'sender_name': 'CloudPlow',
-                'sender_icon': ':ghost:'
-            },
             'Pushover': {
                 'service': 'pushover',
                 'app_token': 'app token goes here',
