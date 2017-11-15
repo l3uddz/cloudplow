@@ -3,13 +3,13 @@ import logging
 import sys
 
 try:
-    import git
+    from git import Repo
 except ImportError:
     sys.exit("You are missing the GitPython requirement.")
 
 log = logging.getLogger("git")
 
-repo = git.Repo.init()
+repo = Repo.init()
 
 
 def active_branch():
@@ -72,8 +72,7 @@ def check_version():
         return
 
     if current != latest:
-        log.warning("You are %d commits behind the latest %s version: %s", missing_commits(current), active_branch(),
-                    latest)
+        log.warning("You are NOT using the latest %s version: %s", active_branch(), latest)
     else:
         log.info("You are using the latest %s version: %s", active_branch(), latest)
     return
