@@ -70,6 +70,35 @@ def init_notifications():
     return
 
 
+def check_suspended_uploaders(uploader_to_check=None):
+    try:
+        for uploader_name, suspension_expiry in uploader_delay.copy().items():
+            # if uploader_to_check is given, only check this uploader
+            if uploader_to_check and uploader_to_check != uploader_name:
+                continue
+
+            if time.time() < suspension_expiry:
+                # this remote is still delayed due to a previous abort due to triggers
+                use_logger = log.debug if not uploader_to_check else log.info
+                use_logger(
+                    "%s is still suspended due to a previously aborted upload. Normal operation in %d seconds at %s",
+                    uploader_name, int(suspension_expiry - time.time()),
+                    time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(suspension_expiry)))
+                # return True when suspended if uploader_to_check is supplied
+                if uploader_to_check:
+                    return True
+            else:
+                log.warning("%s is no longer suspended due to a previous aborted upload!",
+                            uploader_name)
+                uploader_delay.pop(uploader_name, None)
+                # send notification that remote is no longer timed out
+                notify.send(message="Upload suspension has expired for remote: %s" % uploader_name)
+
+    except Exception:
+        log.exception("Exception checking suspended uploaders: ")
+    return False
+
+
 ############################################################
 # DOER FUNCS
 ############################################################
@@ -93,20 +122,8 @@ def do_upload(remote=None):
                 rclone_config = conf.configs['remotes'][uploader_remote]
 
                 # check if this remote is delayed
-                if uploader_remote in uploader_delay:
-                    if time.time() < uploader_delay[uploader_remote]:
-                        # this remote is still delayed due to a previous abort due to triggers
-                        log.warning(
-                            "%s is delayed due to a previously aborted upload. Normal operation in %d seconds at %s",
-                            uploader_remote, int(uploader_delay[uploader_remote] - time.time()),
-                            time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(uploader_delay[uploader_remote])))
-                        continue
-                    else:
-                        log.warning("%s is no longer delayed due to a previous aborted upload, proceeding!",
-                                    uploader_remote)
-                        uploader_delay.pop(uploader_remote, None)
-                        # send notification that remote is no longer timed out
-                        notify.send(message="Upload suspension has expired for remote: %s" % uploader_remote)
+                if check_suspended_uploaders(uploader_remote):
+                    continue
 
                 # send notification that upload is starting
                 notify.send(message="Upload of %d GB has begun for remote: %s" % (
@@ -200,6 +217,9 @@ def scheduled_uploader(uploader_name, uploader_settings):
     log.debug("Checking used disk space for uploader: %s", uploader_name)
     try:
         rclone_settings = conf.configs['remotes'][uploader_name]
+
+        # check suspended uploaders
+        check_suspended_uploaders()
 
         # check used disk space
         used_space = path.get_size(rclone_settings['upload_folder'], uploader_settings['size_excludes'])
