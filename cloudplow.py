@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 
 import schedule
 
-from utils import config, lock, path, decorators
+from utils import config, lock, path, decorators, version
 from utils.notifications import Notifications
 from utils.unionfs import UnionfsHiddenFolder
 from utils.uploader import Uploader
@@ -223,6 +223,7 @@ def scheduled_uploader(uploader_name, uploader_settings):
 
 if __name__ == "__main__":
     # show latest version info from git
+    version.check_version()
 
     # run chosen mode
     try:
