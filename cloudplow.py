@@ -226,8 +226,8 @@ def scheduled_uploader(uploader_name, uploader_settings):
 
         # if disk space is above the limit, clean hidden files then upload
         if used_space >= uploader_settings['max_size_gb']:
-            log.info("%s is %d GB over the maximum limit of %d GB", uploader_name,
-                     used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
+            log.info("Uploader: %s. Local folder size is currently %d GB over the maximum limit of %d GB",
+                     uploader_name, used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
 
             # clean hidden files
             do_hidden()
@@ -235,8 +235,10 @@ def scheduled_uploader(uploader_name, uploader_settings):
             do_upload(uploader_name)
 
         else:
-            log.info("%s has used %d GB. %d GB remaining before its eligible for uploading", uploader_name, used_space,
-                     uploader_settings['max_size_gb'] - used_space)
+            log.info(
+                "Uploader: %s. Local folder size is currently %d GB. "
+                "Still have %d GB remaining before its eligible to begin uploading...",
+                uploader_name, used_space, uploader_settings['max_size_gb'] - used_space)
 
     except Exception:
         log.exception("Unexpected exception occurred while processing uploader %s: ", uploader_name)
