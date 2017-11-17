@@ -172,7 +172,7 @@ class Config(object):
                 # Envirnoment variable
                 elif data['env'] in os.environ:
                     value = os.environ[data['env']]
-                    log.info("Using ENV setting %s=%s" % (
+                    log.debug("Using ENV setting %s=%s" % (
                         data['env'],
                         value
                     ))
@@ -180,7 +180,7 @@ class Config(object):
                 # Default
                 else:
                     value = data['default']
-                    log.info("Using default setting %s=%s" % (
+                    log.debug("Using default setting %s=%s" % (
                         data['argv'],
                         value
                     ))
