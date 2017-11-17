@@ -2,6 +2,7 @@
 import logging
 import time
 from logging.handlers import RotatingFileHandler
+from multiprocessing import Manager, Process
 
 import schedule
 
@@ -54,7 +55,8 @@ notify = Notifications()
 lock.ensure_lock_folder()
 
 # Logic vars
-uploader_delay = {}
+uploader_delay = None
+syncer_delay = None
 
 
 ############################################################
@@ -97,6 +99,14 @@ def check_suspended_uploaders(uploader_to_check=None):
     except Exception:
         log.exception("Exception checking suspended uploaders: ")
     return False
+
+
+def run_process(task, manager_dict, **kwargs):
+    try:
+        new_process = Process(target=task, args=(manager_dict,), kwargs=kwargs)
+        return new_process.start()
+    except Exception:
+        log.exception("Exception starting process with kwargs=%r: ", kwargs)
 
 
 ############################################################
@@ -252,6 +262,11 @@ if __name__ == "__main__":
     # show latest version info from git
     version.check_version()
 
+    # init multiprocessing
+    manager = Manager()
+    uploader_delay = manager.dict()
+    syncer_delay = manager.dict()
+
     # run chosen mode
     try:
         # init notifications
@@ -267,7 +282,7 @@ if __name__ == "__main__":
         elif conf.args['cmd'] == 'run':
             log.info("Started in run mode")
 
-            # add uploader to schedule
+            # add uploaders to schedule
             for uploader, uploader_conf in conf.configs['uploader'].items():
                 schedule.every(uploader_conf['check_interval']).minutes.do(scheduled_uploader, uploader, uploader_conf)
                 log.info("Added %s uploader to schedule, checking available disk space every %d minutes", uploader,
