@@ -19,7 +19,7 @@ class Notifications:
         if 'service' not in kwargs:
             log.error("You must specify a service to load with the service parameter")
             return False
-        elif kwargs['service'].lower() not in SERVICES:
+        elif kwargs['service'] not in SERVICES:
             log.error("You specified an invalid service to load: %s", kwargs['service'])
             return False
 
