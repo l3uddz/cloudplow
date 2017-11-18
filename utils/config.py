@@ -51,6 +51,7 @@ class Config(object):
                 'upload_folder': '/mnt/local/Media',
                 'upload_remote': 'google:/Media',
                 'hidden_remote': 'google:',
+                'sync_remote': 'google:/Media',
                 'rclone_excludes': [
                     '**partial~',
                     '**_HIDDEN~',
@@ -73,6 +74,15 @@ class Config(object):
                     }
                 },
                 'remove_empty_dir_depth': 2
+            }
+        },
+        # syncer settings
+        'syncer': {
+            'google2amzn': {
+                'service': 'scaleway',
+                'region': 'ams1',
+                'sync_from': 'google',
+                'sync_to': 'amzn'
             }
         },
         # notification settings
