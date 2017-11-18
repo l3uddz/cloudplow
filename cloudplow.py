@@ -8,6 +8,7 @@ import schedule
 
 from utils import config, lock, path, decorators, version
 from utils.notifications import Notifications
+from utils.syncer import Syncer
 from utils.unionfs import UnionfsHiddenFolder
 from utils.uploader import Uploader
 
@@ -51,6 +52,9 @@ conf.load()
 # Init Notifications class
 notify = Notifications()
 
+# Init Syncer class
+syncer = Syncer(conf.configs)
+
 # Ensure lock folder exists
 lock.ensure_lock_folder()
 
@@ -70,6 +74,14 @@ def init_notifications():
     except Exception:
         log.exception("Exception initializing notification agents: ")
     return
+
+
+def init_syncers():
+    try:
+        for syncer_name, syncer_config in conf.configs['syncer'].items():
+            syncer.load(**syncer_config)
+    except Exception:
+        log.exception("Exception initializing syncer agents: ")
 
 
 def check_suspended_uploaders(uploader_to_check=None):
@@ -170,7 +182,7 @@ def do_upload(remote=None):
 
 
 @decorators.timed
-def do_sync():
+def do_sync(syncer=None):
     lock_file = lock.sync()
     if lock_file.is_locked():
         log.info("Waiting for running sync to finish before proceeding...")
@@ -254,6 +266,11 @@ def scheduled_uploader(uploader_name, uploader_settings):
         log.exception("Unexpected exception occurred while processing uploader %s: ", uploader_name)
 
 
+def scheduled_syncer(syncer_delays, syncer_name, syncer_config):
+    log.info("Sync for %s with config: %r", syncer_name, syncer_config)
+    do_sync(syncer_name)
+
+
 ############################################################
 # MAIN
 ############################################################
@@ -287,6 +304,14 @@ if __name__ == "__main__":
                 schedule.every(uploader_conf['check_interval']).minutes.do(scheduled_uploader, uploader, uploader_conf)
                 log.info("Added %s uploader to schedule, checking available disk space every %d minutes", uploader,
                          uploader_conf['check_interval'])
+
+            # add syncers to schedule
+            init_syncers()
+            for syncer_name, syncer_conf in conf.configs['syncer'].items():
+                schedule.every(1).minutes.do(run_process, scheduled_syncer, syncer_delay, syncer_name=syncer_name,
+                                             syncer_config=syncer_conf)
+                log.info("Added %s syncer to schedule, syncing every %d hours", syncer_name,
+                         syncer_conf['sync_interval'])
 
             # run schedule
             while True:
