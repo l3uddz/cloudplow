@@ -1,7 +1,7 @@
 import logging
 
 from . import path
-from .rclone import Rclone
+from .rclone import RcloneUploader
 
 log = logging.getLogger('unionfs')
 
@@ -25,7 +25,7 @@ class UnionfsHiddenFolder:
         delete_failed = 0
 
         try:
-            rclone = Rclone(name, remote, self.dry_run)
+            rclone = RcloneUploader(name, remote, self.dry_run)
 
             # clean hidden files from remote
             if self.hidden_files:

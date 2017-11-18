@@ -2,7 +2,7 @@ import logging
 import time
 
 from . import path
-from .rclone import Rclone
+from .rclone import RcloneUploader
 
 log = logging.getLogger("uploader")
 
@@ -30,7 +30,7 @@ class Uploader:
                     rclone_config['rclone_excludes'].append(item)
 
         # do upload
-        rclone = Rclone(self.name, rclone_config, self.dry_run)
+        rclone = RcloneUploader(self.name, rclone_config, self.dry_run)
         log.info("Uploading '%s' to remote: %s", rclone_config['upload_folder'], self.name)
         rclone.upload(self.__logic)
         log.info("Finished uploading to remote: %s", self.name)

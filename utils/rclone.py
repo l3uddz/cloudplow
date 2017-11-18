@@ -10,7 +10,7 @@ except ImportError:
 log = logging.getLogger('rclone')
 
 
-class Rclone:
+class RcloneUploader:
     def __init__(self, name, config, dry_run=False):
         self.name = name
         self.config = config

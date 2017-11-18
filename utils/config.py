@@ -82,7 +82,8 @@ class Config(object):
                 'service': 'scaleway',
                 'region': 'ams1',
                 'sync_from': 'google',
-                'sync_to': 'amzn'
+                'sync_to': 'amzn',
+                'sync_interval': 24
             }
         },
         # notification settings
