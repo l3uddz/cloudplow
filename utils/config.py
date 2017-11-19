@@ -80,7 +80,6 @@ class Config(object):
         'syncer': {
             'google2amzn': {
                 'service': 'scaleway',
-                'region': 'ams1',
                 'sync_from': 'google',
                 'sync_to': 'amzn',
                 'sync_interval': 24

@@ -45,6 +45,12 @@ class Syncer:
         except Exception:
             log.exception("Exception while loading service, kwargs=%r: ", kwargs)
 
+    """
+        Commands below take 1 keyword parameter (service).
+        If service is supplied, the command is only executed on that 1 loaded syncer agent.
+        If service is NOT supplied, the command is executed on all of them
+    """
+
     def startup(self, **kwargs):
         pass
 
