@@ -33,7 +33,8 @@ def execute(command, callback=None, logs=True, shell=False):
 
 def popen(command):
     try:
-        data = subprocess.check_output(command, shell=True, timeout=300).decode().strip("\r\n")
+        data = subprocess.check_output(command, shell=True, timeout=600).decode().strip("\r\n")
         return data
     except Exception:
         log.exception("Exception while executing process: ")
+    return None

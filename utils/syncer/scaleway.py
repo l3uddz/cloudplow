@@ -47,7 +47,7 @@ class Scaleway:
         log.debug("Using: %s", cmd)
 
         resp = process.popen(cmd)
-        if 'failed' in resp.lower():
+        if not resp or 'failed' in resp.lower():
             log.error("Unexpected response while creating instance: %s", resp)
             return False
         else:
@@ -61,10 +61,11 @@ class Scaleway:
         log.debug("Using: %s", cmd)
 
         resp = process.popen(cmd)
-        if 'gnu/linux' not in resp.lower():
+        if not resp or 'gnu/linux' not in resp.lower():
             log.error("Unexpected response while waiting for instance to boot: %s", resp)
             self.destroy()
             return False
+
         log.info("Instance has finished booting, uname: %r", resp)
         return True
 
@@ -83,7 +84,7 @@ class Scaleway:
         log.debug("Using: %s", cmd)
 
         resp = process.popen(cmd)
-        if self.instance_id.lower() not in resp.lower():
+        if not resp or self.instance_id.lower() not in resp.lower():
             log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
             return False
         log.info("Destroyed instance: %r", self.instance_id)
