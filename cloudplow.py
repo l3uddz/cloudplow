@@ -197,7 +197,7 @@ def do_sync(use_syncer=None):
                 # startup instance
                 resp = syncer.startup(service=sync_config['service'])
                 if not resp:
-                    return
+                    continue
 
                     # setup instance
 
