@@ -1,4 +1,5 @@
 import logging
+import time
 
 from utils import process
 
@@ -54,6 +55,7 @@ class Scaleway:
 
         # wait for instance to finish booting
         log.info("Waiting for instance to finish booting...")
+        time.sleep(10)
         cmd = "scw --region=%s exec -w %s %s" % (
             cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote('uname -a'))
         log.debug("Using: %s", cmd)
