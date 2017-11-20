@@ -47,7 +47,7 @@ class Syncer:
             log.exception("Exception while loading service, kwargs=%r: ", kwargs)
 
     """
-        Commands below take 1 or 2 keyword parameter (service and name).
+        Commands below require minimum 1 or 2 keyword parameter (service and name).
     """
 
     def startup(self, **kwargs):
@@ -60,16 +60,19 @@ class Syncer:
             name = kwargs['name']
 
         try:
+            # clean kwargs before passing this on
             chosen_service = kwargs['service']
+            del kwargs['service']
+
             for syncer in self.services:
                 if chosen_service and syncer.NAME.lower() != chosen_service:
                     continue
-                return syncer.startup(name=name)
+                return syncer.startup(**kwargs)
         except Exception:
             log.exception("Exception starting instance kwargs=%r: ", kwargs)
 
     """
-        Commands below take 1 or 2 keyword parameter (service and instance_id).
+        Commands below require minimum 1 or 2 keyword parameter (service and instance_id).
     """
 
     def setup(self, **kwargs):
@@ -78,14 +81,17 @@ class Syncer:
             return False
 
         try:
+            # clean kwargs before passing this on
             chosen_service = kwargs['service']
+            del kwargs['service']
+
             for syncer in self.services:
                 if chosen_service and syncer.NAME.lower() != chosen_service:
                     continue
                 # ignore syncer if instance_id does not match otherwise setup all syncers from service
                 if 'instance_id' in kwargs and syncer.instance_id != kwargs['instance_id']:
                     continue
-                return syncer.setup()
+                return syncer.setup(**kwargs)
         except Exception:
             log.exception("Exception setting up instance kwargs=%r: ", kwargs)
 
@@ -95,14 +101,17 @@ class Syncer:
             return False
 
         try:
+            # clean kwargs before passing this on
             chosen_service = kwargs['service']
+            del kwargs['service']
+
             for syncer in self.services:
                 if chosen_service and syncer.NAME.lower() != chosen_service:
                     continue
                 # ignore syncer if instance_id does not match otherwise destroy all syncers from service
                 if 'instance_id' in kwargs and syncer.instance_id != kwargs['instance_id']:
                     continue
-                return syncer.destroy()
+                return syncer.destroy(**kwargs)
         except Exception:
             log.exception("Exception destroying instance kwargs=%r: ", kwargs)
 

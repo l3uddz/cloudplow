@@ -24,6 +24,7 @@ class Config(object):
         # core settings
         'core': {
             'dry_run': True,
+            'rclone_config_path': '/home/seed/.config/rclone/rclone.conf'
         },
         # hidden cleaner settings
         'hidden': {

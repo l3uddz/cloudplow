@@ -201,7 +201,7 @@ def do_sync(use_syncer=None):
                     continue
 
                 # setup instance
-                resp = syncer.setup(service=sync_config['service'], instance_id=instance_id)
+                resp = syncer.setup(service=sync_config['service'], instance_id=instance_id, rclone_config='test')
                 if not resp:
                     # send notification of failure to setup instance
                     pass

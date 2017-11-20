@@ -44,11 +44,11 @@ class Scaleway:
             return False, None
 
         # create instance
-        log.debug("Creating new instance...")
         cmd = "scw --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
             cmd_quote(self.region), cmd_quote(kwargs['name']), cmd_quote(self.type), cmd_quote(self.image))
         log.debug("Using: %s", cmd)
 
+        log.debug("Creating new instance...")
         resp = process.popen(cmd)
         if not resp or 'failed' in resp.lower():
             log.error("Unexpected response while creating instance: %s", resp)
@@ -73,9 +73,13 @@ class Scaleway:
         log.info("Instance has finished booting, uname: %r", resp)
         return True, self.instance_id
 
-    def setup(self):
+    def setup(self, **kwargs):
         if not self.instance_id or '-' not in self.instance_id:
             log.error("Setup was called, but no instance_id was found, aborting...")
+            return False
+        if 'rclone_config' not in kwargs:
+            log.error("Setup was called, but no rclone_config was found, aborting...")
+            self.destroy()
             return False
 
         # install unzip
@@ -83,6 +87,7 @@ class Scaleway:
         cmd = "scw --region=%s exec %s %s" % (cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
         log.debug("Using: %s", cmd)
 
+        log.debug("Installing rclone to instance: %r", self.instance_id)
         resp = process.popen(cmd)
         if not resp or 'setting up unzip' not in resp.lower():
             log.error("Unexpected response while installing unzip: %s", resp)
@@ -98,6 +103,7 @@ class Scaleway:
         cmd = "scw --region=%s exec %s %s" % (cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
         log.debug("Using: %s", cmd)
 
+        log.debug("Installing rclone to instance: %r", self.instance_id)
         resp = process.popen(cmd)
         if not resp or '/usr/bin/rclone' not in resp.lower():
             log.error("Unexpected response while installing rclone: %s", resp)
@@ -106,10 +112,11 @@ class Scaleway:
         log.info("Installed rclone")
 
         # copy rclone.conf to instance
+        log.info("Copying %r to instance: %r", kwargs['rclone_config'], self.instance_id)
 
         return False
 
-    def destroy(self):
+    def destroy(self, **kwargs):
         if not self.instance_id or '-' not in self.instance_id:
             log.error("Destroy was called, but no instance_id was found, aborting...")
             return False
@@ -118,6 +125,7 @@ class Scaleway:
         cmd = "scw --region=%s rm -f %s" % (cmd_quote(self.region), cmd_quote(self.instance_id))
         log.debug("Using: %s", cmd)
 
+        log.debug("Destroying instance: %r", self.instance_id)
         resp = process.popen(cmd)
         if not resp or self.instance_id.lower() not in resp.lower():
             log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
@@ -126,6 +134,6 @@ class Scaleway:
         log.info("Destroyed instance: %r", self.instance_id)
         return True
 
-    def sync(self):
+    def sync(self, **kwargs):
         # run rclone sync
         pass
