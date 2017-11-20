@@ -38,11 +38,15 @@ class Scaleway:
 
         log.info("Initialized Scaleway syncer agent with kwargs: %r", kwargs)
 
-    def startup(self):
+    def startup(self, **kwargs):
+        if 'instance_id' not in kwargs:
+            log.error("You must provide an instance_id")
+            return False, None
+
         # create instance
         log.debug("Creating new instance...")
-        cmd = "scw --region=%s run -d --ipv6 --commercial-type=%s %s" % (
-            cmd_quote(self.region), cmd_quote(self.type), cmd_quote(self.image))
+        cmd = "scw --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
+            cmd_quote(self.region), cmd_quote(kwargs['instance_id']), cmd_quote(self.type), cmd_quote(self.image))
         log.debug("Using: %s", cmd)
 
         resp = process.popen(cmd)
