@@ -86,6 +86,7 @@ class Scaleway:
         if self.instance_id.lower() not in resp.lower():
             log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
             return False
+        log.info("Destroyed instance: %r", self.instance_id)
         return True
 
     def sync(self):

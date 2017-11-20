@@ -67,7 +67,18 @@ class Syncer:
         pass
 
     def destroy(self, **kwargs):
-        pass
+        if 'service' not in kwargs:
+            log.error("You must specify a service to destroy")
+            return False
+
+        try:
+            chosen_service = kwargs['service']
+            for syncer in self.services:
+                if chosen_service and syncer.NAME.lower() != chosen_service:
+                    continue
+                return syncer.destroy()
+        except Exception:
+            log.exception("Exception destroying instance kwargs=%r: ", kwargs)
 
     def sync(self, **kwargs):
         pass

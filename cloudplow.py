@@ -199,13 +199,14 @@ def do_sync(use_syncer=None):
                 if not resp:
                     continue
 
-                    # setup instance
+                # setup instance
 
-                    # do sync
+                # do sync
 
-                    # destroy instance
+                # destroy instance
+                syncer.destroy()
 
-                    # send successful notification
+                # send successful notification
 
         except Exception:
             log.exception("Exception occurred while syncing: ")
