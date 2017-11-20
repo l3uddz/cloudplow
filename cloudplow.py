@@ -197,6 +197,7 @@ def do_sync(use_syncer=None):
                 # startup instance
                 resp, instance_id = syncer.startup(service=sync_config['service'])
                 if not resp:
+                    # send notification of failure to startup instance
                     continue
 
                 # setup instance
@@ -204,9 +205,13 @@ def do_sync(use_syncer=None):
                 # do sync
 
                 # destroy instance
-                resp, instance_id = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
+                resp = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
+                if not resp:
+                    # send notification of failure to destroy instance
+                    continue
 
                 # send successful notification
+                pass
 
         except Exception:
             log.exception("Exception occurred while syncing: ")

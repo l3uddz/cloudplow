@@ -75,7 +75,7 @@ class Scaleway:
     def destroy(self):
         if not self.instance_id or '-' not in self.instance_id:
             log.error("Destroy was called, but no instance_id was found, aborting...")
-            return False, self.instance_id
+            return False
 
         # destroy the instance
         cmd = "scw --region=%s rm -f %s" % (cmd_quote(self.region), cmd_quote(self.instance_id))
@@ -84,10 +84,10 @@ class Scaleway:
         resp = process.popen(cmd)
         if not resp or self.instance_id.lower() not in resp.lower():
             log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
-            return False, self.instance_id
+            return False
 
         log.info("Destroyed instance: %r", self.instance_id)
-        return True, self.instance_id
+        return True
 
     def sync(self):
         # run rclone sync
