@@ -55,9 +55,7 @@ class Syncer:
             log.error("You must specify a service to startup")
             return False
         if 'name' not in kwargs:
-            name = str(uuid.uuid4())
-        else:
-            name = kwargs['name']
+            kwargs['name'] = str(uuid.uuid4())
 
         try:
             # clean kwargs before passing this on

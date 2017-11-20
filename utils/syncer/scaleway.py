@@ -112,9 +112,9 @@ class Scaleway:
         log.info("Installed rclone")
 
         # copy rclone.conf to instance
-        log.info("Copying %r to instance: %r", kwargs['rclone_config'], self.instance_id)
+        log.debug("Copying rclone config %r to instance: %r", kwargs['rclone_config'], self.instance_id)
 
-        return False
+        return True
 
     def destroy(self, **kwargs):
         if not self.instance_id or '-' not in self.instance_id:
