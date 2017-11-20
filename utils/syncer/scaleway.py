@@ -99,7 +99,11 @@ class Scaleway:
         log.debug("Using: %s", cmd)
 
         resp = process.popen(cmd)
-        log.info("Response: %s", resp)
+        if not resp or '/usr/bin/rclone' not in resp.lower():
+            log.error("Unexpected response while installing rclone: %s", resp)
+            self.destroy()
+            return False
+        log.info("Installed rclone")
 
         # copy rclone.conf to instance
 
