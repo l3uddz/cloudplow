@@ -1,5 +1,10 @@
 import logging
 
+try:
+    from shlex import quote as cmd_quote
+except ImportError:
+    from pipes import quote as cmd_quote
+
 log = logging.getLogger("scaleway")
 
 
@@ -28,7 +33,8 @@ class Scaleway:
         log.info("Initialized Scaleway syncer agent with kwargs: %r", kwargs)
 
     def startup(self):
-        cmd = "scw --region=%s run -d --ipv6 --commercial-type=%s %s" % (self.region, self.type, self.image)
+        cmd = "scw --region=%s run -d --ipv6 --commercial-type=%s %s" % (
+            cmd_quote(self.region), cmd_quote(self.type), cmd_quote(self.image))
         # output from cmd above is the new server id (store this)
         # check for 'failed' inside the output to determine success / failure
         pass
