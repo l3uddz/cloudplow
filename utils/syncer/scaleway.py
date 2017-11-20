@@ -41,7 +41,7 @@ class Scaleway:
 
     def startup(self):
         # create instance
-        log.info("Creating new instance")
+        log.debug("Creating new instance...")
         cmd = "scw --region=%s run -d --ipv6 --commercial-type=%s %s" % (
             cmd_quote(self.region), cmd_quote(self.type), cmd_quote(self.image))
         log.debug("Using: %s", cmd)
@@ -80,6 +80,8 @@ class Scaleway:
 
         # destroy the instance
         cmd = "scw --region=%s rm -f %s" % (cmd_quote(self.region), cmd_quote(self.instance_id))
+        log.debug("Using: %s", cmd)
+
         resp = process.popen(cmd)
         if self.instance_id.lower() not in resp.lower():
             log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
