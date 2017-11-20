@@ -85,22 +85,19 @@ def init_syncers():
 
 
 def check_suspended_uploaders(uploader_to_check=None):
+    suspended = False
     try:
         for uploader_name, suspension_expiry in uploader_delay.copy().items():
-            # if uploader_to_check is given, only check this uploader
-            if uploader_to_check and uploader_to_check != uploader_name:
-                continue
-
             if time.time() < suspension_expiry:
                 # this remote is still delayed due to a previous abort due to triggers
-                use_logger = log.debug if not uploader_to_check else log.info
+                use_logger = log.debug if not (uploader_to_check and uploader_name == uploader_to_check) else log.info
                 use_logger(
                     "%s is still suspended due to a previously aborted upload. Normal operation in %d seconds at %s",
                     uploader_name, int(suspension_expiry - time.time()),
                     time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(suspension_expiry)))
                 # return True when suspended if uploader_to_check is supplied
                 if uploader_to_check:
-                    return True
+                    suspended = True
             else:
                 log.warning("%s is no longer suspended due to a previous aborted upload!",
                             uploader_name)
@@ -110,7 +107,7 @@ def check_suspended_uploaders(uploader_to_check=None):
 
     except Exception:
         log.exception("Exception checking suspended uploaders: ")
-    return False
+    return suspended
 
 
 def run_process(task, manager_dict, **kwargs):
@@ -142,10 +139,6 @@ def do_upload(remote=None):
 
                 # retrieve rclone config for this remote
                 rclone_config = conf.configs['remotes'][uploader_remote]
-
-                # check if this remote is delayed
-                if check_suspended_uploaders(uploader_remote):
-                    continue
 
                 # send notification that upload is starting
                 notify.send(message="Upload of %d GB has begun for remote: %s" % (
@@ -241,7 +234,8 @@ def scheduled_uploader(uploader_name, uploader_settings):
         rclone_settings = conf.configs['remotes'][uploader_name]
 
         # check suspended uploaders
-        check_suspended_uploaders()
+        if check_suspended_uploaders(uploader_name):
+            return
 
         # check used disk space
         used_space = path.get_size(rclone_settings['upload_folder'], uploader_settings['size_excludes'])
