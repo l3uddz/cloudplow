@@ -41,6 +41,7 @@ class Scaleway:
 
     def startup(self):
         # create instance
+        log.info("Creating new instance")
         cmd = "scw --region=%s run -d --ipv6 --commercial-type=%s %s" % (
             cmd_quote(self.region), cmd_quote(self.type), cmd_quote(self.image))
         log.debug("Using: %s", cmd)
@@ -54,7 +55,18 @@ class Scaleway:
         log.info("Created new instance: %r", self.instance_id)
 
         # wait for instance to finish booting
-        return False
+        log.info("Waiting for instance to finish booting...")
+        cmd = "scw --region=%s exec -w %s %s" % (
+            cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote('uname -a'))
+        log.debug("Using: %s", cmd)
+
+        resp = process.popen(cmd)
+        if 'gnu/linux' not in resp.lower():
+            log.error("Unexpected response while waiting for instance to boot: %s", resp)
+            self.destroy()
+            return False
+        log.info("Instance has finished booting, uname: %r", resp)
+        return True
 
     def setup(self):
         # install rclone to instance
@@ -62,8 +74,17 @@ class Scaleway:
         pass
 
     def destroy(self):
+        if not self.instance_id or '-' not in self.instance_id:
+            log.debug("Destroy was called, but no instance_id was found, aborting...")
+            return False
+
         # destroy the instance
-        pass
+        cmd = "scw --region=%s rm -f %s" % (cmd_quote(self.region), cmd_quote(self.instance_id))
+        resp = process.popen(cmd)
+        if self.instance_id.lower() not in resp.lower():
+            log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
+            return False
+        return True
 
     def sync(self):
         # run rclone sync
