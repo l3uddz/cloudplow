@@ -95,8 +95,8 @@ def check_suspended_uploaders(uploader_to_check=None):
                     "%s is still suspended due to a previously aborted upload. Normal operation in %d seconds at %s",
                     uploader_name, int(suspension_expiry - time.time()),
                     time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(suspension_expiry)))
-                # return True when suspended if uploader_to_check is supplied
-                if uploader_to_check:
+                # return True when suspended if uploader_to_check is supplied and this is that remote
+                if uploader_to_check and uploader_name == uploader_to_check:
                     suspended = True
             else:
                 log.warning("%s is no longer suspended due to a previous aborted upload!",
