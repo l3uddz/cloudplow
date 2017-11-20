@@ -119,7 +119,7 @@ class Scaleway:
 
         log.debug("Copying rclone config %r to instance: %r", kwargs['rclone_config'], self.instance_id)
         resp = process.popen(cmd)
-        if not resp or len(resp) >= 2:
+        if resp is None or len(resp) >= 2:
             log.error("Unexpected response while copying rclone config: %s", resp)
             self.destroy()
             return False
