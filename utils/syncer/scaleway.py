@@ -37,6 +37,7 @@ class Scaleway:
             self.image = 'ubuntu-xenial'
 
         log.info("Initialized Scaleway syncer agent with kwargs: %r", kwargs)
+        return
 
     def startup(self, **kwargs):
         if 'name' not in kwargs:
@@ -112,8 +113,19 @@ class Scaleway:
         log.info("Installed rclone")
 
         # copy rclone.conf to instance
-        log.debug("Copying rclone config %r to instance: %r", kwargs['rclone_config'], self.instance_id)
+        cmd = "scw --region=%s cp %s %s:/root/.config/rclone/" % (
+            cmd_quote(self.region), cmd_quote(kwargs['rclone_config']), cmd_quote(self.instance_id))
+        log.debug("Using: %s", cmd)
 
+        log.debug("Copying rclone config %r to instance: %r", kwargs['rclone_config'], self.instance_id)
+        resp = process.popen(cmd)
+        if not resp or len(resp) >= 2:
+            log.error("Unexpected response while copying rclone config: %s", resp)
+            self.destroy()
+            return False
+        log.info("Copied across rclone.conf")
+
+        log.info("Successfully setup instance: %r", self.instance_id)
         return True
 
     def destroy(self, **kwargs):
