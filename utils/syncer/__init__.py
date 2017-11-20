@@ -63,6 +63,10 @@ class Syncer:
         except Exception:
             log.exception("Exception starting instance kwargs=%r: ", kwargs)
 
+    """
+        Commands below take 1 or 2 keyword parameter (service and instance_id).
+    """
+
     def setup(self, **kwargs):
         pass
 
@@ -75,6 +79,9 @@ class Syncer:
             chosen_service = kwargs['service']
             for syncer in self.services:
                 if chosen_service and syncer.NAME.lower() != chosen_service:
+                    continue
+                # ignore syncer if instance_id does not match otherwise destroy all syncers from service
+                if 'instance_id' in kwargs and syncer.instance_id != kwargs['instance_id']:
                     continue
                 return syncer.destroy()
         except Exception:

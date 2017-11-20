@@ -17,6 +17,7 @@ class Scaleway:
         self.sync_from_config = from_config
         self.sync_to_config = to_config
         self.kwargs = kwargs
+        self.instance_id = None
 
         # pass region from kwargs (default France)
         if 'region' in kwargs:
@@ -34,9 +35,6 @@ class Scaleway:
         else:
             self.image = 'ubuntu-xenial'
 
-        # vars used by script
-        self.instance_id = None
-
         log.info("Initialized Scaleway syncer agent with kwargs: %r", kwargs)
 
     def startup(self):
@@ -49,7 +47,7 @@ class Scaleway:
         resp = process.popen(cmd)
         if not resp or 'failed' in resp.lower():
             log.error("Unexpected response while creating instance: %s", resp)
-            return False
+            return False, self.instance_id
         else:
             self.instance_id = resp
         log.info("Created new instance: %r", self.instance_id)
@@ -64,10 +62,10 @@ class Scaleway:
         if not resp or 'gnu/linux' not in resp.lower():
             log.error("Unexpected response while waiting for instance to boot: %s", resp)
             self.destroy()
-            return False
+            return False, self.instance_id
 
         log.info("Instance has finished booting, uname: %r", resp)
-        return True
+        return True, self.instance_id
 
     def setup(self):
         # install rclone to instance
@@ -76,8 +74,8 @@ class Scaleway:
 
     def destroy(self):
         if not self.instance_id or '-' not in self.instance_id:
-            log.debug("Destroy was called, but no instance_id was found, aborting...")
-            return False
+            log.error("Destroy was called, but no instance_id was found, aborting...")
+            return False, self.instance_id
 
         # destroy the instance
         cmd = "scw --region=%s rm -f %s" % (cmd_quote(self.region), cmd_quote(self.instance_id))
@@ -86,9 +84,10 @@ class Scaleway:
         resp = process.popen(cmd)
         if not resp or self.instance_id.lower() not in resp.lower():
             log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
-            return False
+            return False, self.instance_id
+
         log.info("Destroyed instance: %r", self.instance_id)
-        return True
+        return True, self.instance_id
 
     def sync(self):
         # run rclone sync

@@ -195,7 +195,7 @@ def do_sync(use_syncer=None):
                 # send notification that sync is starting
 
                 # startup instance
-                resp = syncer.startup(service=sync_config['service'])
+                resp, instance_id = syncer.startup(service=sync_config['service'])
                 if not resp:
                     continue
 
@@ -204,7 +204,7 @@ def do_sync(use_syncer=None):
                 # do sync
 
                 # destroy instance
-                syncer.destroy(service=sync_config['service'])
+                resp, instance_id = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
 
                 # send successful notification
 
