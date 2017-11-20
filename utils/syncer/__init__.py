@@ -47,7 +47,7 @@ class Syncer:
             log.exception("Exception while loading service, kwargs=%r: ", kwargs)
 
     """
-        Commands below require minimum 1 or 2 keyword parameter (service and name).
+        Methods below require minimum 1 or 2 keyword parameter (service and name).
     """
 
     def startup(self, **kwargs):
@@ -70,7 +70,7 @@ class Syncer:
             log.exception("Exception starting instance kwargs=%r: ", kwargs)
 
     """
-        Commands below require minimum 1 or 2 keyword parameter (service and instance_id).
+        Methods below require minimum 1 or 2 keyword parameter (service and instance_id).
     """
 
     def setup(self, **kwargs):
