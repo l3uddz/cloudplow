@@ -195,12 +195,16 @@ def do_sync(use_syncer=None):
                 # send notification that sync is starting
 
                 # startup instance
-                resp, instance_id = syncer.startup(service=sync_config['service'], instance_id=sync_name)
+                resp, instance_id = syncer.startup(service=sync_config['service'], name=sync_name)
                 if not resp:
                     # send notification of failure to startup instance
                     continue
 
                 # setup instance
+                resp = syncer.setup(service=sync_config['service'], instance_id=instance_id)
+                if not resp:
+                    # send notification of failure to setup instance
+                    pass
 
                 # do sync
 

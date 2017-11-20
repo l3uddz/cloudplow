@@ -39,14 +39,14 @@ class Scaleway:
         log.info("Initialized Scaleway syncer agent with kwargs: %r", kwargs)
 
     def startup(self, **kwargs):
-        if 'instance_id' not in kwargs:
-            log.error("You must provide an instance_id")
+        if 'name' not in kwargs:
+            log.error("You must provide an name for this instance")
             return False, None
 
         # create instance
         log.debug("Creating new instance...")
         cmd = "scw --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
-            cmd_quote(self.region), cmd_quote(kwargs['instance_id']), cmd_quote(self.type), cmd_quote(self.image))
+            cmd_quote(self.region), cmd_quote(kwargs['name']), cmd_quote(self.type), cmd_quote(self.image))
         log.debug("Using: %s", cmd)
 
         resp = process.popen(cmd)
@@ -74,9 +74,24 @@ class Scaleway:
         return True, self.instance_id
 
     def setup(self):
+        if not self.instance_id or '-' not in self.instance_id:
+            log.error("Setup was called, but no instance_id was found, aborting...")
+            return False
+
         # install rclone to instance
+        cmd_exec = "apt-get -qq update && apt-get -y -qq install unzip && " \
+                   "curl -sO https://downloads.rclone.org/rclone-current-linux-amd64.zip && " \
+                   "unzip -q rclone-current-linux-amd64.zip && cd rclone-*-linux-amd64 && " \
+                   "cp rclone /usr/bin/ && chown root:root /usr/bin/rclone && chmod 755 /usr/bin/rclone"
+        cmd = "scw --region=%s exec %s %s" % (cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
+        log.debug("Using: %s", cmd)
+
+        resp = process.popen(cmd)
+        log.info("Response: %s", resp)
+
         # copy rclone.conf to instance
-        pass
+
+        return False
 
     def destroy(self):
         if not self.instance_id or '-' not in self.instance_id:

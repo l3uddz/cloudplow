@@ -47,29 +47,47 @@ class Syncer:
             log.exception("Exception while loading service, kwargs=%r: ", kwargs)
 
     """
-        Commands below take 1 or 2 keyword parameter (service and instance_id).
+        Commands below take 1 or 2 keyword parameter (service and name).
     """
 
     def startup(self, **kwargs):
         if 'service' not in kwargs:
             log.error("You must specify a service to startup")
             return False
-        if 'instance_id' not in kwargs:
-            instance_id = str(uuid.uuid4())
+        if 'name' not in kwargs:
+            name = str(uuid.uuid4())
         else:
-            instance_id = kwargs['instance_id']
+            name = kwargs['name']
 
         try:
             chosen_service = kwargs['service']
             for syncer in self.services:
                 if chosen_service and syncer.NAME.lower() != chosen_service:
                     continue
-                return syncer.startup(instance_id=instance_id)
+                return syncer.startup(name=name)
         except Exception:
             log.exception("Exception starting instance kwargs=%r: ", kwargs)
 
+    """
+        Commands below take 1 or 2 keyword parameter (service and instance_id).
+    """
+
     def setup(self, **kwargs):
-        pass
+        if 'service' not in kwargs:
+            log.error("You must specify a service to setup")
+            return False
+
+        try:
+            chosen_service = kwargs['service']
+            for syncer in self.services:
+                if chosen_service and syncer.NAME.lower() != chosen_service:
+                    continue
+                # ignore syncer if instance_id does not match otherwise setup all syncers from service
+                if 'instance_id' in kwargs and syncer.instance_id != kwargs['instance_id']:
+                    continue
+                return syncer.setup()
+        except Exception:
+            log.exception("Exception setting up instance kwargs=%r: ", kwargs)
 
     def destroy(self, **kwargs):
         if 'service' not in kwargs:
