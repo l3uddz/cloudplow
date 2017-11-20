@@ -1,5 +1,7 @@
 import logging
 
+from utils import process
+
 try:
     from shlex import quote as cmd_quote
 except ImportError:
@@ -32,14 +34,26 @@ class Scaleway:
         else:
             self.image = 'ubuntu-xenial'
 
+        # vars used by script
+        self.instance_id = None
+
         log.info("Initialized Scaleway syncer agent with kwargs: %r", kwargs)
 
     def startup(self):
+        # create instance
         cmd = "scw --region=%s run -d --ipv6 --commercial-type=%s %s" % (
-        cmd_quote(self.region), cmd_quote(self.type), cmd_quote(self.image))
-        # output from cmd above is the new server id (store this)
-        # check for 'failed' inside the output to detect failure, otherwise store returned id for further use
+            cmd_quote(self.region), cmd_quote(self.type), cmd_quote(self.image))
         log.debug("Using: %s", cmd)
+
+        resp = process.popen(cmd)
+        if 'failed' in resp.lower():
+            log.error("Unexpected response while creating instance: %s", resp)
+            return False
+        else:
+            self.instance_id = resp
+        log.info("Created new instance: %r", self.instance_id)
+
+        # wait for instance to finish booting
         return False
 
     def setup(self):

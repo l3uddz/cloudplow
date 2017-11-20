@@ -29,3 +29,11 @@ def execute(command, callback=None, logs=True, shell=False):
         return total_output
     rc = process.poll()
     return rc
+
+
+def popen(command):
+    try:
+        data = subprocess.check_output(command, shell=True, timeout=300).decode().strip("\r\n")
+        return data
+    except Exception:
+        log.exception("Exception while executing process: ")
