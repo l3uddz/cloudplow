@@ -47,12 +47,21 @@ class Syncer:
 
     """
         Commands below take 1 keyword parameter (service).
-        If service is supplied, the command is only executed on that 1 loaded syncer agent.
-        If service is NOT supplied, the command is executed on all of them
     """
 
     def startup(self, **kwargs):
-        pass
+        if 'service' not in kwargs:
+            log.error("You must specify a service to startup")
+            return False
+
+        try:
+            chosen_service = kwargs['service']
+            for syncer in self.services:
+                if chosen_service and syncer.NAME.lower() != chosen_service:
+                    continue
+                return syncer.startup()
+        except Exception:
+            log.exception("Exception starting instance kwargs=%r: ", kwargs)
 
     def setup(self, **kwargs):
         pass

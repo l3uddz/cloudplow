@@ -9,6 +9,8 @@ log = logging.getLogger("scaleway")
 
 
 class Scaleway:
+    NAME = 'Scaleway'
+
     def __init__(self, from_config, to_config, **kwargs):
         self.sync_from_config = from_config
         self.sync_to_config = to_config
@@ -34,10 +36,11 @@ class Scaleway:
 
     def startup(self):
         cmd = "scw --region=%s run -d --ipv6 --commercial-type=%s %s" % (
-            cmd_quote(self.region), cmd_quote(self.type), cmd_quote(self.image))
+        cmd_quote(self.region), cmd_quote(self.type), cmd_quote(self.image))
         # output from cmd above is the new server id (store this)
-        # check for 'failed' inside the output to determine success / failure
-        pass
+        # check for 'failed' inside the output to detect failure, otherwise store returned id for further use
+        log.debug("Using: %s", cmd)
+        return False
 
     def setup(self):
         # install rclone to instance

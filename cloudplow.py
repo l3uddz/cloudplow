@@ -79,7 +79,11 @@ def init_notifications():
 def init_syncers():
     try:
         for syncer_name, syncer_config in conf.configs['syncer'].items():
-            syncer.load(**syncer_config)
+            # remove irrelevant parameters before loading syncer agent
+            filtered_config = syncer_config.copy()
+            filtered_config.pop('sync_interval', None)
+            # load syncer agent
+            syncer.load(**filtered_config)
     except Exception:
         log.exception("Exception initializing syncer agents: ")
 
@@ -175,14 +179,36 @@ def do_upload(remote=None):
 
 
 @decorators.timed
-def do_sync(syncer=None):
+def do_sync(use_syncer=None):
     lock_file = lock.sync()
     if lock_file.is_locked():
         log.info("Waiting for running sync to finish before proceeding...")
 
     with lock_file:
         log.info("Starting sync")
-        time.sleep(10)
+        try:
+            for sync_name, sync_config in conf.configs['syncer'].items():
+                # if syncer is not None, skip this syncer if not == syncer
+                if use_syncer and sync_name != use_syncer:
+                    continue
+
+                # send notification that sync is starting
+
+                # startup instance
+                resp = syncer.startup(service=sync_config['service'])
+                if not resp:
+                    return
+
+                    # setup instance
+
+                    # do sync
+
+                    # destroy instance
+
+                    # send successful notification
+
+        except Exception:
+            log.exception("Exception occurred while syncing: ")
 
     log.info("Finished sync")
 
@@ -290,6 +316,10 @@ if __name__ == "__main__":
             log.info("Started in upload mode")
             do_hidden()
             do_upload()
+        elif conf.args['cmd'] == 'sync':
+            log.info("Starting in sync mode")
+            init_syncers()
+            do_sync()
         elif conf.args['cmd'] == 'run':
             log.info("Started in run mode")
 

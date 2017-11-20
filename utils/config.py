@@ -216,10 +216,11 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('clean', 'upload', 'run'),
+                            choices=('clean', 'upload', 'sync', 'run'),
                             help=(
                                 '"clean": clean HIDDEN files from configured unionfs mounts and rclone remotes\n'
                                 '"upload": perform clean and upload local content to configured chosen unionfs rclone remotes\n'
+                                '"sync": perform sync of configured remotes\n'
                                 '"run": starts the application'
                             )
                             )
