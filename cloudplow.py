@@ -204,7 +204,7 @@ def do_sync(use_syncer=None):
                 # do sync
 
                 # destroy instance
-                syncer.destroy()
+                syncer.destroy(service=sync_config['service'])
 
                 # send successful notification
 
