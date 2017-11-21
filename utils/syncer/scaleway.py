@@ -155,9 +155,12 @@ class Scaleway:
 
         # create RcloneSyncer object
         rclone = RcloneSyncer(self.sync_from_config, self.sync_to_config, **kwargs)
-        resp, delayed_check, delayed_trigger = rclone.sync(self._wrap_command)
 
+        # start sync
+        log.info("Starting sync for instance: %r", self.instance_id)
+        resp, delayed_check, delayed_trigger = rclone.sync(self._wrap_command)
         log.info("Finished syncing instance: %r", self.instance_id)
+
         return resp, delayed_check, delayed_trigger
 
     # internals
