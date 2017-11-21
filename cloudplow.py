@@ -189,7 +189,7 @@ def do_upload(remote=None):
                     uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
                     # send aborted upload notification
                     notify.send(
-                        message="Upload was aborted for remote: %s due to trigger %r, uploads suspended for %d hours" %
+                        message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d hours" %
                                 (uploader_remote, resp_trigger, resp))
                 else:
                     # send successful upload notification
@@ -265,7 +265,7 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     syncer_delays[sync_name] = time.time() + ((60 * 60) * resp_delay)
                     # send aborted sync notification
                     notify.send(
-                        message="Sync was aborted for syncer: %s due to trigger %r, syncs suspended for %d hours" %
+                        message="Sync was aborted for syncer: %s due to trigger %r. Syncs suspended for %d hours" %
                                 (sync_name, resp_trigger, resp_delay))
                 else:
                     log.info("Syncing completed successfully for syncer: %s", sync_name)
