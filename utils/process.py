@@ -10,7 +10,7 @@ def execute(command, callback=None, logs=True, shell=False):
     process = subprocess.Popen(shlex.split(command) if not shell else command, shell=shell, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT)
     while True:
-        output = process.stdout.readline().decode().strip('\r\n')
+        output = process.stdout.readline().decode().strip()
         if process.poll() is not None:
             break
         if output and len(output) and output != "''":

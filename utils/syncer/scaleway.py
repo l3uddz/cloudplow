@@ -159,7 +159,7 @@ class Scaleway:
         # start sync
         log.info("Starting sync for instance: %r", self.instance_id)
         resp, delayed_check, delayed_trigger = rclone.sync(self._wrap_command)
-        log.info("Finished syncing instance: %r", self.instance_id)
+        log.info("Finished syncing for instance: %r", self.instance_id)
 
         return resp, delayed_check, delayed_trigger
 
