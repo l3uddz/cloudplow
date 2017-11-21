@@ -135,6 +135,7 @@ class RcloneSyncer:
         log.debug("Using: %s", sync_agent_cmd)
 
         # exec
+        process.execute(sync_agent_cmd, self._sync_logic)
         return True if not self.delayed_check else False, self.delayed_check, self.delayed_trigger
 
     # internals
