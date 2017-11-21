@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import sys
 import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Manager, Process
@@ -18,7 +19,7 @@ from utils.uploader import Uploader
 
 # Logging
 log_formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)-10s - %(name)-20s -  %(funcName)-30s- %(message)s')
+    '%(asctime)s - %(levelname)-10s - %(name)-20s - %(funcName)-30s - %(message)s')
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 
@@ -26,7 +27,7 @@ root_logger.setLevel(logging.INFO)
 logging.getLogger('schedule').setLevel(logging.ERROR)
 
 # Set console logger
-console_handler = logging.StreamHandler()
+console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setFormatter(log_formatter)
 root_logger.addHandler(console_handler)
 
