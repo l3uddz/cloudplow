@@ -220,7 +220,7 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     continue
 
                 # send notification that sync is starting
-                notify.send(message='Sync initiated for syncer: %s. Booting up %s instance.' % (
+                notify.send(message='Sync initiated for syncer: %s. Creating %s instance...' % (
                     sync_name, sync_config['service']))
 
                 # startup instance
@@ -279,6 +279,10 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     notify.send(
                         message="Syncer: %s failed to destroy its instance: %s. "
                                 "Manually check no instances are still running!" % (sync_name, instance_id))
+                else:
+                    # send notification of instance destroyed
+                    notify.send(message="Syncer: %s has destroyed its %s instance" % (
+                        sync_name, sync_config['service']))
 
         except Exception:
             log.exception("Exception occurred while syncing: ")
