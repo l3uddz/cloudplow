@@ -1,6 +1,6 @@
 import logging
 
-from . import process
+from . import process, misc
 
 try:
     from shlex import quote as cmd_quote
@@ -95,7 +95,7 @@ class RcloneSyncer:
     def __init__(self, from_remote, to_remote, **kwargs):
         self.from_config = from_remote
         self.to_config = to_remote
-        self.rclone_sleeps = {}
+        self.rclone_sleeps = misc.merge_dicts(self.from_config['rclone_sleeps'], self.to_config['rclone_sleeps'])
 
         # pass rclone_extras from kwargs
         if 'rclone_extras' in kwargs:
