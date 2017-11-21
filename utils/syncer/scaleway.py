@@ -21,17 +21,17 @@ class Scaleway:
         self.kwargs = kwargs
         self.instance_id = None
 
-        # pass region from kwargs (default France)
+        # parse region from kwargs (default France)
         if 'region' in kwargs:
             self.region = kwargs['region']
         else:
             self.region = 'par1'
-        # pass type from kwargs (default X64-2GB)
+        # parse type from kwargs (default X64-2GB)
         if 'type' in kwargs:
             self.type = kwargs['type']
         else:
             self.type = 'X64-2GB'
-        # pass image from kwargs (default Ubuntu 16.04)
+        # parse image from kwargs (default Ubuntu 16.04)
         if 'image' in kwargs:
             self.image = kwargs['image']
         else:
@@ -154,6 +154,7 @@ class Scaleway:
             return False, None, None
 
         # create RcloneSyncer object
+        kwargs.update(self.kwargs)
         rclone = RcloneSyncer(self.sync_from_config, self.sync_to_config, **kwargs)
 
         # start sync

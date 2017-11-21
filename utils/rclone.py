@@ -103,17 +103,23 @@ class RcloneSyncer:
         self.delayed_check = 0
         self.delayed_trigger = None
 
-        # pass rclone_extras from kwargs
+        # parse rclone_extras from kwargs
         if 'rclone_extras' in kwargs:
             self.rclone_extras = kwargs['rclone_extras']
         else:
             self.rclone_extras = {}
 
-        # pass dry_run from kwargs
+        # parse dry_run from kwargs
         if 'dry_run' in kwargs:
             self.dry_run = kwargs['dry_run']
         else:
             self.dry_run = False
+
+        # parse use_copy from kwargs
+        if 'use_copy' in kwargs:
+            self.use_copy = kwargs['use_copy']
+        else:
+            self.use_copy = False
 
     def sync(self, cmd_wrapper):
         if not cmd_wrapper:
@@ -122,8 +128,8 @@ class RcloneSyncer:
             return False, self.delayed_check, self.delayed_trigger
 
         # build sync command
-        cmd = 'rclone sync %s %s' % (
-            cmd_quote(self.from_config['sync_remote']), cmd_quote(self.to_config['sync_remote']))
+        cmd = 'rclone %s %s %s' % ('copy' if self.use_copy else 'sync', cmd_quote(self.from_config['sync_remote']),
+                                   cmd_quote(self.to_config['sync_remote']))
 
         extras = self.__extras2string()
         if len(extras) > 2:

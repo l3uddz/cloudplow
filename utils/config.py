@@ -84,6 +84,7 @@ class Config(object):
                 'sync_from': 'google',
                 'sync_to': 'amzn',
                 'sync_interval': 24,
+                'use_copy': True,
                 'rclone_extras': {
                     '--drive-chunk-size': '64M',
                     '--transfers': 16,
