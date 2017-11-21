@@ -214,7 +214,7 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     continue
 
                 # send notification of sync start
-                notify.send(message='Syncer: %s has begun syncing using instance: %s' % (sync_name, instance_id))
+                notify.send(message='Sync has begun for syncer: %s' % sync_name)
 
                 # do sync
                 resp, resp_delay, resp_trigger = syncer.sync(service=sync_config['service'], instance_id=instance_id,
