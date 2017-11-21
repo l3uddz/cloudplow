@@ -367,7 +367,7 @@ def scheduled_syncer(syncer_delays, syncer_name):
             return
 
         # do sync
-        do_sync(syncer_name, syncer_delays)
+        do_sync(syncer_name, syncer_delay=syncer_delays)
 
     except Exception:
         log.exception("Unexpected exception occurred while processing syncer: %s", syncer_name)
@@ -401,7 +401,7 @@ if __name__ == "__main__":
         elif conf.args['cmd'] == 'sync':
             log.info("Starting in sync mode")
             init_syncers()
-            do_sync()
+            do_sync(syncer_delays=syncer_delay)
         elif conf.args['cmd'] == 'run':
             log.info("Started in run mode")
 
