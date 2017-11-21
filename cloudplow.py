@@ -225,6 +225,7 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     syncer_delays[sync_name] = time.time() + ((60 * 60) * resp_delay)
                     # send aborted sync notification
                 else:
+                    log.info("Syncing completed successfully for syncer: %s", sync_name)
                     # send successful sync notification
                     pass
 
