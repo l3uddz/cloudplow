@@ -152,9 +152,9 @@ class Scaleway:
         if not self.instance_id or '-' not in self.instance_id:
             log.error("Sync was called, but no instance_id was found, aborting...")
             return False, None, None
+        kwargs.update(self.kwargs)
 
         # create RcloneSyncer object
-        kwargs.update(self.kwargs)
         rclone = RcloneSyncer(self.sync_from_config, self.sync_to_config, **kwargs)
 
         # start sync

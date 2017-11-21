@@ -218,7 +218,6 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
 
                 # do sync
                 resp, resp_delay, resp_trigger = syncer.sync(service=sync_config['service'], instance_id=instance_id,
-                                                             rclone_extras=sync_config['rclone_extras'],
                                                              dry_run=conf.configs['core']['dry_run'])
 
                 if not resp and not resp_delay:
