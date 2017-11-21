@@ -371,7 +371,7 @@ def scheduled_syncer(syncer_delays, syncer_name):
             return
 
         # do sync
-        do_sync(syncer_name, syncer_delay=syncer_delays)
+        do_sync(syncer_name, syncer_delays=syncer_delays)
 
     except Exception:
         log.exception("Unexpected exception occurred while processing syncer: %s", syncer_name)
