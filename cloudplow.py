@@ -199,6 +199,8 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                 resp, instance_id = syncer.startup(service=sync_config['service'], name=sync_name)
                 if not resp:
                     # send notification of failure to startup instance
+                    notify.send(message='Syncer: %s failed to startup a new instance. '
+                                        'Manually check no instances are still running!' % sync_name)
                     continue
 
                 # setup instance
@@ -206,7 +208,13 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                                     rclone_config=conf.configs['core']['rclone_config_path'])
                 if not resp:
                     # send notification of failure to setup instance
-                    pass
+                    notify.send(
+                        message='Syncer: %s failed to setup a new instance. '
+                                'Manually check no instances are still running!' % sync_name)
+                    continue
+
+                # send notification of sync start
+                notify.send(message='Syncer: %s has begun syncing using instance: %s' % (sync_name, instance_id))
 
                 # do sync
                 resp, resp_delay, resp_trigger = syncer.sync(service=sync_config['service'], instance_id=instance_id,
@@ -216,6 +224,10 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                 if not resp and not resp_delay:
                     log.error("Sync unexpectedly failed for syncer: %s", sync_name)
                     # send unexpected sync fail notification
+                    notify.send(
+                        message='Sync failed unexpectedly for syncer: %s. '
+                                'Manually check no instances are still running!' % sync_name)
+
                 elif not resp and resp_delay and resp_trigger:
                     # non 0 resp_delay result indicates a trigger was met, the result is how many hours to sleep
                     # this syncer for
@@ -225,16 +237,21 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     # add syncer to syncer_delays (which points to syncer_delay)
                     syncer_delays[sync_name] = time.time() + ((60 * 60) * resp_delay)
                     # send aborted sync notification
+                    notify.send(
+                        message="Sync was aborted for syncer: %s due to trigger %r, syncs suspended for %d hours" %
+                                (sync_name, resp_trigger, resp_delay))
                 else:
                     log.info("Syncing completed successfully for syncer: %s", sync_name)
                     # send successful sync notification
-                    pass
+                    notify.send(message="Sync was completed successfully for syncer: %s" % sync_name)
 
                 # destroy instance
                 resp = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
                 if not resp:
                     # send notification of failure to destroy instance
-                    continue
+                    notify.send(
+                        message="Syncer: %s failed to destroy its instance: %s. "
+                                "Manually check no instances are still running!" % (sync_name, instance_id))
 
         except Exception:
             log.exception("Exception occurred while syncing: ")
