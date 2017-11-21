@@ -83,7 +83,15 @@ class Config(object):
                 'service': 'scaleway',
                 'sync_from': 'google',
                 'sync_to': 'amzn',
-                'sync_interval': 24
+                'sync_interval': 24,
+                'rclone_extras': {
+                    '--drive-chunk-size': '64M',
+                    '--transfers': 16,
+                    '--checkers': 32,
+                    '--stats': '60s',
+                    '--verbose': 1,
+                    '--bwlimit': '80M'
+                }
             }
         },
         # notification settings

@@ -2,6 +2,7 @@ import logging
 import time
 
 from utils import process
+from utils.rclone import RcloneSyncer
 
 try:
     from shlex import quote as cmd_quote
@@ -36,7 +37,8 @@ class Scaleway:
         else:
             self.image = 'ubuntu-xenial'
 
-        log.info("Initialized Scaleway syncer agent with kwargs: %r", kwargs)
+        log.info("Initialized Scaleway syncer agent for %s -> %s", self.sync_from_config['sync_remote'],
+                 self.sync_to_config['sync_remote'])
         return
 
     def startup(self, **kwargs):
@@ -147,5 +149,12 @@ class Scaleway:
         return True
 
     def sync(self, **kwargs):
-        # run rclone sync
-        pass
+        if not self.instance_id or '-' not in self.instance_id:
+            log.error("Sync was called, but no instance_id was found, aborting...")
+            return False
+
+        # create RcloneSyncer object
+        rclone = RcloneSyncer(self.sync_from_config, self.sync_to_config, **self.kwargs)
+
+        log.info("Finished syncing instance: %r", self.instance_id)
+        return True

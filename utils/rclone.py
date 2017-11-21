@@ -89,3 +89,31 @@ class RcloneUploader:
         return ' '.join(
             "--exclude=%s" % (cmd_quote(value) if isinstance(value, str) else value) for value in
             self.config['rclone_excludes']).replace('=None', '').strip()
+
+
+class RcloneSyncer:
+    def __init__(self, from_remote, to_remote, **kwargs):
+        self.from_config = from_remote
+        self.to_config = to_remote
+        self.rclone_sleeps = {}
+
+        # pass rclone_extras from kwargs
+        if 'rclone_extras' in kwargs:
+            self.rclone_extras = kwargs['rclone_extras']
+        else:
+            self.rclone_extras = {}
+
+        # pass dry_run from kwargs
+        if 'dry_run' in kwargs:
+            self.dry_run = kwargs['dry_run']
+        else:
+            self.dry_run = False
+
+    def sync_logic(self, data):
+        pass
+
+    # internals
+    def __extras2string(self):
+        return ' '.join(
+            "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in
+            self.rclone_extras.items()).replace('=None', '').strip()
