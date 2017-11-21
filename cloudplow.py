@@ -179,7 +179,7 @@ def do_upload(remote=None):
 
 
 @decorators.timed
-def do_sync(use_syncer=None):
+def do_sync(use_syncer=None, syncer_delays=syncer_delay):
     lock_file = lock.sync()
     if lock_file.is_locked():
         log.info("Waiting for running sync to finish before proceeding...")
@@ -208,15 +208,31 @@ def do_sync(use_syncer=None):
                     pass
 
                 # do sync
+                resp, resp_delay, resp_trigger = syncer.sync(service=sync_config['service'], instance_id=instance_id,
+                                                             rclone_extras=sync_config['rclone_extras'],
+                                                             dry_run=conf.configs['core']['dry_run'])
+
+                if not resp and not resp_delay:
+                    log.error("Sync unexpectedly failed for syncer: %s", sync_name)
+                    # send unexpected sync fail notification
+                elif not resp and resp_delay and resp_trigger:
+                    # non 0 resp_delay result indicates a trigger was met, the result is how many hours to sleep
+                    # this syncer for
+                    log.info(
+                        "Sync aborted due to trigger: %r being met, %s will continue automatic syncing normally in "
+                        "%d hours", resp_trigger, sync_name, resp_delay)
+                    # add syncer to syncer_delays (which points to syncer_delay)
+                    syncer_delays[sync_name] = time.time() + ((60 * 60) * resp_delay)
+                    # send aborted sync notification
+                else:
+                    # send successful sync notification
+                    pass
 
                 # destroy instance
                 resp = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
                 if not resp:
                     # send notification of failure to destroy instance
                     continue
-
-                # send successful notification
-                pass
 
         except Exception:
             log.exception("Exception occurred while syncing: ")
@@ -299,7 +315,7 @@ def scheduled_uploader(uploader_name, uploader_settings):
 
 def scheduled_syncer(syncer_delays, syncer_name, syncer_config):
     log.info("Sync for %s with config: %r", syncer_name, syncer_config)
-    do_sync(syncer_name)
+    do_sync(syncer_name, syncer_delays)
 
 
 ############################################################

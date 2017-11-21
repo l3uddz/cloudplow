@@ -115,7 +115,31 @@ class RcloneSyncer:
         else:
             self.dry_run = False
 
-    def sync_logic(self, data):
+    def sync(self, cmd_wrapper):
+        if not cmd_wrapper:
+            log.error(
+                "You must provide a cmd_wrapper method to wrap the rclone sync command for the desired sync agent")
+            return False, self.delayed_check, self.delayed_trigger
+
+        # build sync command
+        cmd = 'rclone sync %s %s' % (
+            cmd_quote(self.from_config['sync_remote']), cmd_quote(self.to_config['sync_remote']))
+
+        extras = self.__extras2string()
+        if len(extras) > 2:
+            cmd += ' %s' % extras
+        if self.dry_run:
+            cmd += ' --dry-run'
+
+        sync_agent_cmd = cmd_wrapper(cmd)
+        log.debug("Using: %s", sync_agent_cmd)
+
+        # exec
+        return True if not self.delayed_check else False, self.delayed_check, self.delayed_trigger
+
+    # internals
+
+    def _sync_logic(self, data):
         # loop sleep triggers
         for trigger_text, trigger_config in self.rclone_sleeps.items():
             # check/reset trigger timeout
@@ -153,7 +177,6 @@ class RcloneSyncer:
                         return True
         return False
 
-    # internals
     def __extras2string(self):
         return ' '.join(
             "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in

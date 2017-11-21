@@ -151,10 +151,17 @@ class Scaleway:
     def sync(self, **kwargs):
         if not self.instance_id or '-' not in self.instance_id:
             log.error("Sync was called, but no instance_id was found, aborting...")
-            return False
+            return False, None, None
 
         # create RcloneSyncer object
-        rclone = RcloneSyncer(self.sync_from_config, self.sync_to_config, **self.kwargs)
+        rclone = RcloneSyncer(self.sync_from_config, self.sync_to_config, **kwargs)
+        resp, delayed_check, delayed_trigger = rclone.sync(self._wrap_command)
 
         log.info("Finished syncing instance: %r", self.instance_id)
-        return True
+        return resp, delayed_check, delayed_trigger
+
+    # internals
+
+    def _wrap_command(self, command):
+        cmd = "scw --region=%s exec %s %s" % (cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(command))
+        return cmd
