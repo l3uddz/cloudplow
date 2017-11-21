@@ -7,7 +7,7 @@ from multiprocessing import Manager, Process
 
 import schedule
 
-from utils import config, lock, path, decorators, version
+from utils import config, lock, path, decorators, version, misc
 from utils.notifications import Notifications
 from utils.syncer import Syncer
 from utils.unionfs import UnionfsHiddenFolder
@@ -97,8 +97,8 @@ def check_suspended_uploaders(uploader_to_check=None):
                 # this remote is still delayed due to a previous abort due to triggers
                 use_logger = log.debug if not (uploader_to_check and uploader_name == uploader_to_check) else log.info
                 use_logger(
-                    "%s is still suspended due to a previously aborted upload. Normal operation in %d seconds at %s",
-                    uploader_name, int(suspension_expiry - time.time()),
+                    "%s is still suspended due to a previously aborted upload. Normal operation in %s at %s",
+                    uploader_name, misc.seconds_to_string(int(suspension_expiry - time.time())),
                     time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(suspension_expiry)))
                 # return True when suspended if uploader_to_check is supplied and this is that remote
                 if uploader_to_check and uploader_name == uploader_to_check:
@@ -123,8 +123,8 @@ def check_suspended_syncers(syncers_delays, syncer_to_check=None):
                 # this syncer is still delayed due to a previous abort due to triggers
                 use_logger = log.debug if not (syncer_to_check and syncer_name == syncer_to_check) else log.info
                 use_logger(
-                    "%s is still suspended due to a previously aborted sync. Normal operation in %d seconds at %s",
-                    syncer_name, int(suspension_expiry - time.time()),
+                    "%s is still suspended due to a previously aborted sync. Normal operation in %s at %s",
+                    syncer_name, misc.seconds_to_string(int(suspension_expiry - time.time())),
                     time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(suspension_expiry)))
                 # return True when suspended if syncer_to_check is supplied and this is that remote
                 if syncer_to_check and syncer_name == syncer_to_check:
