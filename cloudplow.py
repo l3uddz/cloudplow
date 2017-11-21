@@ -115,6 +115,32 @@ def check_suspended_uploaders(uploader_to_check=None):
     return suspended
 
 
+def check_suspended_syncers(syncers_delays, syncer_to_check=None):
+    suspended = False
+    try:
+        for syncer_name, suspension_expiry in syncers_delays.copy().items():
+            if time.time() < suspension_expiry:
+                # this syncer is still delayed due to a previous abort due to triggers
+                use_logger = log.debug if not (syncer_to_check and syncer_name == syncer_to_check) else log.info
+                use_logger(
+                    "%s is still suspended due to a previously aborted sync. Normal operation in %d seconds at %s",
+                    syncer_name, int(suspension_expiry - time.time()),
+                    time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(suspension_expiry)))
+                # return True when suspended if syncer_to_check is supplied and this is that remote
+                if syncer_to_check and syncer_name == syncer_to_check:
+                    suspended = True
+            else:
+                log.warning("%s is no longer suspended due to a previous aborted sync!",
+                            syncer_name)
+                syncers_delays.pop(syncer_name, None)
+                # send notification that remote is no longer timed out
+                notify.send(message="Sync suspension has expired for syncer: %s" % syncer_name)
+
+    except Exception:
+        log.exception("Exception checking suspended syncers: ")
+    return suspended
+
+
 def run_process(task, manager_dict, **kwargs):
     try:
         new_process = Process(target=task, args=(manager_dict,), kwargs=kwargs)
@@ -300,7 +326,7 @@ def do_hidden():
 ############################################################
 
 def scheduled_uploader(uploader_name, uploader_settings):
-    log.debug("Checking used disk space for uploader: %s", uploader_name)
+    log.debug("Scheduled disk check triggered for uploader: %s", uploader_name)
     try:
         rclone_settings = conf.configs['remotes'][uploader_name]
 
@@ -331,9 +357,18 @@ def scheduled_uploader(uploader_name, uploader_settings):
         log.exception("Unexpected exception occurred while processing uploader %s: ", uploader_name)
 
 
-def scheduled_syncer(syncer_delays, syncer_name, syncer_config):
-    log.info("Sync for %s with config: %r", syncer_name, syncer_config)
-    do_sync(syncer_name, syncer_delays)
+def scheduled_syncer(syncer_delays, syncer_name):
+    log.info("Scheduled sync triggered for syncer: %s", syncer_name)
+    try:
+        # check suspended syncers
+        if check_suspended_syncers(syncer_delays, syncer_name):
+            return
+
+        # do sync
+        do_sync(syncer_name, syncer_delays)
+
+    except Exception:
+        log.exception("Unexpected exception occurred while processing syncer: %s", syncer_name)
 
 
 ############################################################
@@ -377,8 +412,7 @@ if __name__ == "__main__":
             # add syncers to schedule
             init_syncers()
             for syncer_name, syncer_conf in conf.configs['syncer'].items():
-                schedule.every(1).minutes.do(run_process, scheduled_syncer, syncer_delay, syncer_name=syncer_name,
-                                             syncer_config=syncer_conf)
+                schedule.every(1).minutes.do(run_process, scheduled_syncer, syncer_delay, syncer_name=syncer_name)
                 log.info("Added %s syncer to schedule, syncing every %d hours", syncer_name,
                          syncer_conf['sync_interval'])
 
