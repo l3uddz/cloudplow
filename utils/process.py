@@ -8,7 +8,7 @@ log = logging.getLogger("process")
 def execute(command, callback=None, logs=True, shell=False):
     total_output = ''
     process = subprocess.Popen(shlex.split(command) if not shell else command, shell=shell, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+                               stderr=subprocess.STDOUT)
     while True:
         output = process.stdout.readline().decode().strip()
         if process.poll() is not None:
