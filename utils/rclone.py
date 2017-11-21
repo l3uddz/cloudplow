@@ -1,4 +1,5 @@
 import logging
+import time
 
 from . import process, misc
 
@@ -95,7 +96,12 @@ class RcloneSyncer:
     def __init__(self, from_remote, to_remote, **kwargs):
         self.from_config = from_remote
         self.to_config = to_remote
+
+        # trigger logic
         self.rclone_sleeps = misc.merge_dicts(self.from_config['rclone_sleeps'], self.to_config['rclone_sleeps'])
+        self.trigger_tracks = {}
+        self.delayed_check = 0
+        self.delayed_trigger = None
 
         # pass rclone_extras from kwargs
         if 'rclone_extras' in kwargs:
@@ -110,7 +116,42 @@ class RcloneSyncer:
             self.dry_run = False
 
     def sync_logic(self, data):
-        pass
+        # loop sleep triggers
+        for trigger_text, trigger_config in self.rclone_sleeps.items():
+            # check/reset trigger timeout
+            if trigger_text in self.trigger_tracks and self.trigger_tracks[trigger_text]['expires'] != '':
+                if time.time() >= self.trigger_tracks[trigger_text]['expires']:
+                    log.warning("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
+                                trigger_text)
+                    self.trigger_tracks[trigger_text] = {'count': 0, 'expires': ''}
+
+            # check if trigger_text is in data
+            if trigger_text.lower() in data.lower():
+                # check / increase tracking count of trigger_text
+                if trigger_text not in self.trigger_tracks or self.trigger_tracks[trigger_text]['count'] == 0:
+                    # set initial tracking info for trigger
+                    self.trigger_tracks[trigger_text] = {'count': 1, 'expires': time.time() + trigger_config['timeout']}
+                    log.warning("Tracked first occurrence of trigger: %r. Expiring in %d seconds at %s", trigger_text,
+                                trigger_config['timeout'], time.strftime('%Y-%m-%d %H:%M:%S',
+                                                                         time.localtime(
+                                                                             self.trigger_tracks[trigger_text][
+                                                                                 'expires'])))
+                else:
+                    # trigger_text WAS seen before increase count
+                    self.trigger_tracks[trigger_text]['count'] += 1
+                    log.warning("Tracked trigger: %r has occurred %d/%d times within %d seconds", trigger_text,
+                                self.trigger_tracks[trigger_text]['count'], trigger_config['count'],
+                                trigger_config['timeout'])
+
+                    # check if trigger_text was found the required amount of times to abort
+                    if self.trigger_tracks[trigger_text]['count'] >= trigger_config['count']:
+                        log.warning(
+                            "Tracked trigger %r has reached the maximum limit of %d occurrences within %d seconds,"
+                            " aborting upload...", trigger_text, trigger_config['count'], trigger_config['timeout'])
+                        self.delayed_check = trigger_config['sleep']
+                        self.delayed_trigger = trigger_text
+                        return True
+        return False
 
     # internals
     def __extras2string(self):
