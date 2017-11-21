@@ -220,6 +220,8 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     continue
 
                 # send notification that sync is starting
+                notify.send(message='Sync initiated for syncer: %s. Booting up %s instance.' % (
+                    sync_name, sync_config['service']))
 
                 # startup instance
                 resp, instance_id = syncer.startup(service=sync_config['service'], name=sync_name)
