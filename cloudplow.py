@@ -418,7 +418,8 @@ if __name__ == "__main__":
             # add syncers to schedule
             init_syncers()
             for syncer_name, syncer_conf in conf.configs['syncer'].items():
-                schedule.every(1).minutes.do(run_process, scheduled_syncer, syncer_delay, syncer_name=syncer_name)
+                schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer, syncer_delay,
+                                                                      syncer_name=syncer_name)
                 log.info("Added %s syncer to schedule, syncing every %d hours", syncer_name,
                          syncer_conf['sync_interval'])
 
