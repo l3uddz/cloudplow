@@ -404,6 +404,8 @@ if __name__ == "__main__":
             do_upload()
         elif conf.args['cmd'] == 'sync':
             log.info("Starting in sync mode")
+            log.warning("Sync currently has a bug while displaying output to the console. "
+                        "Tail the logfile to view readable logs!")
             init_syncers()
             do_sync(syncer_delays=syncer_delay)
         elif conf.args['cmd'] == 'run':
