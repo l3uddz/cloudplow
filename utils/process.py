@@ -31,9 +31,9 @@ def execute(command, callback=None, logs=True, shell=False):
     return rc
 
 
-def popen(command):
+def popen(command, shell=False):
     try:
-        data = subprocess.check_output(command, shell=True, timeout=600).decode().strip()
+        data = subprocess.check_output(shlex.split(command) if not shell else command, shell=shell, timeout=600).decode().strip()
         return data
     except Exception:
         log.exception("Exception while executing process: ")
