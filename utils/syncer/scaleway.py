@@ -38,8 +38,8 @@ class Scaleway:
         else:
             self.image = 'ubuntu-xenial'
 
-        log.info("Initialized Scaleway syncer agent for %s -> %s", self.sync_from_config['sync_remote'],
-                 self.sync_to_config['sync_remote'])
+        log.info("Initialized Scaleway syncer agent for %s -> %s using tool: %r", self.sync_from_config['sync_remote'],
+                 self.sync_to_config['sync_remote'], self.tool_path)
         return
 
     def startup(self, **kwargs):
