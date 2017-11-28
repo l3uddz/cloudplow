@@ -15,7 +15,8 @@ log = logging.getLogger("scaleway")
 class Scaleway:
     NAME = 'Scaleway'
 
-    def __init__(self, from_config, to_config, **kwargs):
+    def __init__(self, tool_path, from_config, to_config, **kwargs):
+        self.tool_path = tool_path
         self.sync_from_config = from_config
         self.sync_to_config = to_config
         self.kwargs = kwargs
@@ -47,8 +48,9 @@ class Scaleway:
             return False, None
 
         # create instance
-        cmd = "scw --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
-            cmd_quote(self.region), cmd_quote(kwargs['name']), cmd_quote(self.type), cmd_quote(self.image))
+        cmd = "%s --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
+            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['name']), cmd_quote(self.type),
+            cmd_quote(self.image))
         log.debug("Using: %s", cmd)
 
         log.debug("Creating new instance...")
@@ -63,8 +65,8 @@ class Scaleway:
         # wait for instance to finish booting
         log.info("Waiting for instance to finish booting...")
         time.sleep(60)
-        cmd = "scw --region=%s exec -w %s %s" % (
-            cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote('uname -a'))
+        cmd = "%s --region=%s exec -w %s %s" % (
+            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote('uname -a'))
         log.debug("Using: %s", cmd)
 
         resp = process.popen(cmd)
@@ -87,7 +89,8 @@ class Scaleway:
 
         # install unzip
         cmd_exec = "apt-get -qq update && apt-get -y -qq install unzip"
-        cmd = "scw --region=%s exec %s %s" % (cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
+        cmd = "%s --region=%s exec %s %s" % (
+            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
         log.debug("Using: %s", cmd)
 
         log.debug("Installing rclone to instance: %r", self.instance_id)
@@ -103,7 +106,8 @@ class Scaleway:
                    "unzip -q rclone-current-linux-amd64.zip && cd rclone-*-linux-amd64 && " \
                    "cp rclone /usr/bin/ && chown root:root /usr/bin/rclone && chmod 755 /usr/bin/rclone && " \
                    "mkdir -p /root/.config/rclone && which rclone"
-        cmd = "scw --region=%s exec %s %s" % (cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
+        cmd = "%s --region=%s exec %s %s" % (
+            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
         log.debug("Using: %s", cmd)
 
         log.debug("Installing rclone to instance: %r", self.instance_id)
@@ -115,8 +119,9 @@ class Scaleway:
         log.info("Installed rclone")
 
         # copy rclone.conf to instance
-        cmd = "scw --region=%s cp %s %s:/root/.config/rclone/" % (
-            cmd_quote(self.region), cmd_quote(kwargs['rclone_config']), cmd_quote(self.instance_id))
+        cmd = "%s --region=%s cp %s %s:/root/.config/rclone/" % (
+            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['rclone_config']),
+            cmd_quote(self.instance_id))
         log.debug("Using: %s", cmd)
 
         log.debug("Copying rclone config %r to instance: %r", kwargs['rclone_config'], self.instance_id)
@@ -136,7 +141,8 @@ class Scaleway:
             return False
 
         # destroy the instance
-        cmd = "scw --region=%s rm -f %s" % (cmd_quote(self.region), cmd_quote(self.instance_id))
+        cmd = "%s --region=%s rm -f %s" % (
+            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id))
         log.debug("Using: %s", cmd)
 
         log.debug("Destroying instance: %r", self.instance_id)
@@ -167,5 +173,6 @@ class Scaleway:
     # internals
 
     def _wrap_command(self, command):
-        cmd = "scw --region=%s exec %s %s" % (cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(command))
+        cmd = "%s --region=%s exec %s %s" % (
+            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(command))
         return cmd

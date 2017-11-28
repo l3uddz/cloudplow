@@ -81,6 +81,7 @@ class Config(object):
         'syncer': {
             'google2amzn': {
                 'service': 'scaleway',
+                'tool_path': '/home/seed/go/bin/scw',
                 'sync_from': 'google',
                 'sync_to': 'amzn',
                 'sync_interval': 24,

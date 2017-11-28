@@ -24,6 +24,10 @@ class Syncer:
             log.error("You specified an invalid service to load: %s", kwargs['service'])
             return False
 
+        if 'tool_path' not in kwargs:
+            log.error("You must specify a tool_path for each syncer in your service")
+            return False
+
         if 'sync_from' not in kwargs or 'sync_to' not in kwargs:
             log.error("You must specify a sync_form and sync_to in your configuration")
             return False
@@ -34,13 +38,15 @@ class Syncer:
             sync_to_config = self.config['remotes'][kwargs['sync_to']]
 
             # clean kwargs before initializing the service
+            tool_path = kwargs['tool_path']
             chosen_service = SERVICES[kwargs['service']]
             del kwargs['service']
             del kwargs['sync_from']
             del kwargs['sync_to']
+            del kwargs['tool_path']
 
             # load service
-            service = chosen_service(sync_from_config, sync_to_config, **kwargs)
+            service = chosen_service(tool_path, sync_from_config, sync_to_config, **kwargs)
             self.services.append(service)
 
         except Exception:
