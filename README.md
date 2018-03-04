@@ -1,8 +1,8 @@
 
-# cloudplow
+## Cloudplow
 Automatic rclone remote uploader, with support for multiple remote/folder pairings.  UnionFS Cleaner functionality: Deletion of UnionFS whiteout files  and their corresponding files on rclone remotes. Automatic remote syncer: Sync between different remotes via a Scaleway server instance, that is created and destroyed at every sync.
 
-# Config
+## Config
 
 ```
 {
