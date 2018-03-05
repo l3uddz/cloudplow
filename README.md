@@ -17,9 +17,8 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 7. `python3 cloudplow.py` to generate default config.json
 
 
-# Config
+# Sample Config
 
-## Example
 
 ```
 {
@@ -85,9 +84,9 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 }
 ```
 
-## Explained
+# Config Explained
 
-### Core
+## Core
 
 ```
     "core": {
@@ -98,7 +97,7 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 `"dry_run": true` will prevent any files being uploaded or deleted - use this to test out your config.
 
 
-### Hidden
+## Hidden
 UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corresponding files on rclone remotes.
 
 ```
@@ -117,7 +116,7 @@ This is where you specify the location of the unionfs _HIDDEN~ files (i.e. white
 The specific remote path, where those corresponding files are, will be specified in the `remotes` section. 
 
 
-### Notifications
+## Notifications
 
 Notification alerts during tasks. 
 
@@ -134,14 +133,14 @@ Notification alerts during tasks.
 
 Currently, only Pushover is supported. But more will be added later. 
 
-#### Pushover
+### Pushover
 
 Retrieve `app_token` and `user_token` from Pushover.net and fill it in. 
 
 Note: The key name (e.g. `"Pushover":`) can be anything, but the `"service":` must be  `"pushover"`,
 
 
-### Remotes
+## Remotes
 
 This is the heart of the configuration, most of the config references this section one way or another (e.g. hidden path references).
 
@@ -231,7 +230,7 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 
 
 
-### Uploader
+## Uploader
 
 Each entry to `uploader` references a remote inside `remotes`. The remote can only be referenced ONCE inside this list. 
 
@@ -277,7 +276,7 @@ In the example above, the remote `"google"` is being referenced from the `remote
 </pre>
 
 
-## Temp (only for reference)
+# Temp (only for reference)
 
 ```
 
