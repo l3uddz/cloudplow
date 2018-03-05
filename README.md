@@ -112,7 +112,7 @@ UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corres
     
 ```
 
-This is where you specify the location of the unionfs _HIDDEN~ files (i.e. whiteout files) and the rclone remotes where the corresponding files will need to be deleted from. You may specify more than one remote. 
+This is where you specify the location of the unionfs _HIDDEN~ files (i.e. whiteout files) and the rclone remotes where the corresponding files will need to be deleted from. You may specify than one remote here. 
 
 The specific remote path, where those corresponding files are, will be specified in the `remotes` section. 
 
@@ -145,7 +145,7 @@ Note: The key name (e.g. `"Pushover":`) can be anything, but the `"service":` mu
 
 This is the heart of the configuration, most of the config references this section one way or another (e.g. hidden path references).
 
-You can specify more than remote here. 
+You can specify more than one remote here. 
 
 
 ```
@@ -233,6 +233,7 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 
 ### Uploader
 
+Each entry to `uploader` references a remote inside `remotes`. The remote can only be referenced ONCE inside this list. 
 
 ```
     "uploader": {
@@ -250,11 +251,30 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
     }
 ```
 
+In the example above, the remote `"google"` is being referenced from the `remotes` section. 
+
+
+`"check_interval"`: how often (in minutes) to check the size of this remotes `upload_folder`. Once it reaches the size threshold as specified in `max_size_gb`, the uploader will start. 
+            
+`"exclude_open_files"`: when set to `true`, open files will be excluded from the rclone transfer (i.e. transfer will occur without them).
+
+`"max_size_gb"`: maximum size (in gigabytes) before uploading can commence
+
+`"opened_excludes"`: Paths the open file checker will check for when searching for open files. In the example above, any open files with `/downloads/` in it's path, would be ignored. 
+
+`"size_excludes"`: Paths that will not be counted in the total size calculation for `max_size_gb`.		
+         
+            
+<pre>
 
 
 
 
 
+
+
+
+</pre>
 
 
 ## Temp (only for reference)
