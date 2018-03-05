@@ -219,8 +219,6 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 ```
             "upload_folder": "/mnt/local/Media/",
             "upload_remote": "google:/Media/"
-        },
-    },
 
 ```
 
