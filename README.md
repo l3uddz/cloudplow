@@ -17,10 +17,10 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 7. `python3 cloudplow.py` to generate default config.json
 
 
-# Config
+# Configuration
 
 
-## Sample
+## Sample config.json
 
 ```
 {
