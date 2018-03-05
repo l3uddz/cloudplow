@@ -4,8 +4,8 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 
 
 # Requirements
-1. Python 3.5 or higher (`sudo apt install python3 python3-pip)
-2. requirements.txt modules (``)
+1. Python 3.5 or higher (`sudo apt install python3 python3-pip`).
+2. requirements.txt modules (see below).
 
 # Installation on Ubuntu/Debian
 
@@ -17,8 +17,10 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 7. `python3 cloudplow.py` to generate default config.json
 
 
-# Sample Config
+# Config
 
+
+## Sample
 
 ```
 {
@@ -84,7 +86,6 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 }
 ```
 
-# Config Explained
 
 ## Core
 
