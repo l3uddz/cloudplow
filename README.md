@@ -87,6 +87,184 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 
 ## Explained
 
+### Core
+
+```
+    "core": {
+        "dry_run": false
+    },
+```
+
+`"dry_run": true` will prevent any files being uploaded or deleted - use this to test out your config.
+
+
+### Hidden
+UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corresponding files on rclone remotes.
+
+```
+    "hidden": {
+        "/mnt/local/.unionfs-fuse": {
+            "hidden_remotes": [
+                "google"
+            ]
+        }
+    },
+    
+```
+
+This is where you specify the location of the unionfs _HIDDEN~ files (i.e. whiteout files) and the rclone remotes where the corresponding files will need to be deleted from. You may specify more than one remote. 
+
+The specific remote path, where those corresponding files are, will be specified in the `remotes` section. 
+
+
+### Notifications
+
+Notification alerts during tasks. 
+
+
+```
+    "notifications": {
+        "Pushover": {
+            "app_token": "",
+            "service": "pushover",
+            "user_token": ""
+        }
+    },
+```
+
+Currently, only Pushover is supported. But more will be added later. 
+
+#### Pushover
+
+Retrieve `app_token` and `user_token` from Pushover.net and fill it in. 
+
+Note: The key name (e.g. `"Pushover":`) can be anything, but the `"service":` must be  `"pushover"`,
+
+
+### Remotes
+
+This is the heart of the configuration, most of the config references this section one way or another (e.g. hidden path references).
+
+You can specify more than remote here. 
+
+
+```
+    "remotes": {
+        "google": {
+            "hidden_remote": "google:",
+
+```
+
+Under `"remote"`, you have the name of the remote as the key (in the example above, it is `"google"`). The remote name can be anything (e.g. google1, google2, google3, dropbox1, etc). 
+
+`"hidden_remote"`: is the remote path where the unionfs hidden cleaner will remove files from (if the remote is listed under the `hidden` section). 
+
+
+```
+            "rclone_excludes": [
+                "**partial~",
+                "**_HIDDEN~",
+                ".unionfs/**",
+                ".unionfs-fuse/**"
+            ],
+```
+These are the excludes to be used when uploading to this remote.
+
+
+```
+            "rclone_extras": {
+                "--checkers": 16,
+                "--drive-chunk-size": "64M",
+                "--no-traverse": null,
+                "--stats": "60s",
+                "--transfers": 8,
+                "--verbose": 1
+            },
+```
+These are rclone parameters that will be used when uploading to this remote. You may add other rclone parameters. 
+
+Note: a value of null will mean `--no-traverse` instead of `--no-traverse=null`. 
+
+
+
+```
+            "rclone_sleeps": {
+                "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+                    "count": 5,
+                    "sleep": 25,
+                    "timeout": 300
+                }
+            },
+```
+These are keywords or phrases that are monitored during rclone tasks that will cause this remote's upload task to abort and go into a sleep for a specified amount of time. When a remote is asleep, it will not do it's regularly scheduled uploads (as definted in `check_intervals`). 
+
+You may list multiple keywords or phrases here.
+
+In the example above, the phrase `" "Failed to copy: googleapi: Error 403: User rate limit exceeded"` is being monitored. 
+
+`"count"`: How many times this keyword/phrase has to occur within a specific time period (i.e. `timeout`), from the very first occurrence, to cause the remote to go to sleep. 
+
+`"sleep"`: How many hours the remote goes to sleep. 
+
+`"timeout"`: The time period (in seconds) the phrase is counted in. On it's first occurrence, the time is logged and if count is reached within this many seconds, the upload task will abort and the remote will go into sleep. If the timeout period expires, then the count will restart from 0. 
+
+
+
+```
+            "remove_empty_dir_depth": 2,
+```
+This is the depth to min-depth to delete empty folders from relative to `upload_folder`  (1=/Media  ; 2 = /Media/Movies; 3=/Media/Movies/Movies-Kids/)
+            "remove_empty_dir_depth": 2,
+			
+			# this is the remote that upload_folder will be uploaded too
+            "upload_remote": "google:/Media"
+        }
+    },
+
+
+```
+            "upload_folder": "/mnt/local/Media/",
+            "upload_remote": "google:/Media/"
+        },
+    },
+
+```
+
+`"upload_folder"`: is the local path that is uploaded by the `uploader` task, once it reaches the size threshold as specified in `max_size_gb`. 
+
+`"upload_remote"`: is the remote path that `uploader` task will  uploaded to. 
+
+
+
+
+### Uploader
+
+
+```
+    "uploader": {
+        "google": {
+            "check_interval": 30,
+            "exclude_open_files": true,
+            "max_size_gb": 500,
+            "opened_excludes": [
+                "/downloads/"
+            ],
+            "size_excludes": [
+                "downloads/*"
+            ]
+          }
+    }
+```
+
+
+
+
+
+
+
+
+## Temp (only for reference)
+
 ```
 
 {
