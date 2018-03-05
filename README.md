@@ -196,11 +196,11 @@ Note: a value of null will mean `--no-traverse` instead of `--no-traverse=null`.
                 }
             },
 ```
-These are keywords or phrases that are monitored during rclone tasks that will cause this remote's upload task to abort and go into a sleep for a specified amount of time. When a remote is asleep, it will not do it's regularly scheduled uploads (as definted in `check_intervals`). 
+`"rclone_sleeps"` are keywords or phrases that are monitored during rclone tasks that will cause this remote's upload task to abort and go into a sleep for a specified amount of time. When a remote is asleep, it will not do it's regularly scheduled uploads (as definted in `check_intervals`). 
 
 You may list multiple keywords or phrases here.
 
-In the example above, the phrase `" "Failed to copy: googleapi: Error 403: User rate limit exceeded"` is being monitored. 
+In the example above, the phrase `"Failed to copy: googleapi: Error 403: User rate limit exceeded"` is being monitored. 
 
 `"count"`: How many times this keyword/phrase has to occur within a specific time period (i.e. `timeout`), from the very first occurrence, to cause the remote to go to sleep. 
 
@@ -214,12 +214,6 @@ In the example above, the phrase `" "Failed to copy: googleapi: Error 403: User 
             "remove_empty_dir_depth": 2,
 ```
 This is the depth to min-depth to delete empty folders from relative to `upload_folder`  (1=/Media  ; 2 = /Media/Movies; 3=/Media/Movies/Movies-Kids/)
-            "remove_empty_dir_depth": 2,
-			
-			# this is the remote that upload_folder will be uploaded too
-            "upload_remote": "google:/Media"
-        }
-    },
 
 
 ```
