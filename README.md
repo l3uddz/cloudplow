@@ -15,6 +15,11 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 5. `cd cloudplow`
 6. `sudo python3 -m pip install -r requirements.txt`
 7. `python3 cloudplow.py` to generate default config.json
+8. Edit config.json to your preference.
+9. `sudo cp /opt/cloudplow/systemd/cloudplow.service /etc/systemd/system/`
+10. `sudo systemctl daemon-reload`
+11. `sudo systemctl enable cloudplow.service`
+12. `sudo systemctl start cloudplow.service`
 
 
 # Configuration
