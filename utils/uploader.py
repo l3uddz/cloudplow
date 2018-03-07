@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 
 from . import path
@@ -27,7 +28,7 @@ class Uploader:
                 log.info("Excluding these files from being uploaded because they were open: %r", files_to_exclude)
                 # add files_to_exclude to rclone_config
                 for item in files_to_exclude:
-                    rclone_config['rclone_excludes'].append(item)
+                    rclone_config['rclone_excludes'].append(re.escape(item))
 
         # do upload
         rclone = RcloneUploader(self.name, rclone_config, self.dry_run)
