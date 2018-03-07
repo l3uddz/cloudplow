@@ -10,10 +10,10 @@ def execute(command, callback=None, logs=True, shell=False):
     process = subprocess.Popen(shlex.split(command) if not shell else command, shell=shell, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT)
     while True:
-        output = str(process.stdout.readline()).lstrip('b').replace('\\n', '')
+        output = process.stdout.readline().decode().strip()
         if process.poll() is not None:
             break
-        if output and len(output) and output != "''":
+        if output and len(output):
             if logs:
                 log.info(output)
             if callback:
@@ -29,3 +29,13 @@ def execute(command, callback=None, logs=True, shell=False):
         return total_output
     rc = process.poll()
     return rc
+
+
+def popen(command, shell=False):
+    try:
+        data = subprocess.check_output(shlex.split(command) if not shell else command, shell=shell,
+                                       timeout=600).decode().strip()
+        return data
+    except Exception:
+        log.exception("Exception while executing process: ")
+    return None

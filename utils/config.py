@@ -24,6 +24,7 @@ class Config(object):
         # core settings
         'core': {
             'dry_run': True,
+            'rclone_config_path': '/home/seed/.config/rclone/rclone.conf'
         },
         # hidden cleaner settings
         'hidden': {
@@ -51,6 +52,7 @@ class Config(object):
                 'upload_folder': '/mnt/local/Media',
                 'upload_remote': 'google:/Media',
                 'hidden_remote': 'google:',
+                'sync_remote': 'google:/Media',
                 'rclone_excludes': [
                     '**partial~',
                     '**_HIDDEN~',
@@ -73,6 +75,25 @@ class Config(object):
                     }
                 },
                 'remove_empty_dir_depth': 2
+            }
+        },
+        # syncer settings
+        'syncer': {
+            'google2amzn': {
+                'service': 'scaleway',
+                'tool_path': '/home/seed/go/bin/scw',
+                'sync_from': 'google',
+                'sync_to': 'amzn',
+                'sync_interval': 24,
+                'use_copy': True,
+                'rclone_extras': {
+                    '--drive-chunk-size': '64M',
+                    '--transfers': 16,
+                    '--checkers': 32,
+                    '--stats': '60s',
+                    '--verbose': 1,
+                    '--bwlimit': '80M'
+                }
             }
         },
         # notification settings
@@ -206,10 +227,11 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('clean', 'upload', 'run'),
+                            choices=('clean', 'upload', 'sync', 'run'),
                             help=(
                                 '"clean": clean HIDDEN files from configured unionfs mounts and rclone remotes\n'
                                 '"upload": perform clean and upload local content to configured chosen unionfs rclone remotes\n'
+                                '"sync": perform sync of configured remotes\n'
                                 '"run": starts the application'
                             )
                             )
