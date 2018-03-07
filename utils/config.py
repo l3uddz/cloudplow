@@ -70,7 +70,7 @@ class Config(object):
                 'rclone_sleeps': {
                     'Error 403: User rate limit exceeded': {
                         'count': 5,
-                        'timeout': 300,
+                        'timeout': 3600,
                         'sleep': 25
                     }
                 },
