@@ -28,3 +28,15 @@ def seconds_to_string(seconds):
         log.exception("Exception occurred converting %d seconds to readable string: ", seconds)
         resp = '%d seconds' % seconds
     return resp
+
+
+def merge_dicts(*dicts):
+    """ reference: https://stackoverflow.com/a/24745412 """
+    d = {}
+    for dict in dicts:
+        for key in dict:
+            try:
+                d[key] = dict[key]
+            except KeyError:
+                pass
+    return d
