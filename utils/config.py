@@ -86,6 +86,7 @@ class Config(object):
                 'sync_to': 'amzn',
                 'sync_interval': 24,
                 'use_copy': True,
+                'instance_destroy': True,
                 'rclone_extras': {
                     '--drive-chunk-size': '64M',
                     '--transfers': 16,
