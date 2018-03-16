@@ -33,8 +33,7 @@ def execute(command, callback=None, logs=True, shell=False):
 
 def popen(command, shell=False):
     try:
-        data = subprocess.check_output(shlex.split(command) if not shell else command, shell=shell,
-                                       timeout=3600).decode().strip()
+        data = subprocess.check_output(shlex.split(command) if not shell else command, shell=shell).decode().strip()
         return data
     except Exception:
         log.exception("Exception while executing process: ")
