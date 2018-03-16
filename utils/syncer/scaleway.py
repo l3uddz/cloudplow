@@ -74,7 +74,7 @@ class Scaleway:
                 log.error("Unexpected response while creating instance: %s", resp)
                 return False, self.instance_id
             else:
-                self.instance_id = resp
+                self.instance_id = kwargs['name']
             log.info("Started existing instance: %r", self.instance_id)
 
         # wait for instance to finish booting
