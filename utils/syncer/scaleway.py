@@ -118,8 +118,8 @@ class Scaleway:
 
         # install rclone to instance
         cmd_exec = "curl -sO https://downloads.rclone.org/rclone-current-linux-amd64.zip && " \
-                   "unzip -q rclone-current-linux-amd64.zip && cd rclone-*-linux-amd64 && " \
-                   "cp rclone /usr/bin/ && chown root:root /usr/bin/rclone && chmod 755 /usr/bin/rclone && " \
+                   "unzip -oq rclone-current-linux-amd64.zip && cd rclone-*-linux-amd64 && " \
+                   "cp -rf rclone /usr/bin/ && chown root:root /usr/bin/rclone && chmod 755 /usr/bin/rclone && " \
                    "mkdir -p /root/.config/rclone && which rclone"
         cmd = "%s --region=%s exec %s %s" % (
             cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
