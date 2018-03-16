@@ -70,9 +70,9 @@ class Scaleway:
 
             log.debug("Starting instance...")
             resp = process.popen(cmd)
-            if not resp or 'failed' in resp.lower() and 'server should be stopped' not in resp.lower():
+            if not resp or ('failed' in resp.lower() and 'server should be stopped' not in resp.lower()):
                 log.error("Unexpected response while creating instance: %s", resp)
-                return False, self.instance_id
+                return False, kwargs['name']
             else:
                 self.instance_id = kwargs['name']
             log.info("Started existing instance: %r", self.instance_id)
