@@ -103,14 +103,14 @@ class Scaleway:
             return False
 
         # install unzip
-        cmd_exec = "apt-get -qq update && apt-get -y -qq install unzip"
+        cmd_exec = "apt-get -qq update && apt-get -y -qq install unzip && which unzip"
         cmd = "%s --region=%s exec %s %s" % (
             cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
         log.debug("Using: %s", cmd)
 
         log.debug("Installing rclone to instance: %r", self.instance_id)
         resp = process.popen(cmd)
-        if not resp or 'setting up unzip' not in resp.lower():
+        if not resp or '/usr/bin/unzip' not in resp.lower():
             log.error("Unexpected response while installing unzip: %s", resp)
             self.destroy()
             return False
