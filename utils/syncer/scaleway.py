@@ -40,7 +40,14 @@ class Scaleway:
             log.error("You must provide an name for this instance")
             return False, None
 
-        if self.instance_destroy:
+        # check if instance exists
+        cmd = "%s ps -a" % cmd_quote(self.tool_path)
+        resp = process.popen(cmd)
+        if not resp or 'zone' not in resp.lower():
+            log.error("Unexpected response while checking if instance %s exists: %s", kwargs['name'], resp)
+            return False, self.instance_id
+
+        if self.instance_destroy or kwargs['name'].lower() not in resp.lower():
             # create instance
             cmd = "%s --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
                 cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['name']), cmd_quote(self.type),
