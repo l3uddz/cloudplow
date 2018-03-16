@@ -37,6 +37,8 @@ class Scaleway:
             self.image = kwargs['image']
         else:
             self.image = 'ubuntu-xenial'
+        # parse instance_destroy from kwargs (default True)
+        self.instance_destroy = kwargs['instance_destroy'] if 'instance_destroy' in kwargs else True
 
         log.info("Initialized Scaleway syncer agent for %s -> %s using tool: %r", self.sync_from_config['sync_remote'],
                  self.sync_to_config['sync_remote'], self.tool_path)
@@ -47,20 +49,35 @@ class Scaleway:
             log.error("You must provide an name for this instance")
             return False, None
 
-        # create instance
-        cmd = "%s --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['name']), cmd_quote(self.type),
-            cmd_quote(self.image))
-        log.debug("Using: %s", cmd)
+        if self.instance_destroy:
+            # create instance
+            cmd = "%s --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
+                cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['name']), cmd_quote(self.type),
+                cmd_quote(self.image))
+            log.debug("Using: %s", cmd)
 
-        log.debug("Creating new instance...")
-        resp = process.popen(cmd)
-        if not resp or 'failed' in resp.lower():
-            log.error("Unexpected response while creating instance: %s", resp)
-            return False, self.instance_id
+            log.debug("Creating new instance...")
+            resp = process.popen(cmd)
+            if not resp or 'failed' in resp.lower():
+                log.error("Unexpected response while creating instance: %s", resp)
+                return False, self.instance_id
+            else:
+                self.instance_id = resp
+            log.info("Created new instance: %r", self.instance_id)
         else:
-            self.instance_id = resp
-        log.info("Created new instance: %r", self.instance_id)
+            # start existing instance
+            cmd = "%s --region=%s start %s" % (
+                cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['name']))
+            log.debug("Using: %s", cmd)
+
+            log.debug("Starting instance...")
+            resp = process.popen(cmd)
+            if not resp or 'failed' in resp.lower():
+                log.error("Unexpected response while creating instance: %s", resp)
+                return False, self.instance_id
+            else:
+                self.instance_id = resp
+            log.info("Started existing instance: %r", self.instance_id)
 
         # wait for instance to finish booting
         log.info("Waiting for instance to finish booting...")
@@ -140,18 +157,33 @@ class Scaleway:
             log.error("Destroy was called, but no instance_id was found, aborting...")
             return False
 
-        # destroy the instance
-        cmd = "%s --region=%s rm -f %s" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id))
-        log.debug("Using: %s", cmd)
+        if self.instance_destroy:
+            # destroy the instance
+            cmd = "%s --region=%s rm -f %s" % (
+                cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id))
+            log.debug("Using: %s", cmd)
 
-        log.debug("Destroying instance: %r", self.instance_id)
-        resp = process.popen(cmd)
-        if not resp or self.instance_id.lower() not in resp.lower():
-            log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
-            return False
+            log.debug("Destroying instance: %r", self.instance_id)
+            resp = process.popen(cmd)
+            if not resp or self.instance_id.lower() not in resp.lower():
+                log.error("Unexpected response while destroying instance %r: %s", self.instance_id, resp)
+                return False
 
-        log.info("Destroyed instance: %r", self.instance_id)
+            log.info("Destroyed instance: %r", self.instance_id)
+        else:
+            # stop the instance
+            cmd = "%s --region=%s stop %s" % (
+                cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id))
+            log.debug("Using: %s", cmd)
+
+            log.debug("Stopping instance: %r", self.instance_id)
+            resp = process.popen(cmd)
+            if not resp or self.instance_id.lower() not in resp.lower():
+                log.error("Unexpected response while stopping instance %r: %s", self.instance_id, resp)
+                return False
+
+            log.info("Stopped instance: %r", self.instance_id)
+
         return True
 
     def sync(self, **kwargs):
