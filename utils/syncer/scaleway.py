@@ -94,7 +94,7 @@ class Scaleway:
         return True, self.instance_id
 
     def setup(self, **kwargs):
-        if not self.instance_id or '-' not in self.instance_id or kwargs['name'] not in self.instance_id:
+        if not self.instance_id or ('-' not in self.instance_id and kwargs['name'] not in self.instance_id):
             log.error("Setup was called, but no instance_id was found, aborting...")
             return False
         if 'rclone_config' not in kwargs:
@@ -151,7 +151,7 @@ class Scaleway:
         return True
 
     def destroy(self, **kwargs):
-        if not self.instance_id or '-' not in self.instance_id or kwargs['name'] not in self.instance_id:
+        if not self.instance_id or ('-' not in self.instance_id and kwargs['name'] not in self.instance_id):
             log.error("Destroy was called, but no instance_id was found, aborting...")
             return False
 
@@ -185,7 +185,7 @@ class Scaleway:
         return True
 
     def sync(self, **kwargs):
-        if not self.instance_id or '-' not in self.instance_id or kwargs['name'] not in self.instance_id:
+        if not self.instance_id or ('-' not in self.instance_id and kwargs['name'] not in self.instance_id):
             log.error("Sync was called, but no instance_id was found, aborting...")
             return False, None, None
         kwargs.update(self.kwargs)
