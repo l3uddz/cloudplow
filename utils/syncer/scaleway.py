@@ -23,20 +23,11 @@ class Scaleway:
         self.instance_id = None
 
         # parse region from kwargs (default France)
-        if 'region' in kwargs:
-            self.region = kwargs['region']
-        else:
-            self.region = 'par1'
+        self.region = kwargs['region'] if 'region' in kwargs else 'par1'
         # parse type from kwargs (default X64-2GB)
-        if 'type' in kwargs:
-            self.type = kwargs['type']
-        else:
-            self.type = 'X64-2GB'
+        self.type = kwargs['type'] if 'type' in kwargs else 'X64-2GB'
         # parse image from kwargs (default Ubuntu 16.04)
-        if 'image' in kwargs:
-            self.image = kwargs['image']
-        else:
-            self.image = 'ubuntu-xenial'
+        self.image = kwargs['image'] if 'image' in kwargs else 'ubuntu-xenial'
         # parse instance_destroy from kwargs (default True)
         self.instance_destroy = kwargs['instance_destroy'] if 'instance_destroy' in kwargs else True
 
