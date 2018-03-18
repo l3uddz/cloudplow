@@ -198,6 +198,18 @@ class Scaleway:
         resp, delayed_check, delayed_trigger = rclone.sync(self._wrap_command)
         log.info("Finished syncing for instance: %r", self.instance_id)
 
+        # copy rclone.conf back from instance (in-case refresh tokens were used)
+        cmd = "%s --region=%s cp %s:/root/.config/rclone/ %s" % (
+            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id),
+            cmd_quote(kwargs['rclone_config']))
+        log.debug("Using: %s", cmd)
+
+        log.debug("Copying rclone config from instance %r to: %r", self.instance_id, kwargs['rclone_config'])
+        resp = process.popen(cmd)
+        if resp is None or len(resp) >= 2:
+            log.error("Unexpected response while copying rclone config from instance: %s", resp)
+        log.info("Copied rclone.conf from instance")
+
         return resp, delayed_check, delayed_trigger
 
     # internals

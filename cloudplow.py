@@ -248,7 +248,8 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
 
                 # do sync
                 resp, resp_delay, resp_trigger = syncer.sync(service=sync_config['service'], instance_id=instance_id,
-                                                             dry_run=conf.configs['core']['dry_run'])
+                                                             dry_run=conf.configs['core']['dry_run'],
+                                                             rclone_config=conf.configs['core']['rclone_config_path'])
 
                 if not resp and not resp_delay:
                     log.error("Sync unexpectedly failed for syncer: %s", sync_name)
