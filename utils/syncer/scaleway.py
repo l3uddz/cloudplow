@@ -199,7 +199,7 @@ class Scaleway:
         log.info("Finished syncing for instance: %r", self.instance_id)
 
         # copy rclone.conf back from instance (in-case refresh tokens were used)
-        cmd = "%s --region=%s cp %s:/root/.config/rclone/ %s" % (
+        cmd = "%s --region=%s cp %s:/root/.config/rclone/rclone.conf %s" % (
             cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id),
             cmd_quote(kwargs['rclone_config']))
         log.debug("Using: %s", cmd)
