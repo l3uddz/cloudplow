@@ -211,10 +211,11 @@ class Scaleway:
         log.debug("Using: %s", cmd)
 
         log.debug("Copying rclone config from instance %r to: %r", self.instance_id, kwargs['rclone_config'])
-        resp = process.popen(cmd, shell=True)
-        if resp is None or len(resp) >= 2:
-            log.error("Unexpected response while copying rclone config from instance: %s", resp)
-        log.info("Copied rclone.conf from instance")
+        config_resp = process.popen(cmd, shell=True)
+        if config_resp is None or len(config_resp) >= 2:
+            log.error("Unexpected response while copying rclone config from instance: %s", config_resp)
+        else:
+            log.info("Copied rclone.conf from instance")
 
         return resp, delayed_check, delayed_trigger
 
