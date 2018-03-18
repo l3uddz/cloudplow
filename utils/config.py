@@ -111,12 +111,12 @@ class Config(object):
         'config': {
             'argv': '--config',
             'env': 'CLOUDPLOW_CONFIG',
-            'default': os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
+            'default': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'config.json')
         },
         'logfile': {
             'argv': '--logfile',
             'env': 'CLOUDPLOW_LOGFILE',
-            'default': os.path.join(os.path.dirname(sys.argv[0]), 'cloudplow.log')
+            'default': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'cloudplow.log')
         },
         'loglevel': {
             'argv': '--loglevel',
