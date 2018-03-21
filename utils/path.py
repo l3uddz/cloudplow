@@ -48,7 +48,7 @@ def find_files(folder, extension=None, depth=None):
                 if file.lower().endswith(extension.lower()):
                     file_list.append(file)
 
-    return file_list
+    return sorted(file_list, key=str.lower)
 
 
 def find_folders(folder, extension=None, depth=None):
@@ -64,7 +64,7 @@ def find_folders(folder, extension=None, depth=None):
                 folder_list.append(file)
             elif file.lower().endswith(extension.lower()):
                 folder_list.append(file)
-    return folder_list
+    return sorted(folder_list, key=str.lower)
 
 
 def opened_files(path):
