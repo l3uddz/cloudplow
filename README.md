@@ -30,7 +30,8 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 ```
 {
     "core": {
-        "dry_run": false
+        "dry_run": false,
+        "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
     },
     "hidden": {
         "/mnt/local/.unionfs-fuse": {
@@ -56,37 +57,84 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
                 ".unionfs-fuse/**"
             ],
             "rclone_extras": {
-                "--checkers": 8,
+                "--checkers": 16,
                 "--drive-chunk-size": "64M",
                 "--no-traverse": null,
                 "--stats": "60s",
-                "--transfers": 4,
+                "--transfers": 8,
                 "--verbose": 1
             },
             "rclone_sleeps": {
-                "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+                "Error 403: User rate limit exceeded": {
                     "count": 5,
                     "sleep": 25,
-                    "timeout": 300
+                    "timeout": 3600
                 }
             },
-            "remove_empty_dir_depth": 1,
-            "upload_folder": "/mnt/local/Media/",
-            "upload_remote": "google:/Media/"
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "google:/Backups",
+            "upload_folder": "/mnt/local/Media",
+            "upload_remote": "google:/Media"
         },
+        "box": {
+          "hidden_remote": "box:",
+          "rclone_excludes": [
+            "**partial~",
+            "**_HIDDEN~",
+            ".unionfs/**",
+            ".unionfs-fuse/**"
+          ],
+          "rclone_extras": {
+            "--checkers": 32,
+            "--no-traverse": null,
+            "--stats": "60s",
+            "--transfers": 16,
+            "--verbose": 1
+          },
+          "rclone_sleeps": {
+            "Error 403: User rate limit exceeded22": {
+              "count": 5,
+              "sleep": 25,
+              "timeout": 300
+            }
+          },
+          "remove_empty_dir_depth": 2,
+          "sync_remote": "box:/Backups",
+          "upload_folder": "/mnt/local/Media",
+          "upload_remote": "box:/Media"
+        }
+    },
+    "syncer": {
+        "google2box": {
+            "rclone_extras": {
+                "--bwlimit": "80M",
+                "--checkers": 32,
+                "--drive-chunk-size": "64M",
+                "--stats": "60s",
+                "--transfers": 16,
+                "--verbose": 1
+            },
+            "service": "scaleway",
+            "sync_from": "google",
+            "sync_interval": 24,
+            "sync_to": "box",
+            "tool_path": "/home/seed/go/bin/scw",
+            "use_copy": true,
+            "instance_destroy": false
+          }
     },
     "uploader": {
         "google": {
             "check_interval": 30,
             "exclude_open_files": true,
-            "max_size_gb": 500,
+            "max_size_gb": 400,
             "opened_excludes": [
                 "/downloads/"
             ],
             "size_excludes": [
                 "downloads/*"
             ]
-          }
+        }
     }
 }
 ```
@@ -96,7 +144,8 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 
 ```
     "core": {
-        "dry_run": false
+        "dry_run": false,
+	    "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
     },
 ```
 
