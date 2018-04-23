@@ -2,7 +2,7 @@
 
 [Unit]
 Description=cloudplow
-After=network-online.target unionfs.service
+After=network-online.target
 
 [Service]
 User=seed
