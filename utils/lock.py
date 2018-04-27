@@ -5,7 +5,7 @@ import sys
 import lockfile
 
 log = logging.getLogger("lock")
-lock_folder = os.path.join(os.path.dirname(sys.argv[0]), 'locks')
+lock_folder = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'locks')
 
 
 def ensure_lock_folder():
