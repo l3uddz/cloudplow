@@ -13,9 +13,14 @@
 - [Usage](#usage)
 	- [Automatic (Scheduled)](#automatic-scheduled)
 	- [Manual (CLI)](#manual-cli)
-- [Feature Requests](#feature-requests)
 
 <!-- /TOC -->
+
+---
+
+ [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE)
+[![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/cloudplow)
+[![Discord](https://img.shields.io/discord/381077432285003776.svg)](https://discord.gg/xmNYmSJ)
 
 
 # Cloudplow
@@ -383,7 +388,3 @@ optional arguments:
   --loglevel {WARN,INFO,DEBUG}
                         Log level (default: INFO)
 ```
-
-# Feature Requests
-
-[![Feature Requests](http://feathub.com/l3uddz/cloudplow?format=svg)](http://feathub.com/l3uddz/cloudplow)
