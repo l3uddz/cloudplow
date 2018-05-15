@@ -84,6 +84,13 @@ Cloudplow has 3 main functions:
             "app_token": "",
             "service": "pushover",
             "user_token": ""
+        },
+        "Slack": {
+            "webhook_url": "",
+            "sender_name": "cloudplow",
+            "sender_icon": ":heavy_exclamation_mark:"
+            "channel": "",
+            "service": "slack"
         }
     },
     "remotes": {
@@ -232,6 +239,16 @@ Currently, only Pushover is supported. But more will be added later.
 Retrieve `app_token` and `user_token` from Pushover.net and fill it in.
 
 Note: The key name (e.g. `"Pushover":`) can be anything, but the `"service":` must be  `"pushover"`,
+
+### Slack
+
+Retrieve the `webhook_url` when registering your webhook to Slack
+(via https://my.slack.com/services/new/incoming-webhook/).
+
+You can use `sender_name`, `sender_icon` and `channel` to specify settings
+for your webhook. You can however leave these out and use the defaults.
+
+Note: The key name (e.g. `"Slack":`) can be anything, but the `"service":` must be  `"slack"`,
 
 
 ## Remotes
