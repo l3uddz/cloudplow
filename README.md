@@ -251,9 +251,9 @@ Note: The key name can be anything (e.g. `"Pushover":`) , but the `"service"` mu
     "notifications": {
         "Slack": {
             "webhook_url": "",
-						"sender_name": "cloudplow",
-						"sender_icon": ":heavy_exclamation_mark:",
-						"channel": "",
+	    "sender_name": "cloudplow",
+	    "sender_icon": ":heavy_exclamation_mark:",
+	    "channel": "",
             "service": "slack"
         }
     },
