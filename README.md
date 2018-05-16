@@ -1,6 +1,14 @@
+# Cloudplow
+
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE)
+[![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/cloudplow)
+[![Discord](https://img.shields.io/discord/381077432285003776.svg)](https://discord.gg/xmNYmSJ)
+
+---
+
 <!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-- [Cloudplow](#cloudplow)
+- [Introduction](#introduction)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -18,12 +26,9 @@
 
 ---
 
- [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE)
-[![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/cloudplow)
-[![Discord](https://img.shields.io/discord/381077432285003776.svg)](https://discord.gg/xmNYmSJ)
 
 
-# Cloudplow
+# Introduction
 
 Cloudplow has 3 main functions:
 
@@ -88,7 +93,7 @@ Cloudplow has 3 main functions:
         "Slack": {
             "webhook_url": "",
             "sender_name": "cloudplow",
-            "sender_icon": ":heavy_exclamation_mark:"
+            "sender_icon": ":heavy_exclamation_mark:",
             "channel": "",
             "service": "slack"
         }
@@ -222,6 +227,10 @@ The specific remote path, where those corresponding files are, will be specified
 Notification alerts during tasks.
 
 
+Currently, only Pushover and Slack are supported. But more will be added later.
+
+### Pushover
+
 ```
     "notifications": {
         "Pushover": {
@@ -232,15 +241,23 @@ Notification alerts during tasks.
     },
 ```
 
-Currently, only Pushover is supported. But more will be added later.
-
-### Pushover
-
 Retrieve `app_token` and `user_token` from Pushover.net and fill it in.
 
-Note: The key name (e.g. `"Pushover":`) can be anything, but the `"service":` must be  `"pushover"`,
+Note: The key name can be anything (e.g. `"Pushover":`) , but the `"service"` must be  `"pushover"`,
 
 ### Slack
+
+```
+		"notifications": {
+				"Slack": {
+						"webhook_url": "",
+						"sender_name": "cloudplow",
+						"sender_icon": ":heavy_exclamation_mark:",
+						"channel": "",
+						"service": "slack"
+				}
+		},
+```
 
 Retrieve the `webhook_url` when registering your webhook to Slack
 (via https://my.slack.com/services/new/incoming-webhook/).
@@ -248,7 +265,7 @@ Retrieve the `webhook_url` when registering your webhook to Slack
 You can use `sender_name`, `sender_icon` and `channel` to specify settings
 for your webhook. You can however leave these out and use the defaults.
 
-Note: The key name (e.g. `"Slack":`) can be anything, but the `"service":` must be  `"slack"`,
+Note: The key name can be anything (e.g. `"Slack":`) , but the `"service"` must be  `"slack"`,
 
 
 ## Remotes
@@ -380,8 +397,11 @@ In the example above, the remote `"google"` is being referenced from the `remote
 To have Cloudplow run automatically, do the following:
 
 1. `sudo cp /opt/cloudplow/systemd/cloudplow.service /etc/systemd/system/`
+
 2. `sudo systemctl daemon-reload`
+
 3. `sudo systemctl enable cloudplow.service`
+
 4. `sudo systemctl start cloudplow.service`
 
 ## Manual (CLI)
