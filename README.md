@@ -248,15 +248,15 @@ Note: The key name can be anything (e.g. `"Pushover":`) , but the `"service"` mu
 ### Slack
 
 ```
-		"notifications": {
-				"Slack": {
-						"webhook_url": "",
+    "notifications": {
+        "Slack": {
+            "webhook_url": "",
 						"sender_name": "cloudplow",
 						"sender_icon": ":heavy_exclamation_mark:",
 						"channel": "",
-						"service": "slack"
-				}
-		},
+            "service": "slack"
+        }
+    },
 ```
 
 Retrieve the `webhook_url` when registering your webhook to Slack
