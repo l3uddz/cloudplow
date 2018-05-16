@@ -243,7 +243,7 @@ Currently, only Pushover and Slack are supported. But more will be added later.
 
 Retrieve `app_token` and `user_token` from Pushover.net and fill it in.
 
-Note: The key name can be anything (e.g. `"Pushover":`) , but the `"service"` must be  `"pushover"`,
+Note: The key name can be anything (e.g. `"Pushover":`), however, the `"service"` must be `"pushover"`.
 
 ### Slack
 
@@ -265,7 +265,7 @@ Retrieve the `webhook_url` when registering your webhook to Slack
 You can use `sender_name`, `sender_icon` and `channel` to specify settings
 for your webhook. You can however leave these out and use the defaults.
 
-Note: The key name can be anything (e.g. `"Slack":`) , but the `"service"` must be  `"slack"`,
+Note: The key name can be anything (e.g. `"Slack":`), however, the `"service"` must be `"slack"`.
 
 
 ## Remotes
