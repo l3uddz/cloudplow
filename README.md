@@ -1,26 +1,69 @@
-
 # Cloudplow
-Automatic rclone remote uploader, with support for multiple remote/folder pairings.  UnionFS Cleaner functionality: Deletion of UnionFS whiteout files  and their corresponding files on rclone remotes. Automatic remote syncer: Sync between different remotes via a Scaleway server instance, that is created and destroyed at every sync.
+
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE)
+[![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/cloudplow)
+[![Discord](https://img.shields.io/discord/381077432285003776.svg)](https://discord.gg/xmNYmSJ)
+
+---
+
+<!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [Introduction](#introduction)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+	- [Sample config.json](#sample-configjson)
+	- [Core](#core)
+	- [Hidden](#hidden)
+	- [Notifications](#notifications)
+	- [Remotes](#remotes)
+	- [Uploader](#uploader)
+- [Usage](#usage)
+	- [Automatic (Scheduled)](#automatic-scheduled)
+	- [Manual (CLI)](#manual-cli)
+
+<!-- /TOC -->
+
+---
+
+
+
+# Introduction
+
+Cloudplow has 3 main functions:
+
+1. Automatic uploader to Rclone remote : Files are moved off local storage. With support for multiple uploaders (i.e. remote/folder pairings).
+
+2. UnionFS Cleaner functionality: Deletion of UnionFS-Fuse whiteout files (*_HIDDEN~) and their corresponding "whited-out" files on Rclone remotes. With support for multiple remotes (useful if you have multiple Rclone remotes mounted).
+
+3. Automatic remote syncer: Sync between two different Rclone remotes using 3rd party VM instances. With support for multiple remote/folder pairings. With support for multiple syncers (i.e. remote/remote pairings).
 
 
 # Requirements
-1. Python 3.5 or higher (`sudo apt install python3 python3-pip`).
-2. requirements.txt modules (see below).
 
-# Installation on Ubuntu/Debian
+1. Ubuntu/Debian
+
+2. Python 3.5 or higher (`sudo apt install python3 python3-pip`).
+
+3. requirements.txt modules (see below).
+
+# Installation
 
 1. `cd /opt`
-3. `sudo git clone https://github.com/l3uddz/cloudplow`
-4. `sudo chown -R user:group cloudplow` (run `id` to find your user / group)
-5. `cd cloudplow`
-6. `sudo python3 -m pip install -r requirements.txt`
-7. `sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow`
-7. `cloudplow` - run once to generate a default config.json file.
-8. Edit config.json to your preference.
-9. `sudo cp /opt/cloudplow/systemd/cloudplow.service /etc/systemd/system/`
-10. `sudo systemctl daemon-reload`
-11. `sudo systemctl enable cloudplow.service`
-12. `sudo systemctl start cloudplow.service`
+
+1. `sudo git clone https://github.com/l3uddz/cloudplow`
+
+1. `sudo chown -R user:group cloudplow` (run `id` to find your user / group)
+
+1. `cd cloudplow`
+
+1. `sudo python3 -m pip install -r requirements.txt`
+
+1. `sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow`
+
+1. `cloudplow` - run once to generate a default config.json file.
+
+1. `nano config.json` - edit preferences.
 
 
 # Configuration
@@ -28,7 +71,7 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
 
 ## Sample config.json
 
-```
+```json
 {
     "core": {
         "dry_run": false,
@@ -46,6 +89,13 @@ Automatic rclone remote uploader, with support for multiple remote/folder pairin
             "app_token": "",
             "service": "pushover",
             "user_token": ""
+        },
+        "Slack": {
+            "webhook_url": "",
+            "sender_name": "cloudplow",
+            "sender_icon": ":heavy_exclamation_mark:",
+            "channel": "",
+            "service": "slack"
         }
     },
     "remotes": {
@@ -177,6 +227,10 @@ The specific remote path, where those corresponding files are, will be specified
 Notification alerts during tasks.
 
 
+Currently, only Pushover and Slack are supported. But more will be added later.
+
+### Pushover
+
 ```
     "notifications": {
         "Pushover": {
@@ -187,13 +241,31 @@ Notification alerts during tasks.
     },
 ```
 
-Currently, only Pushover is supported. But more will be added later.
-
-### Pushover
-
 Retrieve `app_token` and `user_token` from Pushover.net and fill it in.
 
-Note: The key name (e.g. `"Pushover":`) can be anything, but the `"service":` must be  `"pushover"`,
+Note: The key name can be anything (e.g. `"Pushover":`), however, the `"service"` must be `"pushover"`.
+
+### Slack
+
+```
+    "notifications": {
+        "Slack": {
+            "webhook_url": "",
+	    "sender_name": "cloudplow",
+	    "sender_icon": ":heavy_exclamation_mark:",
+	    "channel": "",
+            "service": "slack"
+        }
+    },
+```
+
+Retrieve the `webhook_url` when registering your webhook to Slack
+(via https://my.slack.com/services/new/incoming-webhook/).
+
+You can use `sender_name`, `sender_icon` and `channel` to specify settings
+for your webhook. You can however leave these out and use the defaults.
+
+Note: The key name can be anything (e.g. `"Slack":`), however, the `"service"` must be `"slack"`.
 
 
 ## Remotes
@@ -316,3 +388,49 @@ In the example above, the remote `"google"` is being referenced from the `remote
 `"opened_excludes"`: Paths the open file checker will check for when searching for open files. In the example above, any open files with `/downloads/` in it's path, would be ignored.
 
 `"size_excludes"`: Paths that will not be counted in the total size calculation for `max_size_gb`.
+
+
+# Usage
+
+## Automatic (Scheduled)
+
+To have Cloudplow run automatically, do the following:
+
+1. `sudo cp /opt/cloudplow/systemd/cloudplow.service /etc/systemd/system/`
+
+2. `sudo systemctl daemon-reload`
+
+3. `sudo systemctl enable cloudplow.service`
+
+4. `sudo systemctl start cloudplow.service`
+
+## Manual (CLI)
+
+Command:
+```
+cloudplow
+```
+
+```
+usage: cloudplow [-h] [--config [CONFIG]] [--logfile [LOGFILE]]
+                 [--loglevel {WARN,INFO,DEBUG}]
+                 {clean,upload,sync,run}
+
+Script to assist cloud mount users.
+Can remove hidden files from rclone remotes, upload local content to remotes as-well as keeping remotes
+in sync with the assistance of Scaleway.
+
+positional arguments:
+  {clean,upload,sync,run}
+                        "clean": clean HIDDEN files from configured unionfs mounts and rclone remotes
+                        "upload": perform clean and upload local content to configured chosen unionfs rclone remotes
+                        "sync": perform sync of configured remotes
+                        "run": starts the application
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --config [CONFIG]     Config file location (default: /opt/cloudplow/config.json)
+  --logfile [LOGFILE]   Log file location (default: /opt/cloudplow/cloudplow.log)
+  --loglevel {WARN,INFO,DEBUG}
+                        Log level (default: INFO)
+```
