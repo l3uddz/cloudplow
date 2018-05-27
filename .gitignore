@@ -27,3 +27,6 @@ __pycache__/
 
 # locks
 locks/*
+
+# Venv
+venv/*
