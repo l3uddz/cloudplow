@@ -64,8 +64,7 @@ class Config(object):
                     '--transfers': 8,
                     '--checkers': 16,
                     '--stats': '60s',
-                    '--verbose': 1,
-                    '--no-traverse': None
+                    '--verbose': 1
                 },
                 'rclone_sleeps': {
                     'Failed to copy: googleapi: Error 403: User rate limit exceeded': {
@@ -79,31 +78,9 @@ class Config(object):
         },
         # syncer settings
         'syncer': {
-            'google2amzn': {
-                'service': 'scaleway',
-                'tool_path': '/home/seed/go/bin/scw',
-                'sync_from': 'google',
-                'sync_to': 'amzn',
-                'sync_interval': 24,
-                'use_copy': True,
-                'instance_destroy': True,
-                'rclone_extras': {
-                    '--drive-chunk-size': '64M',
-                    '--transfers': 16,
-                    '--checkers': 32,
-                    '--stats': '60s',
-                    '--verbose': 1,
-                    '--bwlimit': '80M'
-                }
-            }
         },
         # notification settings
         'notifications': {
-            'Pushover': {
-                'service': 'pushover',
-                'app_token': 'app token goes here',
-                'user_token': 'user token goes here'
-            }
         }
     }
 
