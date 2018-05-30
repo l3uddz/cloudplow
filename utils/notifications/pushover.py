@@ -9,7 +9,7 @@ log = logging.getLogger("pushover")
 class Pushover:
     NAME = "Pushover"
 
-    def __init__(self, app_token, user_token, priority):
+    def __init__(self, app_token, user_token, priority=0):
         self.app_token = app_token
         self.user_token = user_token
         self.priority = priority
