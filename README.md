@@ -88,7 +88,8 @@ Cloudplow has 3 main functions:
         "Pushover": {
             "app_token": "",
             "service": "pushover",
-            "user_token": ""
+            "user_token": "",
+            "priority": "0"
         },
         "Slack": {
             "webhook_url": "",
@@ -236,12 +237,15 @@ Currently, only Pushover and Slack are supported. But more will be added later.
         "Pushover": {
             "app_token": "",
             "service": "pushover",
-            "user_token": ""
+            "user_token": "",
+            "priority": 0
         }
     },
 ```
 
 Retrieve `app_token` and `user_token` from Pushover.net and fill it in.
+
+You can specify a priority for the messages send via Pushover using the `priority` key. It can be any Pushover priority value (https://pushover.net/api#priority)
 
 Note: The key name can be anything (e.g. `"Pushover":`), however, the `"service"` must be `"pushover"`.
 
