@@ -176,7 +176,8 @@ def do_upload(remote=None):
                     path.get_size(rclone_config['upload_folder'], uploader_config['size_excludes']), uploader_remote))
 
                 # perform the upload
-                uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'])
+                uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'],
+                                    conf.configs['core']['rclone_config_path'])
                 resp, resp_trigger = uploader.upload()
 
                 if resp:
@@ -306,7 +307,8 @@ def do_hidden():
         try:
             # loop each supplied hidden folder
             for hidden_folder, hidden_config in conf.configs['hidden'].items():
-                hidden = UnionfsHiddenFolder(hidden_folder, conf.configs['core']['dry_run'])
+                hidden = UnionfsHiddenFolder(hidden_folder, conf.configs['core']['dry_run'],
+                                             conf.configs['core']['rclone_config_path'])
 
                 # loop the chosen remotes for this hidden config cleaning files
                 for hidden_remote_name in hidden_config['hidden_remotes']:

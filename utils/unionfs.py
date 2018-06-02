@@ -7,11 +7,12 @@ log = logging.getLogger('unionfs')
 
 
 class UnionfsHiddenFolder:
-    def __init__(self, hidden_folder, dry_run):
+    def __init__(self, hidden_folder, dry_run, rclone_config_path):
         self.unionfs_fuse = hidden_folder
         self.dry_run = dry_run
         self.hidden_files = self.__files()
         self.hidden_folders = self.__folders()
+        self.rclone_config_path = rclone_config_path
 
     def clean_remote(self, name, remote):
         """
@@ -25,7 +26,7 @@ class UnionfsHiddenFolder:
         delete_failed = 0
 
         try:
-            rclone = RcloneUploader(name, remote, self.dry_run)
+            rclone = RcloneUploader(name, remote, self.rclone_config_path, self.dry_run)
 
             # clean hidden files from remote
             if self.hidden_files:
