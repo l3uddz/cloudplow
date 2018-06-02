@@ -12,16 +12,17 @@ log = logging.getLogger('rclone')
 
 
 class RcloneUploader:
-    def __init__(self, name, config, dry_run=False):
+    def __init__(self, name, config, rclone_config_path, dry_run=False):
         self.name = name
         self.config = config
+        self.rclone_config_path = rclone_config_path
         self.dry_run = dry_run
 
     def delete_file(self, path):
         try:
             log.debug("Deleting file '%s' from remote %s", path, self.name)
             # build cmd
-            cmd = "rclone delete %s" % cmd_quote(path)
+            cmd = "rclone delete %s --config=%s" % (cmd_quote(path), cmd_quote(self.rclone_config_path))
             if self.dry_run:
                 cmd += ' --dry-run'
 
@@ -40,7 +41,7 @@ class RcloneUploader:
         try:
             log.debug("Deleting folder '%s' from remote %s", path, self.name)
             # build cmd
-            cmd = "rclone rmdir %s" % cmd_quote(path)
+            cmd = "rclone rmdir %s --config=%s" % (cmd_quote(path), cmd_quote(self.rclone_config_path))
             if self.dry_run:
                 cmd += ' --dry-run'
 
@@ -59,8 +60,9 @@ class RcloneUploader:
         try:
             log.debug("Uploading '%s' to '%s'", self.config['upload_folder'], self.config['upload_remote'])
             # build cmd
-            cmd = "rclone move %s %s" % (
-                cmd_quote(self.config['upload_folder']), cmd_quote(self.config['upload_remote']))
+            cmd = "rclone move %s %s --config=%s" % (
+                cmd_quote(self.config['upload_folder']), cmd_quote(self.config['upload_remote']),
+                cmd_quote(self.rclone_config_path))
 
             extras = self.__extras2string()
             if len(extras) > 2:
