@@ -1,5 +1,5 @@
 import logging
-
+import os
 import sys
 
 try:
@@ -9,7 +9,7 @@ except ImportError:
 
 log = logging.getLogger("git")
 
-repo = Repo.init()
+repo = Repo.init(os.path.dirname(os.path.realpath(sys.argv[0])))
 
 
 def active_branch():
