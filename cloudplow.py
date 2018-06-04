@@ -38,7 +38,8 @@ conf = config.Config()
 file_handler = RotatingFileHandler(
     conf.settings['logfile'],
     maxBytes=1024 * 1024 * 5,
-    backupCount=5
+    backupCount=5,
+    encoding='utf-8'
 )
 file_handler.setFormatter(log_formatter)
 root_logger.addHandler(file_handler)
