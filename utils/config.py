@@ -23,7 +23,7 @@ class Config(object):
     base_config = {
         # core settings
         'core': {
-            'dry_run': True,
+            'dry_run': False,
             'rclone_config_path': '/home/seed/.config/rclone/rclone.conf'
         },
         # hidden cleaner settings
@@ -36,7 +36,7 @@ class Config(object):
         'uploader': {
             'google': {
                 'check_interval': 30,
-                'max_size_gb': 400,
+                'max_size_gb': 200,
                 'size_excludes': [
                     'downloads/*'
                 ],
