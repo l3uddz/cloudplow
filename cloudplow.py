@@ -6,7 +6,9 @@ import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Manager, Process
 
+import requests
 import schedule
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from utils import config, lock, path, decorators, version, misc
 from utils.notifications import Notifications
@@ -31,6 +33,7 @@ root_logger.setLevel(logging.INFO)
 logging.getLogger('schedule').setLevel(logging.ERROR)
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Set console logger
 console_handler = logging.StreamHandler(sys.stdout)
