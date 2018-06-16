@@ -48,6 +48,7 @@ class Config(object):
             'url': 'https://plex.domain.com',
             'token': '',
             'poll_interval': 60,
+            'max_streams_before_throttle': 1,
             'rclone': {
                 'url': 'http://localhost:5572',
                 'throttle_speed': '3M'

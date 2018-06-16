@@ -374,19 +374,21 @@ def do_plex_monitor():
             # we had a response
             stream_count = len(streams)
             # are we already throttled?
-            if not throttled and stream_count:
+            if not throttled and stream_count >= conf.configs['plex']['max_streams_before_throttle']:
                 log.info("There were %d Plex streams found while we were currently un-throttled, streams: %s",
                          stream_count, pprint.pprint(streams))
                 # send throttle request
                 throttled = rclone.throttle(conf.configs['plex']['rclone']['throttle_speed'])
-            elif throttled and stream_count:
-                log.info("There were %d Plex streams found while we were already throttled, throttling will continue",
-                         stream_count)
-            elif throttled and not stream_count:
-                log.info(
-                    "There were NO Plex streams found while we were currently throttled, throttle is being removed!")
-                # send un-throttle request
-                throttled = not rclone.no_throttle()
+            elif throttled:
+                if stream_count < conf.configs['max_streams_before_throttle']:
+                    log.info(
+                        "There were less than %d Plex streams found while we were currently throttled, throttle is "
+                        "being removed!", conf.configs['plex']['max_streams_before_throttle'])
+                    # send un-throttle request
+                    throttled = not rclone.no_throttle()
+                else:
+                    log.info("There were %d Plex streams found while we were already throttled, throttling will "
+                             "continue", stream_count)
 
         # the lock_file exists, so we can assume an upload is in progress at this point
         time.sleep(conf.configs['plex']['poll_interval'])
