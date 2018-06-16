@@ -1,5 +1,8 @@
 import logging
 import time
+from urllib.parse import urljoin
+
+import requests
 
 from . import process, misc
 
@@ -12,11 +15,12 @@ log = logging.getLogger('rclone')
 
 
 class RcloneUploader:
-    def __init__(self, name, config, rclone_config_path, dry_run=False):
+    def __init__(self, name, config, rclone_config_path, dry_run=False, use_rc=False):
         self.name = name
         self.config = config
         self.rclone_config_path = rclone_config_path
         self.dry_run = dry_run
+        self.use_rc = use_rc
 
     def delete_file(self, path):
         try:
@@ -72,6 +76,8 @@ class RcloneUploader:
                 cmd += ' %s' % excludes
             if self.dry_run:
                 cmd += ' --dry-run'
+            if self.use_rc:
+                cmd += ' --rc'
 
             # exec
             log.debug("Using: %s", cmd)
@@ -190,3 +196,52 @@ class RcloneSyncer:
         return ' '.join(
             "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in
             self.rclone_extras.items()).replace('=None', '').strip()
+
+
+class RcloneThrottler:
+    def __init__(self, url):
+        self.url = url
+
+    def validate(self):
+        success = False
+        payload = {'validated': True}
+        try:
+            resp = requests.post(urljoin(self.url, 'rc/noop'), json=payload, timeout=15, verify=False)
+            if '{' in resp.text and '}' in resp.text:
+                data = resp.json()
+                success = data['validated']
+        except Exception:
+            log.exception("Exception validating rc url at %s: ", self.url)
+        return success
+
+    def throttle(self, speed):
+        success = False
+        payload = {'rate': speed}
+        try:
+            resp = requests.post(urljoin(self.url, 'core/bwlimit'), json=payload, timeout=15, verify=False)
+            if '{' in resp.text and '}' in resp.text:
+                data = resp.json()
+                if 'error' in data:
+                    log.info("Failed to throttle at %s: %s", self.url, data['error'])
+                elif ('status' in data and 'message' in data) and data['status'] == 'ok':
+                    log.info("Successfully throttled at %s to: ", self.url, speed)
+                    success = True
+        except Exception:
+            log.exception("Exception sending throttle request to %s: ", self.url)
+        return success
+
+    def no_throttle(self):
+        success = False
+        payload = {'rate': 'off'}
+        try:
+            resp = requests.post(urljoin(self.url, 'core/bwlimit'), json=payload, timeout=15, verify=False)
+            if '{' in resp.text and '}' in resp.text:
+                data = resp.json()
+                if 'error' in data:
+                    log.info("Failed to un-throttle at %s: %s", self.url, data['error'])
+                elif ('status' in data and 'message' in data) and data['status'] == 'ok':
+                    log.info("Successfully un-throttled at %s", self.url)
+                    success = True
+        except Exception:
+            log.exception("Exception sending un-throttle request to %s: ", self.url)
+        return success

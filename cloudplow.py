@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import pprint
 import sys
 import time
 from logging.handlers import RotatingFileHandler
@@ -9,7 +10,10 @@ import schedule
 
 from utils import config, lock, path, decorators, version, misc
 from utils.notifications import Notifications
+from utils.plex import Plex
+from utils.rclone import RcloneThrottler
 from utils.syncer import Syncer
+from utils.threads import Thread
 from utils.unionfs import UnionfsHiddenFolder
 from utils.uploader import Uploader
 
@@ -25,6 +29,8 @@ root_logger.setLevel(logging.INFO)
 
 # Set schedule logger to ERROR
 logging.getLogger('schedule').setLevel(logging.ERROR)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 # Set console logger
 console_handler = logging.StreamHandler(sys.stdout)
@@ -59,6 +65,9 @@ syncer = Syncer(conf.configs)
 
 # Ensure lock folder exists
 lock.ensure_lock_folder()
+
+# Init thread class
+thread = Thread()
 
 # Logic vars
 uploader_delay = None
@@ -178,9 +187,12 @@ def do_upload(remote=None):
 
                 # perform the upload
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'],
-                                    conf.configs['core']['rclone_config_path'])
-                resp, resp_trigger = uploader.upload()
+                                    conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
+                # start the plex stream monitor before the upload begins if enabled
+                if conf.configs['plex']['enabled']:
+                    thread.start(do_plex_monitor, 'plex-monitor')
 
+                resp, resp_trigger = uploader.upload()
                 if resp:
                     # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
                     log.info(
@@ -333,6 +345,53 @@ def do_hidden():
             log.exception("Exception occurred while cleaning hiddens: ")
 
     log.info("Finished hidden cleaning")
+
+
+@decorators.timed
+def do_plex_monitor():
+    # create the plex object
+    plex = Plex(conf.configs['plex']['url'], conf.configs['plex']['token'])
+    if not plex.validate():
+        log.error("Aborting Plex stream monitor due to failure to validate supplied server url/token...")
+        return
+
+    # create the rclone throttle object
+    rclone = RcloneThrottler(conf.configs['plex']['rclone']['url'])
+    if not rclone.validate():
+        log.error("Aborting Plex stream monitor due to failure to validate supplied rclone rc url...")
+        return
+    else:
+        log.info("Plex streams monitor & upload throttler has now started...")
+
+    throttled = False
+    lock_file = lock.upload()
+    while lock_file.is_locked():
+        streams = plex.get_streams()
+        if streams is None:
+            log.error("Failed to check Plex streams, trying again in %d seconds...",
+                      conf.configs['plex']['poll_interval'])
+        else:
+            # we had a response
+            stream_count = len(streams)
+            # are we already throttled?
+            if not throttled and stream_count:
+                log.info("There were %d Plex streams found while we were currently un-throttled, streams: %s",
+                         stream_count, pprint.pprint(streams))
+                # send throttle request
+                throttled = rclone.throttle(conf.configs['plex']['rclone']['throttle_speed'])
+            elif throttled and stream_count:
+                log.info("There were %d Plex streams found while we were already throttled, throttling will continue",
+                         stream_count)
+            elif throttled and not stream_count:
+                log.info(
+                    "There were NO Plex streams found while we were currently throttled, throttle is being removed!")
+                # send un-throttle request
+                throttled = not rclone.no_throttle()
+
+        # the lock_file exists, so we can assume an upload is in progress at this point
+        time.sleep(conf.configs['plex']['poll_interval'])
+
+    log.info("Finished monitoring Plex streams!")
 
 
 ############################################################

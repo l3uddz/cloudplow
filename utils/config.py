@@ -41,6 +41,17 @@ class Config(object):
         },
         # notification settings
         'notifications': {
+        },
+        # plex settings
+        'plex': {
+            'enabled': False,
+            'url': 'https://plex.domain.com',
+            'token': '',
+            'poll_interval': 60,
+            'rclone': {
+                'url': 'http://localhost:5572',
+                'throttle_speed': '3M'
+            }
         }
     }
 
