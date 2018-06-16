@@ -356,7 +356,7 @@ def do_plex_monitor():
         return
 
     # sleep 15 seconds to allow rclone to start
-    log.info("Plex streams monitor & upload throttler will start monitoring in 15 seconds...")
+    log.info("Plex server url + token were validated, sleeping 15 seconds before checking Rclone rc url...")
     time.sleep(15)
 
     # create the rclone throttle object
@@ -365,7 +365,7 @@ def do_plex_monitor():
         log.error("Aborting Plex stream monitor due to failure to validate supplied rclone rc url...")
         return
     else:
-        log.info("Plex server url + token and Rclone url were validated, monitoring will begin now!")
+        log.info("Rclone rc url was validated, Plex streams monitoring will begin now!")
 
     throttled = False
     lock_file = lock.upload()
