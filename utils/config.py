@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import sys
+from copy import copy
 
 log = logging.getLogger('config')
 
@@ -28,53 +29,12 @@ class Config(object):
         },
         # hidden cleaner settings
         'hidden': {
-            '/mnt/local/.unionfs-fuse': {
-                'hidden_remotes': ['google']
-            }
         },
         # uploader settings
         'uploader': {
-            'google': {
-                'check_interval': 30,
-                'max_size_gb': 200,
-                'size_excludes': [
-                    'downloads/*'
-                ],
-                'opened_excludes': [
-                    '/downloads/'
-                ],
-                'exclude_open_files': True
-            }
         },
         # rclone settings
         'remotes': {
-            'google': {
-                'upload_folder': '/mnt/local/Media',
-                'upload_remote': 'google:/Media',
-                'hidden_remote': 'google:',
-                'sync_remote': 'google:/Media',
-                'rclone_excludes': [
-                    '**partial~',
-                    '**_HIDDEN~',
-                    '.unionfs/**',
-                    '.unionfs-fuse/**',
-                ],
-                'rclone_extras': {
-                    '--drive-chunk-size': '64M',
-                    '--transfers': 8,
-                    '--checkers': 16,
-                    '--stats': '60s',
-                    '--verbose': 1
-                },
-                'rclone_sleeps': {
-                    'Failed to copy: googleapi: Error 403: User rate limit exceeded': {
-                        'count': 5,
-                        'timeout': 3600,
-                        'sleep': 25
-                    }
-                },
-                'remove_empty_dir_depth': 2
-            }
         },
         # syncer settings
         'syncer': {
@@ -110,6 +70,116 @@ class Config(object):
         # Configs
         self.configs = None
 
+    @property
+    def default_config(self):
+        cfg = self.base_config.copy()
+
+        # add example remote
+        cfg['remotes'] = {
+            'google': {
+                'upload_folder': '/mnt/local/Media',
+                'upload_remote': 'google:/Media',
+                'hidden_remote': 'google:',
+                'sync_remote': 'google:/Media',
+                'rclone_excludes': [
+                    '**partial~',
+                    '**_HIDDEN~',
+                    '.unionfs/**',
+                    '.unionfs-fuse/**',
+                ],
+                'rclone_extras': {
+                    '--drive-chunk-size': '64M',
+                    '--transfers': 8,
+                    '--checkers': 16,
+                    '--stats': '60s',
+                    '--verbose': 1
+                },
+                'rclone_sleeps': {
+                    'Failed to copy: googleapi: Error 403: User rate limit exceeded': {
+                        'count': 5,
+                        'timeout': 3600,
+                        'sleep': 25
+                    }
+                },
+                'remove_empty_dir_depth': 2
+            }
+        }
+
+        # add example uploader
+        cfg['uploader'] = {
+            'google': {
+                'check_interval': 30,
+                'max_size_gb': 200,
+                'size_excludes': [
+                    'downloads/*'
+                ],
+                'opened_excludes': [
+                    '/downloads/'
+                ],
+                'exclude_open_files': True
+            }
+        }
+
+        # add example hidden
+        cfg['hidden'] = {
+            '/mnt/local/.unionfs-fuse': {
+                'hidden_remotes': ['google']
+            }
+        }
+
+        return cfg
+
+    def __inner_upgrade(self, settings1, settings2, key=None, overwrite=False):
+        sub_upgraded = False
+        merged = copy(settings2)
+
+        if isinstance(settings1, dict):
+            for k, v in settings1.items():
+                # missing k
+                if k not in settings2:
+                    merged[k] = v
+                    sub_upgraded = True
+                    if not key:
+                        log.info("Added %r config option: %s", str(k), str(v))
+                    else:
+                        log.info("Added %r to config option %r: %s", str(k), str(key), str(v))
+                    continue
+
+                # iterate children
+                if isinstance(v, dict) or isinstance(v, list):
+                    merged[k], did_upgrade = self.__inner_upgrade(settings1[k], settings2[k], key=k,
+                                                                  overwrite=overwrite)
+                    sub_upgraded = did_upgrade if did_upgrade else sub_upgraded
+                elif settings1[k] != settings2[k] and overwrite:
+                    merged = settings1
+                    sub_upgraded = True
+        elif isinstance(settings1, list) and key:
+            for v in settings1:
+                if v not in settings2:
+                    merged.append(v)
+                    sub_upgraded = True
+                    log.info("Added to config option %r: %s", str(key), str(v))
+                    continue
+
+        return merged, sub_upgraded
+
+    def upgrade_settings(self, currents):
+        fields_env = {}
+
+        # ENV gets priority: ENV > config.json
+        for name, data in self.base_config.items():
+            if name in os.environ:
+                # Use JSON decoder to get same behaviour as config file
+                fields_env[name] = json.JSONDecoder().decode(os.environ[name])
+                log.info("Using ENV setting %s=%s", name, fields_env[name])
+
+        # Update in-memory config with environment settings
+        currents.update(fields_env)
+
+        # Do inner upgrade
+        upgraded_settings, upgraded = self.__inner_upgrade(self.base_config, currents)
+        return upgraded_settings, upgraded
+
     def upgrade(self, cfg):
         fields = []
         fields_env = {}
@@ -138,11 +208,16 @@ class Config(object):
     def load(self):
         if not os.path.exists(self.settings['config']):
             log.warning("No config file found, creating default config.")
-            self.save(self.base_config)
+            self.save(self.default_config)
 
         cfg = {}
         with open(self.settings['config'], 'r') as fp:
-            cfg = self.upgrade(json.load(fp))
+            cfg, upgraded = self.upgrade_settings(json.load(fp))
+
+            # Save config if upgraded
+            if upgraded:
+                self.save(cfg)
+                exit(0)
 
         self.configs = cfg
 
