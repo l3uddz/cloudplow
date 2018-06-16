@@ -224,7 +224,7 @@ class RcloneThrottler:
                 if 'error' in data:
                     log.info("Failed to throttle at %s: %s", self.url, data['error'])
                 elif 'rate' in data and data['rate'] == speed:
-                    log.info("Successfully throttled at %s to: ", self.url, speed)
+                    log.info("Successfully throttled at %s to: %s", self.url, speed)
                     success = True
 
         except Exception:
