@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import logging
-import pprint
 import sys
 import time
 from logging.handlers import RotatingFileHandler
@@ -375,32 +374,32 @@ def do_plex_monitor():
     while lock_file.is_locked():
         streams = plex.get_streams()
         if streams is None:
-            log.error("Failed to check Plex streams, trying again in %d seconds...",
+            log.error("Failed to check Plex stream(s), trying again in %d seconds...",
                       conf.configs['plex']['poll_interval'])
         else:
             # we had a response
             stream_count = len(streams)
             # are we already throttled?
             if not throttled and stream_count >= conf.configs['plex']['max_streams_before_throttle']:
-                log.info("There were %d Plex streams found while we were currently un-throttled, streams: %s",
-                         stream_count, pprint.pprint(streams))
+                log.info("There was %d Plex stream(s) found while we were currently un-throttled, streams: %s",
+                         stream_count, streams)
                 # send throttle request
                 throttled = rclone.throttle(conf.configs['plex']['rclone']['throttle_speed'])
             elif throttled:
                 if stream_count < conf.configs['max_streams_before_throttle']:
                     log.info(
-                        "There were less than %d Plex streams found while we were currently throttled, throttle is "
+                        "There was less than %d Plex stream(s) found while we were currently throttled, throttle is "
                         "being removed!", conf.configs['plex']['max_streams_before_throttle'])
                     # send un-throttle request
                     throttled = not rclone.no_throttle()
                 else:
-                    log.info("There were %d Plex streams found while we were already throttled, throttling will "
+                    log.info("There was %d Plex stream(s) found while we were already throttled, throttling will "
                              "continue", stream_count)
 
         # the lock_file exists, so we can assume an upload is in progress at this point
         time.sleep(conf.configs['plex']['poll_interval'])
 
-    log.info("Finished monitoring Plex streams!")
+    log.info("Finished monitoring Plex stream(s)!")
 
 
 ############################################################
