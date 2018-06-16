@@ -32,7 +32,7 @@ class Plex:
                 log.debug("Server responded with status_code=%r, content: %r", r.status_code, r.json())
                 return True
             else:
-                log.debug("Server responded with status_code=%r, content: %r", r.status_code, r.content)
+                log.error("Server responded with status_code=%r, content: %r", r.status_code, r.content)
                 return False
         except Exception:
             log.exception("Exception validating server token=%r, url=%r: ", self.token, self.url)
