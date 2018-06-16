@@ -146,3 +146,6 @@ class PlexStream:
                                                                                     state=self.state,
                                                                                     type=stream_type,
                                                                                     session=self.session_id)
+
+    def __repr__(self):
+        return str(self)
