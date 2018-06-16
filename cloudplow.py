@@ -381,8 +381,11 @@ def do_plex_monitor():
             stream_count = len(streams)
             # are we already throttled?
             if not throttled and stream_count >= conf.configs['plex']['max_streams_before_throttle']:
-                log.info("There was %d Plex stream(s) found while we were currently un-throttled, streams: %s",
-                         stream_count, streams)
+                log.info("There was %d Plex stream(s) found while we were currently un-throttled, streams:",
+                         stream_count)
+                for stream in streams:
+                    log.info("Stream: %s", stream)
+
                 # send throttle request
                 throttled = rclone.throttle(conf.configs['plex']['rclone']['throttle_speed'])
             elif throttled:
