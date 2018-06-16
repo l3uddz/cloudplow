@@ -389,7 +389,7 @@ def do_plex_monitor():
                 # send throttle request
                 throttled = rclone.throttle(conf.configs['plex']['rclone']['throttle_speed'])
             elif throttled:
-                if stream_count < conf.configs['max_streams_before_throttle']:
+                if stream_count < conf.configs['plex']['max_streams_before_throttle']:
                     log.info(
                         "There was less than %d Plex stream(s) found while we were currently throttled, throttle is "
                         "being removed!", conf.configs['plex']['max_streams_before_throttle'])
