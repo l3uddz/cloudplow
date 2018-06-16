@@ -223,9 +223,10 @@ class RcloneThrottler:
                 data = resp.json()
                 if 'error' in data:
                     log.info("Failed to throttle at %s: %s", self.url, data['error'])
-                elif ('status' in data and 'message' in data) and data['status'] == 'ok':
+                elif 'rate' in data and data['rate'] == speed:
                     log.info("Successfully throttled at %s to: ", self.url, speed)
                     success = True
+
         except Exception:
             log.exception("Exception sending throttle request to %s: ", self.url)
         return success
@@ -239,7 +240,7 @@ class RcloneThrottler:
                 data = resp.json()
                 if 'error' in data:
                     log.info("Failed to un-throttle at %s: %s", self.url, data['error'])
-                elif ('status' in data and 'message' in data) and data['status'] == 'ok':
+                elif 'rate' in data and data['rate'] == 'off':
                     log.info("Successfully un-throttled at %s", self.url)
                     success = True
         except Exception:
