@@ -211,7 +211,7 @@ class RcloneThrottler:
                 data = resp.json()
                 success = data['validated']
         except Exception:
-            log.exception("Exception validating rc url at %s: ", self.url)
+            log.exception("Exception validating rc url %s: ", self.url)
         return success
 
     def throttle(self, speed):
@@ -222,9 +222,9 @@ class RcloneThrottler:
             if '{' in resp.text and '}' in resp.text:
                 data = resp.json()
                 if 'error' in data:
-                    log.info("Failed to throttle at %s: %s", self.url, data['error'])
+                    log.info("Failed to throttle %s: %s", self.url, data['error'])
                 elif 'rate' in data and data['rate'] == speed:
-                    log.info("Successfully throttled at %s to: %s", self.url, speed)
+                    log.info("Successfully throttled %s to: %s", self.url, speed)
                     success = True
 
         except Exception:
@@ -239,9 +239,9 @@ class RcloneThrottler:
             if '{' in resp.text and '}' in resp.text:
                 data = resp.json()
                 if 'error' in data:
-                    log.info("Failed to un-throttle at %s: %s", self.url, data['error'])
+                    log.info("Failed to un-throttle %s: %s", self.url, data['error'])
                 elif 'rate' in data and data['rate'] == 'off':
-                    log.info("Successfully un-throttled at %s", self.url)
+                    log.info("Successfully un-throttled %s", self.url)
                     success = True
         except Exception:
             log.exception("Exception sending un-throttle request to %s: ", self.url)
