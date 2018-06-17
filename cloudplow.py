@@ -167,6 +167,8 @@ def run_process(task, manager_dict, **kwargs):
 
 @decorators.timed
 def do_upload(remote=None):
+    plex_monitor_thread = None
+
     lock_file = lock.upload()
     if lock_file.is_locked():
         log.info("Waiting for running upload to finish before proceeding...")
@@ -191,8 +193,8 @@ def do_upload(remote=None):
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'],
                                     conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
                 # start the plex stream monitor before the upload begins if enabled
-                if conf.configs['plex']['enabled']:
-                    thread.start(do_plex_monitor, 'plex-monitor')
+                if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
+                    plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
 
                 resp, resp_trigger = uploader.upload()
                 if resp:
@@ -214,6 +216,14 @@ def do_upload(remote=None):
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
                     uploader.remove_empty_dirs()
+
+            # stop plex stream monitor
+            if conf.configs['plex']['enabled'] and plex_monitor_thread is not None:
+                try:
+                    plex_monitor_thread.kill()
+                    log.info("Terminated plex monitoring thread!")
+                except Exception:
+                    log.exception("Exception terminating plex monitoring thread: ")
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
