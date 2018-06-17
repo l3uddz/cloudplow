@@ -140,12 +140,11 @@ class PlexStream:
             stream_type = self.type
 
         return u"{user} is playing {media} using {player}. " \
-               "Stream state: {state}, type: {type}. Session key: {session}".format(user=self.user,
-                                                                                    media=self.title,
-                                                                                    player=self.player,
-                                                                                    state=self.state,
-                                                                                    type=stream_type,
-                                                                                    session=self.session_id)
+               "Stream state: {state}, type: {type}.".format(user=self.user,
+                                                             media=self.title,
+                                                             player=self.player,
+                                                             state=self.state,
+                                                             type=stream_type)
 
     def __repr__(self):
         return str(self)
