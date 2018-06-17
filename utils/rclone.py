@@ -77,7 +77,7 @@ class RcloneUploader:
             if self.dry_run:
                 cmd += ' --dry-run'
             if self.use_rc:
-                cmd += ' --rc --rc-addr=%s' % cmd_quote('localhost:79492')
+                cmd += ' --rc --rc-addr=%s' % cmd_quote('localhost:7949')
 
             # exec
             log.debug("Using: %s", cmd)
