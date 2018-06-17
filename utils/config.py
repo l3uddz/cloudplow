@@ -50,7 +50,7 @@ class Config(object):
             'poll_interval': 60,
             'max_streams_before_throttle': 1,
             'rclone': {
-                'url': 'http://localhost:5572',
+                'url': 'http://localhost:79492',
                 'throttle_speed': '25M'
             }
         }
