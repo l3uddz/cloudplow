@@ -19,9 +19,3 @@ class Thread:
             thread.join()
             self.threads.remove(thread)
         return
-
-    def kill(self):
-        for thread in copy.copy(self.threads):
-            thread.kill()
-            self.threads.remove(thread)
-        return

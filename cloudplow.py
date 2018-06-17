@@ -74,6 +74,7 @@ thread = Thread()
 # Logic vars
 uploader_delay = None
 syncer_delay = None
+plex_monitor_thread = None
 
 
 ############################################################
@@ -165,9 +166,10 @@ def run_process(task, manager_dict, **kwargs):
 # DOER FUNCS
 ############################################################
 
+
 @decorators.timed
 def do_upload(remote=None):
-    plex_monitor_thread = None
+    global plex_monitor_thread
 
     lock_file = lock.upload()
     if lock_file.is_locked():
@@ -216,14 +218,6 @@ def do_upload(remote=None):
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
                     uploader.remove_empty_dirs()
-
-            # stop plex stream monitor
-            if conf.configs['plex']['enabled'] and plex_monitor_thread is not None:
-                try:
-                    plex_monitor_thread.kill()
-                    log.info("Terminated plex monitoring thread!")
-                except Exception:
-                    log.exception("Exception terminating plex monitoring thread: ")
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
@@ -361,10 +355,13 @@ def do_hidden():
 
 @decorators.timed
 def do_plex_monitor():
+    global plex_monitor_thread
+
     # create the plex object
     plex = Plex(conf.configs['plex']['url'], conf.configs['plex']['token'])
     if not plex.validate():
         log.error("Aborting Plex stream monitor due to failure to validate supplied server url/token...")
+        plex_monitor_thread = None
         return
 
     # sleep 15 seconds to allow rclone to start
@@ -375,6 +372,7 @@ def do_plex_monitor():
     rclone = RcloneThrottler(conf.configs['plex']['rclone']['url'])
     if not rclone.validate():
         log.error("Aborting Plex stream monitor due to failure to validate supplied rclone rc url...")
+        plex_monitor_thread = None
         return
     else:
         log.info("Rclone rc url was validated, Plex streams monitoring will begin now!")
@@ -414,6 +412,7 @@ def do_plex_monitor():
         time.sleep(conf.configs['plex']['poll_interval'])
 
     log.info("Finished monitoring Plex stream(s)!")
+    plex_monitor_thread = None
 
 
 ############################################################
