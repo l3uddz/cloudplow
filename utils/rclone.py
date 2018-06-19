@@ -222,9 +222,9 @@ class RcloneThrottler:
             if '{' in resp.text and '}' in resp.text:
                 data = resp.json()
                 if 'error' in data:
-                    log.info("Failed to throttle %s: %s", self.url, data['error'])
+                    log.error("Failed to throttle %s: %s", self.url, data['error'])
                 elif 'rate' in data and data['rate'] == speed:
-                    log.info("Successfully throttled %s to: %s", self.url, speed)
+                    log.warning("Successfully throttled %s to: %s", self.url, speed)
                     success = True
 
         except Exception:
@@ -239,9 +239,9 @@ class RcloneThrottler:
             if '{' in resp.text and '}' in resp.text:
                 data = resp.json()
                 if 'error' in data:
-                    log.info("Failed to un-throttle %s: %s", self.url, data['error'])
+                    log.error("Failed to un-throttle %s: %s", self.url, data['error'])
                 elif 'rate' in data and data['rate'] == 'off':
-                    log.info("Successfully un-throttled %s", self.url)
+                    log.warning("Successfully un-throttled %s", self.url)
                     success = True
         except Exception:
             log.exception("Exception sending un-throttle request to %s: ", self.url)
