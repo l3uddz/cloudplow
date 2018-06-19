@@ -386,7 +386,11 @@ def do_plex_monitor():
                       conf.configs['plex']['poll_interval'])
         else:
             # we had a response
-            stream_count = len(streams)
+            stream_count = 0
+            for stream in streams:
+                if stream.state == 'playing':
+                    stream_count += 1
+
             # are we already throttled?
             if not throttled and stream_count >= conf.configs['plex']['max_streams_before_throttle']:
                 log.info("There was %d Plex stream(s) found while we were currently un-throttled, streams:",
