@@ -1,4 +1,6 @@
+import glob
 import logging
+import os
 import time
 from urllib.parse import urljoin
 
@@ -96,7 +98,10 @@ class RcloneUploader:
 
     def __excludes2string(self):
         return ' '.join(
-            "--exclude=%s" % (cmd_quote(value) if isinstance(value, str) else value) for value in
+            "--exclude=%s" % (
+                cmd_quote(glob.escape(value) if value.startswith(os.path.sep) else value) if isinstance(value,
+                                                                                                        str) else value)
+            for value in
             self.config['rclone_excludes']).replace('=None', '').strip()
 
 
