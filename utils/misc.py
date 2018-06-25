@@ -40,3 +40,11 @@ def merge_dicts(*dicts):
             except KeyError:
                 pass
     return d
+
+
+def get_nearest_less_element(elements, key):
+    """ reference: https://stackoverflow.com/a/37851454 """
+    if key in elements:
+        return elements[key]
+    else:
+        return elements[int(max(x for x in elements.keys() if int(x) < int(key)))]
