@@ -47,4 +47,4 @@ def get_nearest_less_element(elements, key):
     if key in elements:
         return elements[key]
     else:
-        return elements[int(max(x for x in elements.keys() if int(x) < int(key)))]
+        return elements[str(max(x for x in elements.keys() if int(x) < int(key)))]

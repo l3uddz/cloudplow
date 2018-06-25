@@ -52,11 +52,11 @@ class Config(object):
             'rclone': {
                 'url': 'http://localhost:7949',
                 'throttle_speeds': {
-                    1: '50M',
-                    2: '40M',
-                    3: '30M',
-                    4: '20M',
-                    5: '10M'
+                    '1': '50M',
+                    '2': '40M',
+                    '3': '30M',
+                    '4': '20M',
+                    '5': '10M'
                 }
             }
         }
