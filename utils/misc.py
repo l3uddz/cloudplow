@@ -42,9 +42,6 @@ def merge_dicts(*dicts):
     return d
 
 
-def get_nearest_less_element(elements, key):
-    """ reference: https://stackoverflow.com/a/37851454 """
-    if key in elements:
-        return elements[key]
-    else:
-        return elements[str(max(x for x in elements.keys() if int(x) < int(key)))]
+def get_nearest_less_element(data, num):
+    """ reference: https://stackoverflow.com/a/7934624 """
+    return data[str(num)] if str(num) in data else data[min(data.keys(), key=lambda k: abs(int(k) - num))]
