@@ -1,8 +1,8 @@
 # Cloudplow
 
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/) [![License: GPL 3](https://img.shields.io/badge/License-GPL%203-blue.svg)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE)
+[![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord)](https://discord.io/cloudbox)
 [![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/cloudplow)
-[![Discord](https://img.shields.io/discord/381077432285003776.svg)](https://discord.gg/xmNYmSJ)
 
 ---
 
@@ -16,6 +16,7 @@
 	- [Core](#core)
 	- [Hidden](#hidden)
 	- [Notifications](#notifications)
+	- [Plex](#plex)
 	- [Remotes](#remotes)
 	- [Uploader](#uploader)
 - [Usage](#usage)
@@ -98,6 +99,23 @@ Cloudplow has 3 main functions:
             "channel": "",
             "service": "slack"
         }
+    },
+    "plex": {
+        "enabled": true,
+        "max_streams_before_throttle": 1,
+        "poll_interval": 60,
+        "rclone": {
+            "throttle_speeds": {
+                "1": "50M",
+                "2": "40M",
+                "3": "30M",
+                "4": "20M",
+                "5": "10M"
+            },
+            "url": "http://localhost:7949"
+        },
+        "token": "",
+        "url": "https://plex.cloudbox.media"
     },
     "remotes": {
         "google": {
@@ -223,6 +241,53 @@ This is where you specify the location of the unionfs _HIDDEN~ files (i.e. white
 The specific remote path, where those corresponding files are, will be specified in the `remotes` section.
 
 
+## Plex
+
+Cloudplow can throttle Rclone uploads during active, playing Plex streams (paused streams are ignored).
+
+
+```
+    "plex": {
+        "enabled": true,
+        "max_streams_before_throttle": 1,
+        "poll_interval": 60,
+        "rclone": {
+            "throttle_speeds": {
+                "1": "50M",
+                "2": "40M",
+                "3": "30M",
+                "4": "20M",
+                "5": "10M"
+            },
+            "url": "http://localhost:7949"
+        },
+        "token": "",
+        "url": "https://plex.cloudbox.media"
+    },
+```
+
+
+`enabled` - `true` to enable.
+
+`url` - Your Plex URL.
+
+`token` - Your Plex Access Token.
+
+`poll_interval` - How often (in seconds) Plex is checked for active streams.
+
+`max_streams_before_throttle` - How many playing streams are allowed before enabling throttling.
+
+`rclone`
+
+- `url` - Leave as default.
+
+- `throttle_speed` - Categorized option to configure upload speeds for various stream counts (where `5` represents 5 streams or more). `M` is MB/s.
+
+  - Format: `"STREAM COUNT": "THROTTLED UPLOAD SPEED",`
+
+
+
+
 ## Notifications
 
 Notification alerts during tasks.
@@ -278,17 +343,29 @@ This is the heart of the configuration, most of the config references this secti
 
 You can specify more than one remote here.
 
+#### Basic
+
+```
+    "remotes": {
+        "google": {
+```
+
+Under `"remote"`, you have the name of the remote as the key (in the example above, it is `"google"`). The remote name can be anything (e.g. google1, google2, google3, dropbox1, etc).
+
+
+
+#### Hidden Cleaner
 
 ```
     "remotes": {
         "google": {
             "hidden_remote": "google:",
-
 ```
 
-Under `"remote"`, you have the name of the remote as the key (in the example above, it is `"google"`). The remote name can be anything (e.g. google1, google2, google3, dropbox1, etc).
 
 `"hidden_remote"`: is the remote path where the unionfs hidden cleaner will remove files from (if the remote is listed under the `hidden` section).
+
+#### Rclone Excludes
 
 
 ```
@@ -299,7 +376,13 @@ Under `"remote"`, you have the name of the remote as the key (in the example abo
                 ".unionfs-fuse/**"
             ],
 ```
+
+
+
 These are the excludes to be used when uploading to this remote.
+
+
+#### Rclone Extras
 
 
 ```
@@ -317,7 +400,22 @@ These are rclone parameters that will be used when uploading to this remote. You
 Note: a value of null will mean `--no-traverse` instead of `--no-traverse=null`.
 
 
+#### Rclone Sleep (i.e. Ban Sleep)
 
+Format:
+```
+            "rclone_sleeps": {
+                "keyword or phrase to be monitored": {
+                    "count": 5,
+                    "sleep": 25,
+                    "timeout": 300
+                }
+            },
+```
+
+
+
+Example:
 ```
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -327,6 +425,9 @@ Note: a value of null will mean `--no-traverse` instead of `--no-traverse=null`.
                 }
             },
 ```
+
+
+
 `"rclone_sleeps"` are keywords or phrases that are monitored during rclone tasks that will cause this remote's upload task to abort and go into a sleep for a specified amount of time. When a remote is asleep, it will not do it's regularly scheduled uploads (as definted in `check_intervals`).
 
 You may list multiple keywords or phrases here.
@@ -335,23 +436,31 @@ In the example above, the phrase `"Failed to copy: googleapi: Error 403: User ra
 
 `"count"`: How many times this keyword/phrase has to occur within a specific time period (i.e. `timeout`), from the very first occurrence, to cause the remote to go to sleep.
 
-`"sleep"`: How many hours the remote goes to sleep.
+`"timeout"`: The time period (in seconds) during which the the phrase is counted in after its first occurance.
 
-`"timeout"`: The time period (in seconds) the phrase is counted in. On it's first occurrence, the time is logged and if count is reached within this many seconds, the upload task will abort and the remote will go into sleep. If the timeout period expires, then the count will restart from 0.
+  - On it's first occurrence, the time is logged and if `count` is reached within this `timeout` period, the upload task will abort and the remote will go into `sleep`.
 
+  - If the `timeout` period expires without reaching the `count`, the `count` will reset back to `0`.
 
+  - The `timeout` period will restart again after the first new occurance of the monitored phrase.
+
+`"sleep"`: How many hours the remote goes to sleep for, when the monitored phrase is `count`-ed during the `timeout` period.
+
+#### Remove Empty Directories
 
 ```
             "remove_empty_dir_depth": 2,
 ```
-This is the depth to min-depth to delete empty folders from relative to `upload_folder`  (1=/Media  ; 2 = /Media/Movies; 3=/Media/Movies/Movies-Kids/)
+This is the depth to min-depth to delete empty folders from relative to `upload_folder`  (1 = `/Media/ ` ; 2 = `/Media/Movies/`; 3 = `/Media/Movies/Movies-Kids/`)
 
 
 ```
-            "upload_folder": "/mnt/local/Media/",
-            "upload_remote": "google:/Media/"
+          "upload_folder": "/mnt/local/Media/",
+          "upload_remote": "google:/Media/"
 
 ```
+#### Local/Remote Paths
+
 
 `"upload_folder"`: is the local path that is uploaded by the `uploader` task, once it reaches the size threshold as specified in `max_size_gb`.
 
@@ -362,7 +471,7 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 
 ## Uploader
 
-Each entry to `uploader` references a remote inside `remotes`. The remote can only be referenced ONCE inside this list.
+Each entry to `uploader` references a remote inside `remotes`. The remote can only be referenced ONCE.
 
 ```
     "uploader": {
@@ -380,8 +489,7 @@ Each entry to `uploader` references a remote inside `remotes`. The remote can on
     }
 ```
 
-In the example above, the remote `"google"` is being referenced from the `remotes` section.
-
+In the example above, the uploader references `"google"` from the `remotes` section.
 
 `"check_interval"`: how often (in minutes) to check the size of this remotes `upload_folder`. Once it reaches the size threshold as specified in `max_size_gb`, the uploader will start.
 
