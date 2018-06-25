@@ -378,6 +378,7 @@ def do_plex_monitor():
         log.info("Rclone rc url was validated, Plex streams monitoring will begin now!")
 
     throttled = False
+    throttle_speed = None
     lock_file = lock.upload()
     while lock_file.is_locked():
         streams = plex.get_streams()
@@ -400,13 +401,15 @@ def do_plex_monitor():
                 log.info("Upload throttling will now commence...")
 
                 # send throttle request
-                throttled = rclone.throttle(conf.configs['plex']['rclone']['throttle_speed'])
+                throttle_speed = misc.get_nearest_less_element(conf.configs['plex']['rclone']['throttle_speeds'],
+                                                               stream_count)
+                throttled = rclone.throttle(throttle_speed)
 
                 # send notification
                 if throttled:
                     notify.send(
-                        message="Throttled current upload because there was %d playing stream(s) on Plex" %
-                                stream_count)
+                        message="Throttled current upload to %s because there was %d playing stream(s) on Plex" %
+                                (throttle_speed, stream_count))
 
             elif throttled:
                 if stream_count < conf.configs['plex']['max_streams_before_throttle']:
@@ -415,6 +418,7 @@ def do_plex_monitor():
                         "removing throttle!", conf.configs['plex']['max_streams_before_throttle'])
                     # send un-throttle request
                     throttled = not rclone.no_throttle()
+                    throttle_speed = None
 
                     # send notification
                     if not throttled:
@@ -422,9 +426,23 @@ def do_plex_monitor():
                             message="Un-throttled current upload because there was less than %d playing stream(s) on "
                                     "Plex" % conf.configs['plex']['max_streams_before_throttle'])
 
+                elif misc.get_nearest_less_element(conf.configs['plex']['rclone']['throttle_speeds'],
+                                                   stream_count) != throttle_speed:
+                    # throttle speed changed, probably due to more/less streams, re-throttle
+                    throttle_speed = misc.get_nearest_less_element(conf.configs['plex']['rclone']['throttle_speeds'],
+                                                                   stream_count)
+                    log.info("Adjusting throttle speed for current upload to %s because there "
+                             "was now %d playing stream(s) on Plex", throttle_speed, stream_count)
+                    
+                    throttled = rclone.throttle(throttle_speed)
+                    if throttled:
+                        notify.send(
+                            message='Current upload had its throttle rate adjusted to %s due to %d playing stream(s)'
+                                    ' on Plex' % (throttle_speed, stream_count))
+
                 else:
-                    log.info("There was %d playing stream(s) on Plex while we were already throttled, throttling "
-                             "will continue..", stream_count)
+                    log.info("There was %d playing stream(s) on Plex while we were already throttled to %s, throttling "
+                             "will continue..", stream_count, throttle_speed)
 
         # the lock_file exists, so we can assume an upload is in progress at this point
         time.sleep(conf.configs['plex']['poll_interval'])
