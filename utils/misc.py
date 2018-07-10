@@ -40,3 +40,8 @@ def merge_dicts(*dicts):
             except KeyError:
                 pass
     return d
+
+
+def get_nearest_less_element(data, num):
+    """ reference: https://stackoverflow.com/a/7934624 """
+    return data[str(num)] if str(num) in data else data[min(data.keys(), key=lambda k: abs(int(k) - num))]

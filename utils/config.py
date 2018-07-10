@@ -51,7 +51,13 @@ class Config(object):
             'max_streams_before_throttle': 1,
             'rclone': {
                 'url': 'http://localhost:7949',
-                'throttle_speed': '25M'
+                'throttle_speeds': {
+                    '1': '50M',
+                    '2': '40M',
+                    '3': '30M',
+                    '4': '20M',
+                    '5': '10M'
+                }
             }
         }
     }
