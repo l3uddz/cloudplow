@@ -437,7 +437,7 @@ def do_plex_monitor():
                              "was now %d playing stream(s) on Plex", throttle_speed, stream_count)
 
                     throttled = rclone.throttle(throttle_speed)
-                    if throttled:
+                    if throttled and conf.configs['plex']['verbose_notifications']:
                         notify.send(
                             message='Throttle for current upload was adjusted to %s due to %d playing stream(s)'
                                     ' on Plex' % (throttle_speed, stream_count))
