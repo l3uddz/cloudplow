@@ -193,6 +193,7 @@ def do_upload(remote=None):
 
                 # perform the upload
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'],
+                                    conf.configs['core']['rclone_binary_path'],
                                     conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
                 # start the plex stream monitor before the upload begins if enabled
                 if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
@@ -327,6 +328,7 @@ def do_hidden():
             # loop each supplied hidden folder
             for hidden_folder, hidden_config in conf.configs['hidden'].items():
                 hidden = UnionfsHiddenFolder(hidden_folder, conf.configs['core']['dry_run'],
+                                             conf.configs['core']['rclone_binary_path'],
                                              conf.configs['core']['rclone_config_path'])
 
                 # loop the chosen remotes for this hidden config cleaning files
@@ -435,7 +437,7 @@ def do_plex_monitor():
                              "was now %d playing stream(s) on Plex", throttle_speed, stream_count)
 
                     throttled = rclone.throttle(throttle_speed)
-                    if throttled:
+                    if throttled and conf.configs['plex']['verbose_notifications']:
                         notify.send(
                             message='Throttle for current upload was adjusted to %s due to %d playing stream(s)'
                                     ' on Plex' % (throttle_speed, stream_count))

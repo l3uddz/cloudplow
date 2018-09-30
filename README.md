@@ -77,6 +77,7 @@ Cloudplow has 3 main functions:
 {
     "core": {
         "dry_run": false,
+        "rclone_binary_path": "/usr/bin/rclone",
         "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
     },
     "hidden": {
@@ -105,6 +106,7 @@ Cloudplow has 3 main functions:
         "enabled": true,
         "max_streams_before_throttle": 1,
         "poll_interval": 60,
+        "verbose_notifications": false,
         "rclone": {
             "throttle_speeds": {
                 "1": "50M",
@@ -216,6 +218,7 @@ Cloudplow has 3 main functions:
 ```
     "core": {
         "dry_run": false,
+        "rclone_binary_path": "/usr/bin/rclone",
 	    "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
     },
 ```
@@ -252,6 +255,7 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
         "enabled": true,
         "max_streams_before_throttle": 1,
         "poll_interval": 60,
+        "verbose_notifications": false,
         "rclone": {
             "throttle_speeds": {
                 "1": "50M",
@@ -277,6 +281,8 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
 `poll_interval` - How often (in seconds) Plex is checked for active streams.
 
 `max_streams_before_throttle` - How many playing streams are allowed before enabling throttling.
+
+`verbose_notifications` - Send notifications when rate limit is adjusted due to more/less streams.
 
 `rclone`
 
