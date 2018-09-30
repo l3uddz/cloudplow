@@ -1,6 +1,7 @@
 {
     "core": {
         "dry_run": false,
+        "rclone_binary_path": "/usr/bin/rclone",
 	    "rclone_config_path": "/home/user/.config/rclone/rclone.conf"
     },
     "hidden": {
@@ -18,6 +19,7 @@
         "token": "",
         "poll_interval": 60,
         "max_streams_before_throttle": 1,
+        "verbose_notifications": false,
         "rclone": {
             "throttle_speeds": {
                 "1": "50M",
