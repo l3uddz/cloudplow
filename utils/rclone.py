@@ -17,9 +17,10 @@ log = logging.getLogger('rclone')
 
 
 class RcloneUploader:
-    def __init__(self, name, config, rclone_config_path, dry_run=False, use_rc=False):
+    def __init__(self, name, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False):
         self.name = name
         self.config = config
+        self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
         self.dry_run = dry_run
         self.use_rc = use_rc
@@ -28,7 +29,8 @@ class RcloneUploader:
         try:
             log.debug("Deleting file '%s' from remote %s", path, self.name)
             # build cmd
-            cmd = "rclone delete %s --config=%s" % (cmd_quote(path), cmd_quote(self.rclone_config_path))
+            cmd = "%s delete %s --config=%s" % (cmd_quote(self.rclone_binary_path), cmd_quote(path),
+                                                cmd_quote(self.rclone_config_path))
             if self.dry_run:
                 cmd += ' --dry-run'
 
@@ -47,7 +49,8 @@ class RcloneUploader:
         try:
             log.debug("Deleting folder '%s' from remote %s", path, self.name)
             # build cmd
-            cmd = "rclone rmdir %s --config=%s" % (cmd_quote(path), cmd_quote(self.rclone_config_path))
+            cmd = "%s rmdir %s --config=%s" % (cmd_quote(self.rclone_binary_path), cmd_quote(path),
+                                               cmd_quote(self.rclone_config_path))
             if self.dry_run:
                 cmd += ' --dry-run'
 
@@ -66,9 +69,10 @@ class RcloneUploader:
         try:
             log.debug("Uploading '%s' to '%s'", self.config['upload_folder'], self.config['upload_remote'])
             # build cmd
-            cmd = "rclone move %s %s --config=%s" % (
-                cmd_quote(self.config['upload_folder']), cmd_quote(self.config['upload_remote']),
-                cmd_quote(self.rclone_config_path))
+            cmd = "%s move %s %s --config=%s" % (cmd_quote(self.rclone_binary_path),
+                                                 cmd_quote(self.config['upload_folder']),
+                                                 cmd_quote(self.config['upload_remote']),
+                                                 cmd_quote(self.rclone_config_path))
 
             extras = self.__extras2string()
             if len(extras) > 2:
