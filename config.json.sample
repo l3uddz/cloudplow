@@ -71,6 +71,11 @@
             "opened_excludes": [
                 "/downloads/"
             ],
+            "schedule": {
+                "allowed_from": "04:00",
+                "allowed_until": "08:00",
+                "enabled": false
+            },
             "size_excludes": [
                 "downloads/*"
             ]
