@@ -204,6 +204,11 @@ Cloudplow has 3 main functions:
             "opened_excludes": [
                 "/downloads/"
             ],
+            "schedule": {
+                "allowed_from": "04:00",
+                "allowed_until": "08:00",
+                "enabled": false
+            },
             "size_excludes": [
                 "downloads/*"
             ]
@@ -219,7 +224,7 @@ Cloudplow has 3 main functions:
     "core": {
         "dry_run": false,
         "rclone_binary_path": "/usr/bin/rclone",
-	    "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
+        "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
     },
 ```
 
@@ -489,6 +494,11 @@ Each entry to `uploader` references a remote inside `remotes`. The remote can on
             "opened_excludes": [
                 "/downloads/"
             ],
+            "schedule": {
+                "allowed_from": "04:00",
+                "allowed_until": "08:00",
+                "enabled": false
+            },
             "size_excludes": [
                 "downloads/*"
             ]
@@ -505,6 +515,8 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 `"max_size_gb"`: maximum size (in gigabytes) before uploading can commence
 
 `"opened_excludes"`: Paths the open file checker will check for when searching for open files. In the example above, any open files with `/downloads/` in it's path, would be ignored.
+
+`"schedule"`: This section allows you to specify a time period, in 24H (HH:MM) format, for when uploads are allowed to start. Uploads in progress will not stop when `allowed_until` is reached. This setting will not affect manual uploads, only the automatic uploader in `run` mode.
 
 `"size_excludes"`: Paths that will not be counted in the total size calculation for `max_size_gb`.
 

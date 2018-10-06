@@ -1,4 +1,5 @@
 import logging
+import time
 
 log = logging.getLogger("misc")
 
@@ -45,3 +46,14 @@ def merge_dicts(*dicts):
 def get_nearest_less_element(data, num):
     """ reference: https://stackoverflow.com/a/7934624 """
     return data[str(num)] if str(num) in data else data[min(data.keys(), key=lambda k: abs(int(k) - num))]
+
+
+def is_time_between(time_range, current_time=time.strftime('%H:%M')):
+    """ reference: https://stackoverflow.com/a/45265202 """
+    try:
+        if time_range[1] < time_range[0]:
+            return current_time >= time_range[0] or current_time <= time_range[1]
+        return time_range[0] <= current_time <= time_range[1]
+    except Exception:
+        log.exception("Exception determining if current time was between the supplied range: ")
+    return True
