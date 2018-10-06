@@ -136,7 +136,12 @@ class Config(object):
                 'opened_excludes': [
                     '/downloads/'
                 ],
-                'exclude_open_files': True
+                'exclude_open_files': True,
+                'schedule': {
+                    'enabled': False,
+                    'allowed_from': '04:00',
+                    'allowed_until': '08:00'
+                }
             }
         }
 

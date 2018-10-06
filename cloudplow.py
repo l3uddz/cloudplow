@@ -474,6 +474,18 @@ def scheduled_uploader(uploader_name, uploader_settings):
             log.info("Uploader: %s. Local folder size is currently %d GB over the maximum limit of %d GB",
                      uploader_name, used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
 
+            # does this uploader have schedule settings
+            if 'schedule' in uploader_settings and uploader_settings['schedule']['enabled']:
+                # there is a schedule set for this uploader, check if we are within the allowed times
+                current_time = time.strftime('%H:%M')
+                if not misc.is_time_between((uploader_settings['schedule']['allowed_from'],
+                                             uploader_settings['schedule']['allowed_until'])):
+                    log.info(
+                        "Uploader: %s. The current time %s is not within the allowed upload time periods %s -> %s",
+                        uploader_name, current_time, uploader_settings['schedule']['allowed_from'],
+                        uploader_settings['schedule']['allowed_until'])
+                    return
+
             # clean hidden files
             do_hidden()
             # upload
@@ -506,6 +518,7 @@ def scheduled_syncer(syncer_delays, syncer_name):
 ############################################################
 # MAIN
 ############################################################
+
 
 if __name__ == "__main__":
     # show latest version info from git
