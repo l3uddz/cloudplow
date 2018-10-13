@@ -11,6 +11,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from utils import config, lock, path, decorators, version, misc
 from utils.notifications import Notifications
+from utils.nzbget import Nzbget
 from utils.plex import Plex
 from utils.rclone import RcloneThrottler
 from utils.syncer import Syncer
@@ -170,6 +171,8 @@ def run_process(task, manager_dict, **kwargs):
 @decorators.timed
 def do_upload(remote=None):
     global plex_monitor_thread
+    nzbget: Nzbget = None
+    nzbget_paused = False
 
     lock_file = lock.upload()
     if lock_file.is_locked():
@@ -195,9 +198,19 @@ def do_upload(remote=None):
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'],
                                     conf.configs['core']['rclone_binary_path'],
                                     conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
-                # start the plex stream monitor before the upload begins if enabled
+
+                # start the plex stream monitor before the upload begins, if enabled
                 if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
                     plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
+
+                # pause the nzbget queue before starting the upload, if enabled
+                if conf.configs['nzbget']['enabled']:
+                    nzbget = Nzbget(conf.configs['nzbget']['url'])
+                    if nzbget.pause_queue():
+                        nzbget_paused = True
+                        log.info("Paused the Nzbget download queue, upload commencing!")
+                    else:
+                        log.error("Failed to pause the Nzbget download queue, upload commencing anyway...")
 
                 resp, resp_trigger = uploader.upload()
                 if resp:
@@ -219,6 +232,14 @@ def do_upload(remote=None):
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
                     uploader.remove_empty_dirs()
+
+                # resume the nzbget queue, if enabled
+                if conf.configs['nzbget']['enabled'] and nzbget is not None and nzbget_paused:
+                    if nzbget.resume_queue():
+                        nzbget_paused = False
+                        log.info("Resumed the Nzbget download queue!")
+                    else:
+                        log.error("Failed to resume the Nzbget download queue??")
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
