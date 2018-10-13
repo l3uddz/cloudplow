@@ -135,7 +135,8 @@ Cloudplow has 3 main functions:
                 "--no-traverse": null,
                 "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1
+                "--verbose": 1,
+                "--fast-list": null
             },
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -162,7 +163,8 @@ Cloudplow has 3 main functions:
             "--no-traverse": null,
             "--stats": "60s",
             "--transfers": 16,
-            "--verbose": 1
+            "--verbose": 1,
+            "--fast-list": null
           },
           "rclone_sleeps": {
             "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -185,7 +187,8 @@ Cloudplow has 3 main functions:
                 "--drive-chunk-size": "64M",
                 "--stats": "60s",
                 "--transfers": 16,
-                "--verbose": 1
+                "--verbose": 1,
+                "--fast-list": null
             },
             "service": "scaleway",
             "sync_from": "google",
@@ -404,7 +407,8 @@ These are the excludes to be used when uploading to this remote.
                 "--no-traverse": null,
                 "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1
+                "--verbose": 1,
+                "--fast-list": null
             },
 ```
 These are rclone parameters that will be used when uploading to this remote. You may add other rclone parameters.

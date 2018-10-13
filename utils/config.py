@@ -112,7 +112,8 @@ class Config(object):
                     '--transfers': 8,
                     '--checkers': 16,
                     '--stats': '60s',
-                    '--verbose': 1
+                    '--verbose': 1,
+                    '--fast-list': None
                 },
                 'rclone_sleeps': {
                     'Failed to copy: googleapi: Error 403: User rate limit exceeded': {
