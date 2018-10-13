@@ -208,7 +208,7 @@ def do_upload(remote=None):
                     nzbget = Nzbget(conf.configs['nzbget']['url'])
                     if nzbget.pause_queue():
                         nzbget_paused = True
-                        log.info("Successfully paused the Nzbget download queue, upload commencing!")
+                        log.info("Paused the Nzbget download queue, upload commencing!")
                     else:
                         log.error("Failed to pause the Nzbget download queue, upload commencing anyway...")
 
@@ -237,7 +237,7 @@ def do_upload(remote=None):
                 if conf.configs['nzbget']['enabled'] and nzbget is not None and nzbget_paused:
                     if nzbget.resume_queue():
                         nzbget_paused = False
-                        log.info("Successfully resumed the Nzbget download queue!")
+                        log.info("Resumed the Nzbget download queue!")
                     else:
                         log.error("Failed to resume the Nzbget download queue??")
 

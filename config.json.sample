@@ -13,6 +13,10 @@
     },
     "notifications": {
     },
+    "nzbget": {
+        "enabled": false,
+        "url": "https://user:pass@nzbget.domain.com"
+    },
     "plex": {
         "enabled": false,
         "url": "http://localhost:32400",

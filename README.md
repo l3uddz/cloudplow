@@ -102,6 +102,10 @@ Cloudplow has 3 main functions:
             "service": "slack"
         }
     },
+    "nzbget": {
+        "enabled": false,
+        "url": "https://user:pass@nzbget.domain.com"
+    },
     "plex": {
         "enabled": true,
         "max_streams_before_throttle": 1,
@@ -300,7 +304,20 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
 
   - Format: `"STREAM COUNT": "THROTTLED UPLOAD SPEED",`
 
+## Nzbget
 
+Cloudplow can pause the Nzbget download queue when an upload starts; and then resume it upon the upload finishing.
+
+```
+    "nzbget": {
+        "enabled": false,
+        "url": "https://user:pass@nzbget.domain.com"
+    },
+```
+
+`enabled` - `true` to enable.
+
+`url` - Your Nzbget URL.
 
 
 ## Notifications
