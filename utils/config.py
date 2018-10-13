@@ -61,6 +61,11 @@ class Config(object):
                     '5': '10M'
                 }
             }
+        },
+        # nzbget settings
+        'nzbget': {
+            'enabled': False,
+            'url': 'https://user:password@nzbget.domain.com'
         }
     }
 
