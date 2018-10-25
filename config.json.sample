@@ -2,7 +2,7 @@
     "core": {
         "dry_run": false,
         "rclone_binary_path": "/usr/bin/rclone",
-	    "rclone_config_path": "/home/user/.config/rclone/rclone.conf"
+	      "rclone_config_path": "/home/user/.config/rclone/rclone.conf"
     },
     "hidden": {
         "/mnt/local/.unionfs-fuse": {
@@ -26,6 +26,7 @@
         "verbose_notifications": false,
         "rclone": {
             "throttle_speeds": {
+                "0": "100M",
                 "1": "50M",
                 "2": "40M",
                 "3": "30M",

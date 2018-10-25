@@ -113,6 +113,7 @@ Cloudplow has 3 main functions:
         "verbose_notifications": false,
         "rclone": {
             "throttle_speeds": {
+                "0": "100M",
                 "1": "50M",
                 "2": "40M",
                 "3": "30M",
@@ -235,8 +236,11 @@ Cloudplow has 3 main functions:
     },
 ```
 
-`"dry_run": true` will prevent any files being uploaded or deleted - use this to test out your config.
+`"dry_run": true` - prevent any files being uploaded or deleted - use this to test out your config.
 
+`rclone_binary_path` - full path to rclone binary file.
+
+`rclone_config_path` - full path to rclone config file.
 
 ## Hidden
 UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corresponding files on rclone remotes.
