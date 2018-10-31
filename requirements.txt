@@ -1,4 +1,4 @@
 lockfile~=0.12.2
 schedule~=0.4.3
-requests~=2.18.4
+requests~=2.20.0
 GitPython~=2.1.10
