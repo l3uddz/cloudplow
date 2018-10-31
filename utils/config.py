@@ -61,6 +61,11 @@ class Config(object):
                     '5': '10M'
                 }
             }
+        },
+        # nzbget settings
+        'nzbget': {
+            'enabled': False,
+            'url': 'https://user:password@nzbget.domain.com'
         }
     }
 
@@ -112,7 +117,8 @@ class Config(object):
                     '--transfers': 8,
                     '--checkers': 16,
                     '--stats': '60s',
-                    '--verbose': 1
+                    '--verbose': 1,
+                    '--fast-list': None
                 },
                 'rclone_sleeps': {
                     'Failed to copy: googleapi: Error 403: User rate limit exceeded': {
@@ -136,7 +142,12 @@ class Config(object):
                 'opened_excludes': [
                     '/downloads/'
                 ],
-                'exclude_open_files': True
+                'exclude_open_files': True,
+                'schedule': {
+                    'enabled': False,
+                    'allowed_from': '04:00',
+                    'allowed_until': '08:00'
+                }
             }
         }
 

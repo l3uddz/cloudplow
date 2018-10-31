@@ -11,6 +11,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from utils import config, lock, path, decorators, version, misc
 from utils.notifications import Notifications
+from utils.nzbget import Nzbget
 from utils.plex import Plex
 from utils.rclone import RcloneThrottler
 from utils.syncer import Syncer
@@ -170,6 +171,8 @@ def run_process(task, manager_dict, **kwargs):
 @decorators.timed
 def do_upload(remote=None):
     global plex_monitor_thread
+    nzbget: Nzbget = None
+    nzbget_paused = False
 
     lock_file = lock.upload()
     if lock_file.is_locked():
@@ -195,9 +198,19 @@ def do_upload(remote=None):
                 uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'],
                                     conf.configs['core']['rclone_binary_path'],
                                     conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
-                # start the plex stream monitor before the upload begins if enabled
+
+                # start the plex stream monitor before the upload begins, if enabled
                 if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
                     plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
+
+                # pause the nzbget queue before starting the upload, if enabled
+                if conf.configs['nzbget']['enabled']:
+                    nzbget = Nzbget(conf.configs['nzbget']['url'])
+                    if nzbget.pause_queue():
+                        nzbget_paused = True
+                        log.info("Paused the Nzbget download queue, upload commencing!")
+                    else:
+                        log.error("Failed to pause the Nzbget download queue, upload commencing anyway...")
 
                 resp, resp_trigger = uploader.upload()
                 if resp:
@@ -219,6 +232,14 @@ def do_upload(remote=None):
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
                     uploader.remove_empty_dirs()
+
+                # resume the nzbget queue, if enabled
+                if conf.configs['nzbget']['enabled'] and nzbget is not None and nzbget_paused:
+                    if nzbget.resume_queue():
+                        nzbget_paused = False
+                        log.info("Resumed the Nzbget download queue!")
+                    else:
+                        log.error("Failed to resume the Nzbget download queue??")
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
@@ -391,7 +412,7 @@ def do_plex_monitor():
             # we had a response
             stream_count = 0
             for stream in streams:
-                if stream.state == 'playing':
+                if stream.state == 'playing' or stream.state == 'buffering':
                     stream_count += 1
 
             # are we already throttled?
@@ -474,6 +495,18 @@ def scheduled_uploader(uploader_name, uploader_settings):
             log.info("Uploader: %s. Local folder size is currently %d GB over the maximum limit of %d GB",
                      uploader_name, used_space - uploader_settings['max_size_gb'], uploader_settings['max_size_gb'])
 
+            # does this uploader have schedule settings
+            if 'schedule' in uploader_settings and uploader_settings['schedule']['enabled']:
+                # there is a schedule set for this uploader, check if we are within the allowed times
+                current_time = time.strftime('%H:%M')
+                if not misc.is_time_between((uploader_settings['schedule']['allowed_from'],
+                                             uploader_settings['schedule']['allowed_until'])):
+                    log.info(
+                        "Uploader: %s. The current time %s is not within the allowed upload time periods %s -> %s",
+                        uploader_name, current_time, uploader_settings['schedule']['allowed_from'],
+                        uploader_settings['schedule']['allowed_until'])
+                    return
+
             # clean hidden files
             do_hidden()
             # upload
@@ -506,6 +539,7 @@ def scheduled_syncer(syncer_delays, syncer_name):
 ############################################################
 # MAIN
 ############################################################
+
 
 if __name__ == "__main__":
     # show latest version info from git

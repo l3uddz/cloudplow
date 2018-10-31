@@ -2,7 +2,7 @@
     "core": {
         "dry_run": false,
         "rclone_binary_path": "/usr/bin/rclone",
-	    "rclone_config_path": "/home/user/.config/rclone/rclone.conf"
+        "rclone_config_path": "/home/user/.config/rclone/rclone.conf"
     },
     "hidden": {
         "/mnt/local/.unionfs-fuse": {
@@ -13,6 +13,10 @@
     },
     "notifications": {
     },
+    "nzbget": {
+        "enabled": false,
+        "url": "https://user:pass@nzbget.domain.com"
+    },
     "plex": {
         "enabled": false,
         "url": "http://localhost:32400",
@@ -22,6 +26,7 @@
         "verbose_notifications": false,
         "rclone": {
             "throttle_speeds": {
+                "0": "100M",
                 "1": "50M",
                 "2": "40M",
                 "3": "30M",
@@ -46,7 +51,8 @@
                 "--drive-chunk-size": "64M",
                 "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1
+                "--verbose": 1,
+                "--fast-list": null
             },
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -71,6 +77,11 @@
             "opened_excludes": [
                 "/downloads/"
             ],
+            "schedule": {
+                "allowed_from": "04:00",
+                "allowed_until": "08:00",
+                "enabled": false
+            },
             "size_excludes": [
                 "downloads/*"
             ]

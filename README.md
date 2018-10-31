@@ -102,6 +102,10 @@ Cloudplow has 3 main functions:
             "service": "slack"
         }
     },
+    "nzbget": {
+        "enabled": false,
+        "url": "https://user:pass@nzbget.domain.com"
+    },
     "plex": {
         "enabled": true,
         "max_streams_before_throttle": 1,
@@ -109,6 +113,7 @@ Cloudplow has 3 main functions:
         "verbose_notifications": false,
         "rclone": {
             "throttle_speeds": {
+                "0": "100M",
                 "1": "50M",
                 "2": "40M",
                 "3": "30M",
@@ -135,7 +140,8 @@ Cloudplow has 3 main functions:
                 "--no-traverse": null,
                 "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1
+                "--verbose": 1,
+                "--fast-list": null
             },
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -162,7 +168,8 @@ Cloudplow has 3 main functions:
             "--no-traverse": null,
             "--stats": "60s",
             "--transfers": 16,
-            "--verbose": 1
+            "--verbose": 1,
+            "--fast-list": null
           },
           "rclone_sleeps": {
             "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -185,7 +192,8 @@ Cloudplow has 3 main functions:
                 "--drive-chunk-size": "64M",
                 "--stats": "60s",
                 "--transfers": 16,
-                "--verbose": 1
+                "--verbose": 1,
+                "--fast-list": null
             },
             "service": "scaleway",
             "sync_from": "google",
@@ -204,6 +212,11 @@ Cloudplow has 3 main functions:
             "opened_excludes": [
                 "/downloads/"
             ],
+            "schedule": {
+                "allowed_from": "04:00",
+                "allowed_until": "08:00",
+                "enabled": false
+            },
             "size_excludes": [
                 "downloads/*"
             ]
@@ -219,12 +232,15 @@ Cloudplow has 3 main functions:
     "core": {
         "dry_run": false,
         "rclone_binary_path": "/usr/bin/rclone",
-	    "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
+        "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
     },
 ```
 
-`"dry_run": true` will prevent any files being uploaded or deleted - use this to test out your config.
+`"dry_run": true` - prevent any files being uploaded or deleted - use this to test out your config.
 
+`rclone_binary_path` - full path to rclone binary file.
+
+`rclone_config_path` - full path to rclone config file.
 
 ## Hidden
 UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corresponding files on rclone remotes.
@@ -292,7 +308,20 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
 
   - Format: `"STREAM COUNT": "THROTTLED UPLOAD SPEED",`
 
+## Nzbget
 
+Cloudplow can pause the Nzbget download queue when an upload starts; and then resume it upon the upload finishing.
+
+```
+    "nzbget": {
+        "enabled": false,
+        "url": "https://user:pass@nzbget.domain.com"
+    },
+```
+
+`enabled` - `true` to enable.
+
+`url` - Your Nzbget URL.
 
 
 ## Notifications
@@ -399,7 +428,8 @@ These are the excludes to be used when uploading to this remote.
                 "--no-traverse": null,
                 "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1
+                "--verbose": 1,
+                "--fast-list": null
             },
 ```
 These are rclone parameters that will be used when uploading to this remote. You may add other rclone parameters.
@@ -489,6 +519,11 @@ Each entry to `uploader` references a remote inside `remotes`. The remote can on
             "opened_excludes": [
                 "/downloads/"
             ],
+            "schedule": {
+                "allowed_from": "04:00",
+                "allowed_until": "08:00",
+                "enabled": false
+            },
             "size_excludes": [
                 "downloads/*"
             ]
@@ -505,6 +540,8 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 `"max_size_gb"`: maximum size (in gigabytes) before uploading can commence
 
 `"opened_excludes"`: Paths the open file checker will check for when searching for open files. In the example above, any open files with `/downloads/` in it's path, would be ignored.
+
+`"schedule"`: This section allows you to specify a time period, in 24H (HH:MM) format, for when uploads are allowed to start. Uploads in progress will not stop when `allowed_until` is reached. This setting will not affect manual uploads, only the automatic uploader in `run` mode.
 
 `"size_excludes"`: Paths that will not be counted in the total size calculation for `max_size_gb`.
 
@@ -553,3 +590,8 @@ optional arguments:
   --loglevel {WARN,INFO,DEBUG}
                         Log level (default: INFO)
 ```
+
+
+***
+
+_If you find this project helpful, feel free to make a small donation via [Monzo](https://monzo.me/jamesbayliss9) (Credit Cards, Apple Pay, Google Pay, and others; no fees), [Paypal](https://www.paypal.me/l3uddz) (l3uddz@gmail.com), and Bitcoin (3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL)._
