@@ -171,7 +171,7 @@ def run_process(task, manager_dict, **kwargs):
 @decorators.timed
 def do_upload(remote=None):
     global plex_monitor_thread
-    nzbget: Nzbget = None
+    nzbget = None
     nzbget_paused = False
 
     lock_file = lock.upload()
