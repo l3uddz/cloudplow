@@ -44,29 +44,61 @@ Cloudplow has 3 main functions:
 
 # Requirements
 
-1. Ubuntu/Debian
+1. Ubuntu/Debian OS.
 
 2. Python 3.5 or higher (`sudo apt install python3 python3-pip`).
 
-3. requirements.txt modules (see below).
+3. Required Python modules (see below).
 
 # Installation
 
-1. `cd /opt`
+1. Clone the cloudplow repo.
 
-1. `sudo git clone https://github.com/l3uddz/cloudplow`
+   ```
+   sudo git clone https://github.com/l3uddz/cloudplow /opt/cloudplow
+   ```
 
-1. `sudo chown -R user:group cloudplow` (run `id` to find your user / group)
+1. Fix permissions of the cloudplow folder (replace `user`/`group` with your info; run `id` to check).
 
-1. `cd cloudplow`
+   ```
+   sudo chown -R user:group /opt/cloudplow
+   ```
 
-1. `sudo python3 -m pip install -r requirements.txt`
+1. Go into the cloudplow folder.
 
-1. `sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow`
+   ```
+   cd cloudplow
+   ```
 
-1. `cloudplow` - run once to generate a default config.json file.
+1. Install the required python modules.
 
-1. `nano config.json` - edit preferences.
+   ```
+   sudo python3 -m pip install -r requirements.txt
+   ```
+
+1. Create a shortcut for cloudplow.
+
+   ```
+   sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow
+   ```
+
+1. Create a shortcut for cloudplow.
+
+   ```
+   sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow
+   ```
+
+1. Generate a basic `config.json` file.
+
+   ```
+   cloudplow run
+   ```
+
+1. Configure the `config.json` file.
+
+   ```
+   nano config.json
+   ```
 
 
 # Configuration
