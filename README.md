@@ -460,12 +460,12 @@ Under `"remote"`, you have the name of the remote as the key (in the example abo
 
 
 ```
-"rclone_excludes": [
-    "**partial~",
-    "**_HIDDEN~",
-    ".unionfs/**",
-    ".unionfs-fuse/**"
-],
+            "rclone_excludes": [
+                "**partial~",
+                "**_HIDDEN~",
+                ".unionfs/**",
+                ".unionfs-fuse/**"
+            ],
 ```
 
 These are the excludes to be used when uploading to this remote.
@@ -475,13 +475,13 @@ These are the excludes to be used when uploading to this remote.
 
 
 ```
-"rclone_extras": {
-    "--checkers": 16,
-    "--drive-chunk-size": "64M",
-        "--stats": "60s",
-    "--transfers": 8,
-    "--verbose": 1
-},
+            "rclone_extras": {
+                "--checkers": 16,
+                "--drive-chunk-size": "64M",
+                    "--stats": "60s",
+                "--transfers": 8,
+                "--verbose": 1
+            },
 ```
 These are rclone parameters that will be used when uploading to this remote. You may add other rclone parameters.
 
@@ -492,25 +492,25 @@ Note: a value of null will mean `--no-traverse` instead of `--no-traverse=null`.
 
 Format:
 ```
-"rclone_sleeps": {
-    "keyword or phrase to be monitored": {
-        "count": 5,
-        "sleep": 25,
-        "timeout": 300
-    }
-},
+            "rclone_sleeps": {
+                "keyword or phrase to be monitored": {
+                    "count": 5,
+                    "sleep": 25,
+                    "timeout": 300
+                }
+            },
 ```
 
 Example:
 
 ```
-"rclone_sleeps": {
-    "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
-        "count": 5,
-        "sleep": 25,
-        "timeout": 300
-    }
-},
+            "rclone_sleeps": {
+                "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+                    "count": 5,
+                    "sleep": 25,
+                    "timeout": 300
+                }
+            },
 ```
 
 `"rclone_sleeps"` are keywords or phrases that are monitored during rclone tasks that will cause this remote's upload task to abort and go into a sleep for a specified amount of time. When a remote is asleep, it will not do it's regularly scheduled uploads (as definted in `check_intervals`).
@@ -534,14 +534,14 @@ In the example above, the phrase `"Failed to copy: googleapi: Error 403: User ra
 #### Remove Empty Directories
 
 ```
-"remove_empty_dir_depth": 2,
+            "remove_empty_dir_depth": 2,
 ```
 This is the depth to min-depth to delete empty folders from relative to `upload_folder`  (1 = `/Media/ ` ; 2 = `/Media/Movies/`; 3 = `/Media/Movies/Movies-Kids/`)
 
 
 ```
-"upload_folder": "/mnt/local/Media/",
-"upload_remote": "google:/Media/"
+            "upload_folder": "/mnt/local/Media/",
+            "upload_remote": "google:/Media/"
 ```
 
 #### Local/Remote Paths
