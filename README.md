@@ -67,7 +67,7 @@ Cloudplow has 3 main functions:
 1. Go into the cloudplow folder.
 
    ```
-   cd cloudplow
+   cd /opt/cloudplow
    ```
 
 1. Install the required python modules.
