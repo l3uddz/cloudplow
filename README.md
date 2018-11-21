@@ -82,12 +82,6 @@ Cloudplow has 3 main functions:
    sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow
    ```
 
-1. Create a shortcut for cloudplow.
-
-   ```
-   sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow
-   ```
-
 1. Generate a basic `config.json` file.
 
    ```
