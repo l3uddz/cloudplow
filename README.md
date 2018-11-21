@@ -13,10 +13,11 @@
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
-	- [Sample config.json](#sample-configjson)
+	- [Sample](#sample)
 	- [Core](#core)
 	- [Hidden](#hidden)
 	- [Notifications](#notifications)
+	- [NZBGet](#nzbget)
 	- [Plex](#plex)
 	- [Remotes](#remotes)
 	- [Uploader](#uploader)
@@ -43,35 +44,61 @@ Cloudplow has 3 main functions:
 
 # Requirements
 
-1. Ubuntu/Debian
+1. Ubuntu/Debian OS.
 
 2. Python 3.5 or higher (`sudo apt install python3 python3-pip`).
 
-3. requirements.txt modules (see below).
+3. Required Python modules (see below).
 
 # Installation
 
-1. `cd /opt`
+1. Clone the cloudplow repo.
 
-1. `sudo git clone https://github.com/l3uddz/cloudplow`
+   ```
+   sudo git clone https://github.com/l3uddz/cloudplow /opt/cloudplow
+   ```
 
-1. `sudo chown -R user:group cloudplow` (run `id` to find your user / group)
+1. Fix permissions of the cloudplow folder (replace `user`/`group` with your info; run `id` to check).
 
-1. `cd cloudplow`
+   ```
+   sudo chown -R user:group /opt/cloudplow
+   ```
 
-1. `sudo python3 -m pip install -r requirements.txt`
+1. Go into the cloudplow folder.
 
-1. `sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow`
+   ```
+   cd /opt/cloudplow
+   ```
 
-1. `cloudplow` - run once to generate a default config.json file.
+1. Install the required python modules.
 
-1. `nano config.json` - edit preferences.
+   ```
+   sudo python3 -m pip install -r requirements.txt
+   ```
+
+1. Create a shortcut for cloudplow.
+
+   ```
+   sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow
+   ```
+
+1. Generate a basic `config.json` file.
+
+   ```
+   cloudplow run
+   ```
+
+1. Configure the `config.json` file.
+
+   ```
+   nano config.json
+   ```
 
 
 # Configuration
 
 
-## Sample config.json
+## Sample
 
 ```json
 {
@@ -137,11 +164,9 @@ Cloudplow has 3 main functions:
             "rclone_extras": {
                 "--checkers": 16,
                 "--drive-chunk-size": "64M",
-                "--no-traverse": null,
                 "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1,
-                "--fast-list": null
+                "--verbose": 1
             },
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -155,6 +180,27 @@ Cloudplow has 3 main functions:
             "upload_folder": "/mnt/local/Media",
             "upload_remote": "google:/Media"
         },
+        "google_downloads": {
+          "hidden_remote": "",
+          "rclone_excludes": [
+            "**partial~",
+            "**_HIDDEN~",
+            ".unionfs/**",
+            ".unionfs-fuse/**"
+          ],
+          "rclone_extras": {
+            "--checkers": 32,
+            "--stats": "60s",
+            "--transfers": 16,
+            "--verbose": 1
+          },
+          "rclone_sleeps": {}
+          },
+          "remove_empty_dir_depth": 2,
+          "sync_remote": "",
+          "upload_folder": "/mnt/local/Downloads",
+          "upload_remote": "google:/Downloads"
+        },
         "box": {
           "hidden_remote": "box:",
           "rclone_excludes": [
@@ -165,14 +211,12 @@ Cloudplow has 3 main functions:
           ],
           "rclone_extras": {
             "--checkers": 32,
-            "--no-traverse": null,
             "--stats": "60s",
             "--transfers": 16,
-            "--verbose": 1,
-            "--fast-list": null
+            "--verbose": 1
           },
           "rclone_sleeps": {
-            "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+            "User rate limit exceeded": {
               "count": 5,
               "sleep": 25,
               "timeout": 300
@@ -180,8 +224,8 @@ Cloudplow has 3 main functions:
           },
           "remove_empty_dir_depth": 2,
           "sync_remote": "box:/Backups",
-          "upload_folder": "/mnt/local/Media",
-          "upload_remote": "box:/Media"
+          "upload_folder": "",
+          "upload_remote": ""
         }
     },
     "syncer": {
@@ -192,8 +236,7 @@ Cloudplow has 3 main functions:
                 "--drive-chunk-size": "64M",
                 "--stats": "60s",
                 "--transfers": 16,
-                "--verbose": 1,
-                "--fast-list": null
+                "--verbose": 1
             },
             "service": "scaleway",
             "sync_from": "google",
@@ -220,7 +263,19 @@ Cloudplow has 3 main functions:
             "size_excludes": [
                 "downloads/*"
             ]
-        }
+        },
+        "google_downloads": {
+            "check_interval": 30,
+            "exclude_open_files": true,
+            "max_size_gb": 400,
+            "opened_excludes": [
+                "/downloads/"
+            ],
+            "schedule": {},
+            "size_excludes": [
+                "downloads/*"
+            ]
+        },
     }
 }
 ```
@@ -229,11 +284,11 @@ Cloudplow has 3 main functions:
 ## Core
 
 ```
-    "core": {
-        "dry_run": false,
-        "rclone_binary_path": "/usr/bin/rclone",
-        "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
-    },
+"core": {
+    "dry_run": false,
+    "rclone_binary_path": "/usr/bin/rclone",
+    "rclone_config_path": "/home/seed/.config/rclone/rclone.conf"
+},
 ```
 
 `"dry_run": true` - prevent any files being uploaded or deleted - use this to test out your config.
@@ -246,14 +301,13 @@ Cloudplow has 3 main functions:
 UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corresponding files on rclone remotes.
 
 ```
-    "hidden": {
-        "/mnt/local/.unionfs-fuse": {
-            "hidden_remotes": [
-                "google"
-            ]
-        }
-    },
-
+"hidden": {
+    "/mnt/local/.unionfs-fuse": {
+        "hidden_remotes": [
+            "google"
+        ]
+    }
+},
 ```
 
 This is where you specify the location of the unionfs _HIDDEN~ files (i.e. whiteout files) and the rclone remotes where the corresponding files will need to be deleted from. You may specify than one remote here.
@@ -261,36 +315,101 @@ This is where you specify the location of the unionfs _HIDDEN~ files (i.e. white
 The specific remote path, where those corresponding files are, will be specified in the `remotes` section.
 
 
+## Notifications
+
+Notification alerts during tasks.
+
+
+Currently, only Pushover and Slack are supported. But more will be added later.
+
+### Pushover
+
+```
+"notifications": {
+    "Pushover": {
+        "app_token": "",
+        "service": "pushover",
+        "user_token": "",
+        "priority": 0
+    }
+},
+```
+
+Retrieve `app_token` and `user_token` from Pushover.net and fill it in.
+
+You can specify a priority for the messages send via Pushover using the `priority` key. It can be any Pushover priority value (https://pushover.net/api#priority)
+
+Note: The key name can be anything (e.g. `"Pushover":`), however, the `"service"` must be `"pushover"`.
+
+### Slack
+
+```
+"notifications": {
+    "Slack": {
+        "webhook_url": "",
+        "sender_name": "cloudplow",
+        "sender_icon": ":heavy_exclamation_mark:",
+        "channel": "",
+        "service": "slack"
+    }
+},
+```
+
+Retrieve the `webhook_url` when registering your webhook to Slack
+(via https://my.slack.com/services/new/incoming-webhook/).
+
+You can use `sender_name`, `sender_icon` and `channel` to specify settings
+for your webhook. You can however leave these out and use the defaults.
+
+Note: The key name can be anything (e.g. `"Slack":`), however, the `"service"` must be `"slack"`.
+
+
+## NZBGet
+
+Cloudplow can pause the Nzbget download queue when an upload starts; and then resume it upon the upload finishing.
+
+```
+"nzbget": {
+    "enabled": false,
+    "url": "https://user:pass@nzbget.domain.com"
+},
+```
+
+`enabled` - `true` to enable.
+
+`url` - Your Nzbget URL. Can be either `http://user:pass@localhost:6789` or `https://user:pass@nzbget.domain.com`.
+
 ## Plex
 
 Cloudplow can throttle Rclone uploads during active, playing Plex streams (paused streams are ignored).
 
 
 ```
-    "plex": {
-        "enabled": true,
-        "max_streams_before_throttle": 1,
-        "poll_interval": 60,
-        "verbose_notifications": false,
-        "rclone": {
-            "throttle_speeds": {
-                "1": "50M",
-                "2": "40M",
-                "3": "30M",
-                "4": "20M",
-                "5": "10M"
-            },
-            "url": "http://localhost:7949"
+"plex": {
+    "enabled": true,
+    "max_streams_before_throttle": 1,
+    "poll_interval": 60,
+    "verbose_notifications": false,
+    "rclone": {
+        "throttle_speeds": {
+            "0": "1000M",
+            "1": "50M",
+            "2": "40M",
+            "3": "30M",
+            "4": "20M",
+            "5": "10M"
         },
-        "token": "",
-        "url": "https://plex.cloudbox.media"
+        "url": "http://localhost:7949"
     },
+    "token": "",
+    "url": "https://plex.domain.com"
+},
 ```
 
 
 `enabled` - `true` to enable.
 
-`url` - Your Plex URL.
+`url` - Your Plex URL. Can be either `http://localhost:32400` or `https://plex.domain.com`.
 
 `token` - Your Plex Access Token.
 
@@ -304,73 +423,9 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
 
 - `url` - Leave as default.
 
-- `throttle_speed` - Categorized option to configure upload speeds for various stream counts (where `5` represents 5 streams or more). `M` is MB/s.
+- `throttle_speed` - Categorized option to configure upload speeds for various stream counts (where `5` represents 5 streams or more). Stream count `0` represents speeds when no active stream is playing. `M` is MB/s.
 
   - Format: `"STREAM COUNT": "THROTTLED UPLOAD SPEED",`
-
-## Nzbget
-
-Cloudplow can pause the Nzbget download queue when an upload starts; and then resume it upon the upload finishing.
-
-```
-    "nzbget": {
-        "enabled": false,
-        "url": "https://user:pass@nzbget.domain.com"
-    },
-```
-
-`enabled` - `true` to enable.
-
-`url` - Your Nzbget URL.
-
-
-## Notifications
-
-Notification alerts during tasks.
-
-
-Currently, only Pushover and Slack are supported. But more will be added later.
-
-### Pushover
-
-```
-    "notifications": {
-        "Pushover": {
-            "app_token": "",
-            "service": "pushover",
-            "user_token": "",
-            "priority": 0
-        }
-    },
-```
-
-Retrieve `app_token` and `user_token` from Pushover.net and fill it in.
-
-You can specify a priority for the messages send via Pushover using the `priority` key. It can be any Pushover priority value (https://pushover.net/api#priority)
-
-Note: The key name can be anything (e.g. `"Pushover":`), however, the `"service"` must be `"pushover"`.
-
-### Slack
-
-```
-    "notifications": {
-        "Slack": {
-            "webhook_url": "",
-	    "sender_name": "cloudplow",
-	    "sender_icon": ":heavy_exclamation_mark:",
-	    "channel": "",
-            "service": "slack"
-        }
-    },
-```
-
-Retrieve the `webhook_url` when registering your webhook to Slack
-(via https://my.slack.com/services/new/incoming-webhook/).
-
-You can use `sender_name`, `sender_icon` and `channel` to specify settings
-for your webhook. You can however leave these out and use the defaults.
-
-Note: The key name can be anything (e.g. `"Slack":`), however, the `"service"` must be `"slack"`.
 
 
 ## Remotes
@@ -413,8 +468,6 @@ Under `"remote"`, you have the name of the remote as the key (in the example abo
             ],
 ```
 
-
-
 These are the excludes to be used when uploading to this remote.
 
 
@@ -425,11 +478,9 @@ These are the excludes to be used when uploading to this remote.
             "rclone_extras": {
                 "--checkers": 16,
                 "--drive-chunk-size": "64M",
-                "--no-traverse": null,
-                "--stats": "60s",
+                    "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1,
-                "--fast-list": null
+                "--verbose": 1
             },
 ```
 These are rclone parameters that will be used when uploading to this remote. You may add other rclone parameters.
@@ -450,9 +501,8 @@ Format:
             },
 ```
 
-
-
 Example:
+
 ```
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -462,8 +512,6 @@ Example:
                 }
             },
 ```
-
-
 
 `"rclone_sleeps"` are keywords or phrases that are monitored during rclone tasks that will cause this remote's upload task to abort and go into a sleep for a specified amount of time. When a remote is asleep, it will not do it's regularly scheduled uploads (as definted in `check_intervals`).
 
@@ -492,10 +540,10 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 
 
 ```
-          "upload_folder": "/mnt/local/Media/",
-          "upload_remote": "google:/Media/"
-
+            "upload_folder": "/mnt/local/Media/",
+            "upload_remote": "google:/Media/"
 ```
+
 #### Local/Remote Paths
 
 
@@ -504,31 +552,31 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 `"upload_remote"`: is the remote path that `uploader` task will  uploaded to.
 
 
-
-
 ## Uploader
 
-Each entry to `uploader` references a remote inside `remotes`. The remote can only be referenced ONCE.
+Each entry to `uploader` references a remote inside `remotes` (i.e. the names have to match). The remote can only be referenced ONCE.
+
+If another folder needs to be uploaded, even to the same remote, then another uploader/remote combo must be created. The example at the top of this page shows 2 uploader/remote configs.
 
 ```
-    "uploader": {
-        "google": {
-            "check_interval": 30,
-            "exclude_open_files": true,
-            "max_size_gb": 500,
-            "opened_excludes": [
-                "/downloads/"
-            ],
-            "schedule": {
-                "allowed_from": "04:00",
-                "allowed_until": "08:00",
-                "enabled": false
-            },
-            "size_excludes": [
-                "downloads/*"
-            ]
-          }
-    }
+"uploader": {
+    "google": {
+        "check_interval": 30,
+        "exclude_open_files": true,
+        "max_size_gb": 500,
+        "opened_excludes": [
+            "/downloads/"
+        ],
+        "schedule": {
+            "allowed_from": "04:00",
+            "allowed_until": "08:00",
+            "enabled": false
+        },
+        "size_excludes": [
+            "downloads/*"
+        ]
+      }
+}
 ```
 
 In the example above, the uploader references `"google"` from the `remotes` section.
