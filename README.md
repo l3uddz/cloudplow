@@ -144,6 +144,8 @@ Cloudplow has 3 main functions:
                     "timeout": 3600
                 }
             },
+            "rclone_command":"move",
+            "rclone_command":"move",
             "remove_empty_dir_depth": 2,
             "sync_remote": "google:/Backups",
             "upload_folder": "/mnt/local/Media",
@@ -458,6 +460,11 @@ In the example above, the phrase `"Failed to copy: googleapi: Error 403: User ra
 
 `"sleep"`: How many hours the remote goes to sleep for, when the monitored phrase is `count`-ed during the `timeout` period.
 
+#### Set Rclone Command
+```
+            "rclone_command":"move"
+```
+This is the desired command to be used when running any uploads (Can be move or copy)
 #### Remove Empty Directories
 
 ```
