@@ -52,7 +52,7 @@
                 "--stats": "60s",
                 "--transfers": 8,
                 "--verbose": 1,
-                "--fast-list": null
+                "--skip-links": null
             },
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {

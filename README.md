@@ -166,7 +166,8 @@ Cloudplow has 3 main functions:
                 "--drive-chunk-size": "64M",
                 "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1
+                "--verbose": 1,
+                "--skip-links": null
             },
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -182,53 +183,56 @@ Cloudplow has 3 main functions:
             "upload_remote": "google:/Media"
         },
         "google_downloads": {
-          "hidden_remote": "",
-          "rclone_excludes": [
-            "**partial~",
-            "**_HIDDEN~",
-            ".unionfs/**",
-            ".unionfs-fuse/**"
-          ],
-          "rclone_extras": {
-            "--checkers": 32,
-            "--stats": "60s",
-            "--transfers": 16,
-            "--verbose": 1
-          },
-          "rclone_sleeps": {}
-          },
-          "remove_empty_dir_depth": 2,
-          "sync_remote": "",
-          "upload_folder": "/mnt/local/Downloads",
-          "upload_remote": "google:/Downloads"
+            "hidden_remote": "",
+            "rclone_excludes": [
+              "**partial~",
+              "**_HIDDEN~",
+              ".unionfs/**",
+              ".unionfs-fuse/**"
+            ],
+            "rclone_extras": {
+              "--checkers": 32,
+              "--stats": "60s",
+              "--transfers": 16,
+              "--verbose": 1,
+              "--skip-links": null
+            },
+            "rclone_sleeps": {}
+            },
+            "rclone_command": "copy",
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "",
+            "upload_folder": "/mnt/local/Downloads",
+            "upload_remote": "google:/Downloads"
         },
         "box": {
-          "hidden_remote": "box:",
-          "rclone_excludes": [
-            "**partial~",
-            "**_HIDDEN~",
-            ".unionfs/**",
-            ".unionfs-fuse/**"
-          ],
-          "rclone_extras": {
-            "--checkers": 32,
-            "--stats": "60s",
-            "--transfers": 16,
-            "--verbose": 1
-          },
-          "rclone_sleeps": {
-            "User rate limit exceeded": {
-              "count": 5,
-              "sleep": 25,
-              "timeout": 300
-            }
-          },
-          "rclone_command": "move",
-          "remove_empty_dir_depth": 2,
-          "sync_remote": "box:/Backups",
-          "upload_folder": "",
-          "upload_remote": ""
-        }
+            "hidden_remote": "box:",
+            "rclone_excludes": [
+              "**partial~",
+              "**_HIDDEN~",
+              ".unionfs/**",
+              ".unionfs-fuse/**"
+            ],
+            "rclone_extras": {
+              "--checkers": 32,
+              "--stats": "60s",
+              "--transfers": 16,
+              "--verbose": 1,
+              "--skip-links": null
+            },
+            "rclone_sleeps": {
+              "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+                "count": 5,
+                "sleep": 25,
+                "timeout": 300
+              }
+            },
+            "rclone_command": "move",
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "box:/Backups",
+            "upload_folder": "/mnt/local/Media",
+            "upload_remote": "box:/Media"
+          }
     },
     "syncer": {
         "google2box": {
