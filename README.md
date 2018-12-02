@@ -484,7 +484,7 @@ These are the excludes to be used when uploading to this remote.
             "rclone_extras": {
                 "--checkers": 16,
                 "--drive-chunk-size": "64M",
-                    "--stats": "60s",
+                "--stats": "60s",
                 "--transfers": 8,
                 "--verbose": 1
             },
