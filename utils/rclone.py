@@ -71,7 +71,7 @@ class RcloneUploader:
             log.debug("Rclone command set to %s",self.config['rclone_command'])
             # build cmd
             cmd = "%s %s %s %s --config=%s" % (cmd_quote(self.rclone_binary_path),
-                                                 cmd_quote(self.config['rclone_command'] if self.config['rclone_command'].lower() != 'sync' else 'move'),
+                                                 cmd_quote(self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move'),
                                                  cmd_quote(self.config['upload_folder']),
                                                  cmd_quote(self.config['upload_remote']),
                                                  cmd_quote(self.rclone_config_path))
