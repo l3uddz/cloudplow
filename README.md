@@ -166,7 +166,8 @@ Cloudplow has 3 main functions:
                 "--drive-chunk-size": "64M",
                 "--stats": "60s",
                 "--transfers": 8,
-                "--verbose": 1
+                "--verbose": 1,
+                "--skip-links": null
             },
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
@@ -175,58 +176,63 @@ Cloudplow has 3 main functions:
                     "timeout": 3600
                 }
             },
+            "rclone_command": "move",
             "remove_empty_dir_depth": 2,
             "sync_remote": "google:/Backups",
             "upload_folder": "/mnt/local/Media",
             "upload_remote": "google:/Media"
         },
         "google_downloads": {
-          "hidden_remote": "",
-          "rclone_excludes": [
-            "**partial~",
-            "**_HIDDEN~",
-            ".unionfs/**",
-            ".unionfs-fuse/**"
-          ],
-          "rclone_extras": {
-            "--checkers": 32,
-            "--stats": "60s",
-            "--transfers": 16,
-            "--verbose": 1
-          },
-          "rclone_sleeps": {}
-          },
-          "remove_empty_dir_depth": 2,
-          "sync_remote": "",
-          "upload_folder": "/mnt/local/Downloads",
-          "upload_remote": "google:/Downloads"
+            "hidden_remote": "",
+            "rclone_excludes": [
+              "**partial~",
+              "**_HIDDEN~",
+              ".unionfs/**",
+              ".unionfs-fuse/**"
+            ],
+            "rclone_extras": {
+              "--checkers": 32,
+              "--stats": "60s",
+              "--transfers": 16,
+              "--verbose": 1,
+              "--skip-links": null
+            },
+            "rclone_sleeps": {}
+            },
+            "rclone_command": "copy",
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "",
+            "upload_folder": "/mnt/local/Downloads",
+            "upload_remote": "google:/Downloads"
         },
         "box": {
-          "hidden_remote": "box:",
-          "rclone_excludes": [
-            "**partial~",
-            "**_HIDDEN~",
-            ".unionfs/**",
-            ".unionfs-fuse/**"
-          ],
-          "rclone_extras": {
-            "--checkers": 32,
-            "--stats": "60s",
-            "--transfers": 16,
-            "--verbose": 1
-          },
-          "rclone_sleeps": {
-            "User rate limit exceeded": {
-              "count": 5,
-              "sleep": 25,
-              "timeout": 300
-            }
-          },
-          "remove_empty_dir_depth": 2,
-          "sync_remote": "box:/Backups",
-          "upload_folder": "",
-          "upload_remote": ""
-        }
+            "hidden_remote": "box:",
+            "rclone_excludes": [
+              "**partial~",
+              "**_HIDDEN~",
+              ".unionfs/**",
+              ".unionfs-fuse/**"
+            ],
+            "rclone_extras": {
+              "--checkers": 32,
+              "--stats": "60s",
+              "--transfers": 16,
+              "--verbose": 1,
+              "--skip-links": null
+            },
+            "rclone_sleeps": {
+              "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+                "count": 5,
+                "sleep": 25,
+                "timeout": 300
+              }
+            },
+            "rclone_command": "move",
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "box:/Backups",
+            "upload_folder": "/mnt/local/Media",
+            "upload_remote": "box:/Media"
+          }
     },
     "syncer": {
         "google2box": {
@@ -530,6 +536,12 @@ In the example above, the phrase `"Failed to copy: googleapi: Error 403: User ra
   - The `timeout` period will restart again after the first new occurance of the monitored phrase.
 
 `"sleep"`: How many hours the remote goes to sleep for, when the monitored phrase is `count`-ed during the `timeout` period.
+
+#### Set Rclone Command
+```
+            "rclone_command": "move",
+```
+This is the desired command to be used when running any uploads. Options are `move` or `copy`. Default is `move`.
 
 #### Remove Empty Directories
 

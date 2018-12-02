@@ -106,6 +106,7 @@ class Config(object):
                 'upload_remote': 'google:/Media',
                 'hidden_remote': 'google:',
                 'sync_remote': 'google:/Media',
+                'rclone_command': 'move',
                 'rclone_excludes': [
                     '**partial~',
                     '**_HIDDEN~',
@@ -118,7 +119,7 @@ class Config(object):
                     '--checkers': 16,
                     '--stats': '60s',
                     '--verbose': 1,
-                    '--fast-list': None
+                    '--skip-links': None
                 },
                 'rclone_sleeps': {
                     'Failed to copy: googleapi: Error 403: User rate limit exceeded': {
