@@ -537,11 +537,11 @@ In the example above, the phrase `"Failed to copy: googleapi: Error 403: User ra
 
 `"sleep"`: How many hours the remote goes to sleep for, when the monitored phrase is `count`-ed during the `timeout` period.
 
-#### Set Rclone Command
+#### Rclone Command
 ```
             "rclone_command": "move",
 ```
-This is the desired command to be used when running any uploads. Options are `move` or `copy`. Default is `move`.
+This is the desired command to be used when running any rclone uploads. Options are `move` or `copy`. Default is `move`.
 
 #### Remove Empty Directories
 
