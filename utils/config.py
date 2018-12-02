@@ -106,6 +106,7 @@ class Config(object):
                 'upload_remote': 'google:/Media',
                 'hidden_remote': 'google:',
                 'sync_remote': 'google:/Media',
+                'rclone_command': 'move',
                 'rclone_excludes': [
                     '**partial~',
                     '**_HIDDEN~',
