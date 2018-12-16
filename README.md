@@ -73,6 +73,12 @@ Cloudplow has 3 main functions:
 1. Install the required python modules.
 
    ```
+   sudo apt-get install python3-pip
+   ```
+
+1. Install the required python modules.
+
+   ```
    sudo python3 -m pip install -r requirements.txt
    ```
 
