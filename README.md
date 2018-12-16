@@ -70,7 +70,7 @@ Cloudplow has 3 main functions:
    cd /opt/cloudplow
    ```
 
-1. Install the required python modules.
+1. Install Python PIP.
 
    ```
    sudo apt-get install python3-pip
