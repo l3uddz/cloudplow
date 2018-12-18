@@ -45,8 +45,8 @@ class UnionfsHiddenFolder:
                                 delete_failed += 1
 
                         for future in concurrent.futures.as_completed(future_to_remote_file):
+                            remote_file = future_to_remote_file[future]
                             try:
-                                remote_file = future_to_remote_file[future]
                                 if future.result():
                                     log.info("Removed file '%s'", remote_file)
                                     delete_success += 1
@@ -54,7 +54,8 @@ class UnionfsHiddenFolder:
                                     log.error("Failed removing file '%s'", remote_file)
                                     delete_failed += 1
                             except Exception:
-                                log.exception("Exception processing result from rclone delete file future: ")
+                                log.exception("Exception processing result from rclone delete file future for '%s': ",
+                                              remote_file)
                                 delete_failed += 1
 
                     # clean hidden folders from remote
@@ -71,8 +72,8 @@ class UnionfsHiddenFolder:
                                 delete_failed += 1
 
                         for future in concurrent.futures.as_completed(future_to_remote_folder):
+                            remote_folder = future_to_remote_folder[future]
                             try:
-                                remote_folder = future_to_remote_folder[future]
                                 if future.result():
                                     log.info("Removed folder '%s'", remote_folder)
                                     delete_success += 1
@@ -81,7 +82,8 @@ class UnionfsHiddenFolder:
                                     delete_failed += 1
 
                             except Exception:
-                                log.exception("Exception processing result from rclone delete folder future: ")
+                                log.exception("Exception processing result from rclone delete folder future for '%s': ",
+                                              remote_folder)
                                 delete_failed += 1
 
                 log.info("Completed cleaning hidden(s) from remote: %s", name)
