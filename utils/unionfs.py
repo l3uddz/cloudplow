@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 
 from . import path
@@ -28,34 +29,66 @@ class UnionfsHiddenFolder:
 
         try:
             rclone = RcloneUploader(name, remote, self.rclone_binary_path, self.rclone_config_path, self.dry_run)
-
-            # clean hidden files from remote
-            if self.hidden_files:
-                log.info("Cleaning %d hidden file(s) from remote: %s", len(self.hidden_files), name)
-                for hidden_file in self.hidden_files:
-                    remote_file = self.__hidden2remote(remote, hidden_file)
-                    if remote_file and rclone.delete_file(remote_file):
-                        log.info("Removed file '%s'", remote_file)
-                        delete_success += 1
-                    else:
-                        log.error("Failed removing file '%s'", remote_file)
-                        delete_failed += 1
-
-            # clean hidden folders from remote
-            if self.hidden_folders:
-                log.info("Cleaning %d hidden folder(s) from remote: %s", len(self.hidden_folders), name)
-                for hidden_folder in self.hidden_folders:
-                    remote_folder = self.__hidden2remote(remote, hidden_folder)
-                    if remote_folder and rclone.delete_folder(remote_folder):
-                        log.info("Removed folder '%s'", remote_folder)
-                        delete_success += 1
-                    else:
-                        log.error("Failed removing folder '%s'", remote_folder)
-                        delete_failed += 1
-
+            # clean hiddens from remote using a process pool
             if self.hidden_files or self.hidden_folders:
+                with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+                    # clean hidden files from remote
+                    if self.hidden_files:
+                        log.info("Cleaning %d hidden file(s) from remote: %s", len(self.hidden_files), name)
+                        future_to_remote_file = {}
+                        for hidden_file in self.hidden_files:
+                            remote_file = self.__hidden2remote(remote, hidden_file)
+                            if remote_file:
+                                future_to_remote_file[executor.submit(rclone.delete_file, remote_file)] = remote_file
+                            else:
+                                log.error("Failed mapping file '%s' to a remote file", hidden_file)
+                                delete_failed += 1
+
+                        for future in concurrent.futures.as_completed(future_to_remote_file):
+                            remote_file = future_to_remote_file[future]
+                            try:
+                                if future.result():
+                                    log.info("Removed file '%s'", remote_file)
+                                    delete_success += 1
+                                else:
+                                    log.error("Failed removing file '%s'", remote_file)
+                                    delete_failed += 1
+                            except Exception:
+                                log.exception("Exception processing result from rclone delete file future for '%s': ",
+                                              remote_file)
+                                delete_failed += 1
+
+                    # clean hidden folders from remote
+                    if self.hidden_folders:
+                        log.info("Cleaning %d hidden folder(s) from remote: %s", len(self.hidden_folders), name)
+                        future_to_remote_folder = {}
+                        for hidden_folder in self.hidden_folders:
+                            remote_folder = self.__hidden2remote(remote, hidden_folder)
+                            if remote_folder:
+                                future_to_remote_folder[
+                                    executor.submit(rclone.delete_folder, remote_folder)] = remote_folder
+                            else:
+                                log.error("Failed mapping folder '%s' to a remote folder", hidden_folder)
+                                delete_failed += 1
+
+                        for future in concurrent.futures.as_completed(future_to_remote_folder):
+                            remote_folder = future_to_remote_folder[future]
+                            try:
+                                if future.result():
+                                    log.info("Removed folder '%s'", remote_folder)
+                                    delete_success += 1
+                                else:
+                                    log.error("Failed removing folder '%s'", remote_folder)
+                                    delete_failed += 1
+
+                            except Exception:
+                                log.exception("Exception processing result from rclone delete folder future for '%s': ",
+                                              remote_folder)
+                                delete_failed += 1
+
                 log.info("Completed cleaning hidden(s) from remote: %s", name)
                 log.info("%d items were deleted, %d items failed to delete", delete_success, delete_failed)
+
             return True, delete_success, delete_failed
         except Exception:
             log.exception("Exception cleaning hidden(s) from %r: ", self.unionfs_fuse)
