@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 
 from . import path
@@ -32,14 +33,28 @@ class UnionfsHiddenFolder:
             # clean hidden files from remote
             if self.hidden_files:
                 log.info("Cleaning %d hidden file(s) from remote: %s", len(self.hidden_files), name)
-                for hidden_file in self.hidden_files:
-                    remote_file = self.__hidden2remote(remote, hidden_file)
-                    if remote_file and rclone.delete_file(remote_file):
-                        log.info("Removed file '%s'", remote_file)
-                        delete_success += 1
-                    else:
-                        log.error("Failed removing file '%s'", remote_file)
-                        delete_failed += 1
+                with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+                    future_to_remote_file = {}
+                    for hidden_file in self.hidden_files:
+                        remote_file = self.__hidden2remote(remote, hidden_file)
+                        if remote_file:
+                            future_to_remote_file[executor.submit(rclone.delete_file, remote_file)] = remote_file
+                        else:
+                            log.error("Failed mapping file '%s' to a remote file", hidden_file)
+                            delete_failed += 1
+
+                    for future in concurrent.futures.as_completed(future_to_remote_file):
+                        try:
+                            remote_file = future_to_remote_file[future]
+                            if future.result():
+                                log.info("Removed file '%s'", remote_file)
+                                delete_success += 1
+                            else:
+                                log.error("Failed removing file '%s'", remote_file)
+                                delete_failed += 1
+                        except Exception:
+                            log.exception("Exception processing result from rclone delete file future: ")
+                            delete_failed += 1
 
             # clean hidden folders from remote
             if self.hidden_folders:
