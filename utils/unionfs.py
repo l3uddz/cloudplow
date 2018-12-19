@@ -79,50 +79,45 @@ class UnionfsHiddenFolder:
 
         return False, delete_success, delete_failed
 
+    def remove_local_hidden(self):
+        if len(self.hidden_files):
+            path.delete(self.hidden_files)
+            log.info("Removed %d local hidden file(s) from disk", len(self.hidden_files))
+        if len(self.hidden_folders):
+            path.delete(self.hidden_folders)
+            log.info("Removed %d local hidden folder(s) from disk", len(self.hidden_folders))
+        return
 
-def remove_local_hidden(self):
-    if len(self.hidden_files):
-        path.delete(self.hidden_files)
-        log.info("Removed %d local hidden file(s) from disk", len(self.hidden_files))
-    if len(self.hidden_folders):
-        path.delete(self.hidden_folders)
-        log.info("Removed %d local hidden folder(s) from disk", len(self.hidden_folders))
-    return
+    def remove_empty_dirs(self):
+        path.remove_empty_dirs(self.unionfs_fuse, 1)
+        log.info("Removed empty directories from '%s'", self.unionfs_fuse)
 
+    # internals
+    def __files(self):
+        hidden_files = []
+        try:
+            hidden_files = path.find_files(self.unionfs_fuse, '_HIDDEN~')
+            log.info("Found %d hidden files in %r", len(hidden_files), self.unionfs_fuse)
+        except Exception:
+            log.exception("Exception finding hidden files for %r: ", self.unionfs_fuse)
+            hidden_files = None
+        return hidden_files
 
-def remove_empty_dirs(self):
-    path.remove_empty_dirs(self.unionfs_fuse, 1)
-    log.info("Removed empty directories from '%s'", self.unionfs_fuse)
+    def __folders(self):
+        hidden_folders = []
+        try:
+            hidden_folders = path.find_folders(self.unionfs_fuse, '_HIDDEN~')
+            log.info("Found %d hidden folders in %r", len(hidden_folders), self.unionfs_fuse)
+        except Exception:
+            log.exception("Exception finding hidden folders for %r: ", self.unionfs_fuse)
+            hidden_folders = None
+        return hidden_folders
 
-
-# internals
-def __files(self):
-    hidden_files = []
-    try:
-        hidden_files = path.find_files(self.unionfs_fuse, '_HIDDEN~')
-        log.info("Found %d hidden files in %r", len(hidden_files), self.unionfs_fuse)
-    except Exception:
-        log.exception("Exception finding hidden files for %r: ", self.unionfs_fuse)
-        hidden_files = None
-    return hidden_files
-
-
-def __folders(self):
-    hidden_folders = []
-    try:
-        hidden_folders = path.find_folders(self.unionfs_fuse, '_HIDDEN~')
-        log.info("Found %d hidden folders in %r", len(hidden_folders), self.unionfs_fuse)
-    except Exception:
-        log.exception("Exception finding hidden folders for %r: ", self.unionfs_fuse)
-        hidden_folders = None
-    return hidden_folders
-
-
-def __hidden2remote(self, remote, hidden_path):
-    try:
-        remote_path = hidden_path.replace(self.unionfs_fuse, remote['hidden_remote']).rstrip('_HIDDEN~')
-        log.debug("Mapped '%s' to '%s'", hidden_path, remote_path)
-        return remote_path
-    except Exception:
-        log.exception("Exception mapping hidden file '%s' to its rclone remote path", hidden_path)
-    return None
+    def __hidden2remote(self, remote, hidden_path):
+        try:
+            remote_path = hidden_path.replace(self.unionfs_fuse, remote['hidden_remote']).rstrip('_HIDDEN~')
+            log.debug("Mapped '%s' to '%s'", hidden_path, remote_path)
+            return remote_path
+        except Exception:
+            log.exception("Exception mapping hidden file '%s' to its rclone remote path", hidden_path)
+        return None
