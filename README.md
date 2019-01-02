@@ -156,7 +156,7 @@ Cloudplow has 3 main functions:
             "url": "http://localhost:7949"
         },
         "token": "",
-        "url": "https://plex.cloudbox.media"
+        "url": "https://plex.domain.com"
     },
     "remotes": {
         "google": {
@@ -203,7 +203,7 @@ Cloudplow has 3 main functions:
               "--verbose": 1,
               "--skip-links": null
             },
-            "rclone_sleeps": {}
+            "rclone_sleeps": {
             },
             "rclone_command": "copy",
             "remove_empty_dir_depth": 2,
