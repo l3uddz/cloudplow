@@ -17,13 +17,14 @@ log = logging.getLogger('rclone')
 
 
 class RcloneUploader:
-    def __init__(self, name, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False):
+    def __init__(self, name, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False,service_file=None):
         self.name = name
         self.config = config
         self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
         self.dry_run = dry_run
         self.use_rc = use_rc
+        self.service_file = service_file
 
     def delete_file(self, path):
         try:
@@ -75,7 +76,8 @@ class RcloneUploader:
                                                  cmd_quote(self.config['upload_folder']),
                                                  cmd_quote(self.config['upload_remote']),
                                                  cmd_quote(self.rclone_config_path))
-
+            if self.service_file != None:
+                cmd += ' --drive-service-account-credentials string %s' % self.service_file
             extras = self.__extras2string()
             if len(extras) > 2:
                 cmd += ' %s' % extras

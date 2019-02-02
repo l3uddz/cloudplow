@@ -21,6 +21,9 @@ class Uploader:
         self.rclone_config_path = rclone_config_path
         self.use_rc = use_rc
 
+    def set_service_file(self,file):
+        self.service_file = file
+
     def upload(self):
         rclone_config = self.rclone_config.copy()
 
@@ -34,8 +37,12 @@ class Uploader:
                     rclone_config['rclone_excludes'].append(re.escape(item))
 
         # do upload
-        rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
-                                self.dry_run, self.use_rc)
+        if self.service_file != None:
+            rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
+                                    self.dry_run, self.use_rc,self.service_file)
+        else:
+            rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
+                                    self.dry_run, self.use_rc)
         log.info("Uploading '%s' to remote: %s", rclone_config['upload_folder'], self.name)
         rclone.upload(self.__logic)
         log.info("Finished uploading to remote: %s", self.name)
