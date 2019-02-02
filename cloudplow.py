@@ -580,8 +580,12 @@ if __name__ == "__main__":
             # add syncers to schedule
             init_syncers()
             for syncer_name, syncer_conf in conf.configs['syncer'].items():
-                schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer, syncer_delay,
-                                                                      syncer_name=syncer_name)
+                if syncer_conf['service'].lower() == 'local':
+                    schedule.every(syncer_conf['sync_interval']).hours.do(scheduled_syncer, syncer_delay,
+                                                                          syncer_name=syncer_name)
+                else:
+                    schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer, syncer_delay,
+                                                                          syncer_name=syncer_name)
                 log.info("Added %s syncer to schedule, syncing every %d hours", syncer_name,
                          syncer_conf['sync_interval'])
 
