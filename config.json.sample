@@ -66,7 +66,6 @@
                     "timeout": 3600
                 }
             },
-            "service_account_path":"/home/daghaian/.config/cloudplow/service_accounts/,
             "rclone_command":"move",
             "remove_empty_dir_depth": 2,
             "sync_remote": "google:/Media",
@@ -91,7 +90,8 @@
             },
             "size_excludes": [
                 "downloads/*"
-            ]
+            ],
+            "service_account_path":"/home/daghaian/.config/cloudplow/service_accounts/"
         }
     }
 }
