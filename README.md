@@ -15,17 +15,18 @@
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
-	- [Sample](#sample)
-	- [Core](#core)
-	- [Hidden](#hidden)
-	- [Notifications](#notifications)
-	- [NZBGet](#nzbget)
-	- [Plex](#plex)
-	- [Remotes](#remotes)
-	- [Uploader](#uploader)
+  - [Sample](#sample)
+  - [Core](#core)
+  - [Hidden](#hidden)
+  - [Notifications](#notifications)
+  - [NZBGet](#nzbget)
+  - [Plex](#plex)
+  - [Remotes](#remotes)
+  - [Uploader](#uploader)
+  - [Syncer](#syncer)
 - [Usage](#usage)
-	- [Automatic (Scheduled)](#automatic-scheduled)
-	- [Manual (CLI)](#manual-cli)
+  - [Automatic (Scheduled)](#automatic-scheduled)
+  - [Manual (CLI)](#manual-cli)
 
 <!-- /TOC -->
 
@@ -39,14 +40,14 @@ Cloudplow has 3 main functions:
 
 1. Automatic uploader to Rclone remote : Files are moved off local storage. With support for multiple uploaders (i.e. remote/folder pairings).
 
-2. UnionFS Cleaner functionality: Deletion of UnionFS-Fuse whiteout files (*_HIDDEN~) and their corresponding "whited-out" files on Rclone remotes. With support for multiple remotes (useful if you have multiple Rclone remotes mounted).
+2. UnionFS Cleaner functionality: Deletion of UnionFS-Fuse whiteout files (`*_HIDDEN~`) and their corresponding "whited-out" files on Rclone remotes. With support for multiple remotes (useful if you have multiple Rclone remotes mounted).
 
 3. Automatic remote syncer: Sync between two different Rclone remotes using 3rd party VM instances. With support for multiple remote/folder pairings. With support for multiple syncers (i.e. remote/remote pairings).
 
 
 # Requirements
 
-1. Ubuntu/Debian OS.
+1. Ubuntu/Debian OS (could work in other OSes with some tweaks).
 
 2. Python 3.5 or higher (`sudo apt install python3 python3-pip`).
 
@@ -182,6 +183,11 @@ Cloudplow has 3 main functions:
                     "count": 5,
                     "sleep": 25,
                     "timeout": 3600
+                },
+                " 0/s,": {
+                    "count": 15,
+                    "sleep": 25,
+                    "timeout": 140
                 }
             },
             "rclone_command": "move",
@@ -233,6 +239,11 @@ Cloudplow has 3 main functions:
                 "count": 5,
                 "sleep": 25,
                 "timeout": 300
+              },
+              " 0/s,": {
+                  "count": 15,
+                  "sleep": 25,
+                  "timeout": 140
               }
             },
             "rclone_command": "move",
@@ -324,7 +335,7 @@ UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corres
 },
 ```
 
-This is where you specify the location of the unionfs _HIDDEN~ files (i.e. whiteout files) and the rclone remotes where the corresponding files will need to be deleted from. You may specify than one remote here.
+This is where you specify the location of the unionfs `_HIDDEN~` files (i.e. whiteout files) and the rclone remotes where the corresponding files will need to be deleted from. You may specify than one remote here.
 
 The specific remote path, where those corresponding files are, will be specified in the `remotes` section.
 
@@ -573,13 +584,15 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 
 #### Sync From/To Paths
 
-`"sync_remote"`: this is the from/to destination used by the syncer when building the rclone command.
+`"sync_remote"`: Used by the `syncer` task. This specifies the from/to destinations used to build the rclone command. See the [syncer](#syncer) section for more on this.
 
 ## Uploader
 
 Each entry to `uploader` references a remote inside `remotes` (i.e. the names have to match). The remote can only be referenced ONCE.
 
 If another folder needs to be uploaded, even to the same remote, then another uploader/remote combo must be created. The example at the top of this page shows 2 uploader/remote configs.
+
+If multiple uploader tasks are specified, the tasks will run sequentially (vs in parallel).
 
 ```
 "uploader": {
@@ -621,9 +634,11 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 
 Each entry to the `syncer` corresponds to a single sync task.
 
-Further documention refers to the example configurations below.
+New `remotes` entries should be created for a single `syncer` task.
 
-```
+Further documentation refers to the example configurations below.
+
+```json
     "remotes": {
         "local_torrents": {
             "hidden_remote": "",
@@ -635,10 +650,10 @@ Further documention refers to the example configurations below.
                     "sleep": 25,
                     "timeout": 3600
                 },
-                "0/s": {
-                    "count": 10,
+                " 0/s,": {
+                    "count": 15,
                     "sleep": 25,
-                    "timeout": 3600
+                    "timeout": 140
                 }
             },
             "remove_empty_dir_depth": 2,
@@ -678,26 +693,107 @@ Further documention refers to the example configurations below.
     },
 ```
 
-As can be seen above, we have two remote entries, both of which have the sync_remote filled in, which is used by the syncer tasks to know where it is syncing from/to.
+### Remotes
 
-It is important to note, the rclone_sleeps entries from both remote entries are collated by the syncer, so there is only need for 1 `rclone_sleeps` to be filled in.
+```json
+    "remotes": {
+        "local_torrents": {
+            "hidden_remote": "",
+            "rclone_excludes": [],
+            "rclone_extras": {},
+            "rclone_sleeps": {
+                "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+                    "count": 5,
+                    "sleep": 25,
+                    "timeout": 3600
+                },
+                " 0/s,": {
+                    "count": 15,
+                    "sleep": 25,
+                    "timeout": 140
+                }
+            },
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "/mnt/local/downloads/torrents",
+            "upload_folder": "",
+            "upload_remote": ""
+        },
+        "google_torrents": {
+            "hidden_remote": "",
+            "rclone_excludes": [],
+            "rclone_extras": {},
+            "rclone_sleeps": {},
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "gdrive:/downloads/torrents",
+            "upload_folder": "",
+            "upload_remote": ""
+        }
+    },
+```
+
+`sync_remote`: In the example above, there are two remote entries, both of which have  `sync_remote` filled-in. This is used by the syncer task to specify the sync source and destination (i.e. `sync_remote` of `sync_from` remote is the source and `sync_remote` of `sync_to` remote is the destination).
+
+`rclone_sleeps`: Entries from both remotes are collated by the `syncer`, so there is only need for one `rclone_sleeps` to be filled in.
+
+`rclone_extras`: Are not used by the syncer.
+
+### Syncer
+
+```json
+    "syncer": {
+        "torrents2google": {
+            "rclone_extras": {
+                "--checkers": 16,
+                "--drive-chunk-size": "128M",
+                "--stats": "60s",
+                "--transfers": 8,
+                "--verbose": 1,
+                "--fast-list": null
+            },
+            "service": "local",
+            "sync_from": "local_torrents",
+            "sync_interval": 26,
+            "sync_to": "google_torrents",
+            "tool_path": "/usr/bin/rclone",
+            "use_copy": false,
+            "instance_destroy": false
+          }
+    },
+```
 
 `"rclone_extras"`: These are extra rclone parameters that will be passed to the rclone sync command (the `rclone_extras` in the remote entries are not used by the syncer).
 
-`"service"`: This determines which syncer agent to use to perform this task. It currently supports `local` which is as the name suggests, a local sync from the system running cloudplow. `scaleway` is supported, however further documentation will be needed to describe the setup process.
+`"service"`: Which syncer agent to use for the syncer task. Choices are `local` and `scaleway`. Other service providers can be added in the future.
 
-`"sync_from"`: This tells the syncer task, where the sync is coming FROM, in our example above, our local torrents folder.
+  - `local`: a remote-to-remote sync that runs locally (i.e. on the same system as the one running cloudplow).
+  
+  - `scaleway`: a remote-to-remote sync that runs on a Scaleway instance. Further documentation will be needed to describe the setup process.
 
-`"sync_to"`: This tells the syncer task, where the sync is going TO, in our example above, our `gdrive:/downloads/torrents` folder.
+`"sync_from"`: Where the sync is coming FROM.
 
-`"sync_interval"`: This tells the syncer task how often to execute in hours, when cloudplow is being run in automatic mode.
+  - In the example above, this is a local torrents folder.
 
-`"tool_path"`: This tells the syncer task, which binary to use to execute the sync, when using the `local` service, this must be the rclone binary path. When using instance providers such as scaleway, it will be the binary path of the `scw` tool.
+`"sync_to"`: Where the sync is going TO.
 
-`"use_copy"`: This tells the syncer to use the copy rclone mode, instead of the default sync. 
+  - In the example above, this is the `gdrive:/downloads/torrents` path.
 
-`"instance_destroy"`: This tells the syncer task, upon the finish of a sync task, destroy the instance it created. This is only applicable when a sync task is using a service such as scaleway, rather than the local mode. If this is set to false, it will re-use the existing instance that was previously created/shutdown after the last sync ran. 
-It is able todo this due to the instances being created with the name of the syncer, in our example above `torrents2google`. It would see an instance already exists with that name, start it up, then start the sync, then stop it rather than destroying it.
+`"sync_interval"`: How often to execute the sync, in hours. Only applies when cloudplow is being ran as a service (see [here](#automatic-scheduled)).
+
+`"tool_path"`: Which binary to use to execute the sync.
+
+  - When using the `local` service, this will be the rclone binary path.
+  
+  - When using `scaleway`, this will be the binary path of the `scw` tool.
+
+`"use_copy"`: This tells the syncer to use the `rclone copy` command (vs the default `rclone sync` one). Default is `false`.
+
+`"instance_destroy"`:
+
+  - When this is `true`, the instance that is created for the sync task is destroyed after the task finishes.  Only applies to non `local` sync services (e.g. `scaleway`).  
+  
+  - When this is set to `false`, it will re-use the existing instance that was previously created/shutdown after the last sync ran.
+  
+    - Note: It is able todo this because the instances being created are named after the `syncer` task (e.g. `torrents2google` in the example above). It uses this name to determine if an instance already exists, to start/stop it, rather than destroy it.
 
 
 # Usage
