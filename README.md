@@ -571,6 +571,9 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 
 `"upload_remote"`: is the remote path that `uploader` task will  uploaded to.
 
+#### Sync From/To Paths
+
+`"sync_remote"`: this is the from/to destination used by the syncer when building the rclone command.
 
 ## Uploader
 
@@ -612,6 +615,89 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 `"schedule"`: This section allows you to specify a time period, in 24H (HH:MM) format, for when uploads are allowed to start. Uploads in progress will not stop when `allowed_until` is reached. This setting will not affect manual uploads, only the automatic uploader in `run` mode.
 
 `"size_excludes"`: Paths that will not be counted in the total size calculation for `max_size_gb`.
+
+
+## Syncer
+
+Each entry to the `syncer` corresponds to a single sync task.
+
+Further documention refers to the example configurations below.
+
+```
+    "remotes": {
+        "local_torrents": {
+            "hidden_remote": "",
+            "rclone_excludes": [],
+            "rclone_extras": {},
+            "rclone_sleeps": {
+                "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+                    "count": 5,
+                    "sleep": 25,
+                    "timeout": 3600
+                },
+                "0/s": {
+                    "count": 10,
+                    "sleep": 25,
+                    "timeout": 3600
+                }
+            },
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "/mnt/local/downloads/torrents",
+            "upload_folder": "",
+            "upload_remote": ""
+        },
+        "google_torrents": {
+            "hidden_remote": "",
+            "rclone_excludes": [],
+            "rclone_extras": {},
+            "rclone_sleeps": {},
+            "remove_empty_dir_depth": 2,
+            "sync_remote": "gdrive:/downloads/torrents",
+            "upload_folder": "",
+            "upload_remote": ""
+        }
+    },
+    "syncer": {
+        "torrents2google": {
+            "rclone_extras": {
+                "--checkers": 16,
+                "--drive-chunk-size": "128M",
+                "--stats": "60s",
+                "--transfers": 8,
+                "--verbose": 1,
+                "--fast-list": null
+            },
+            "service": "local",
+            "sync_from": "local_torrents",
+            "sync_interval": 26,
+            "sync_to": "google_torrents",
+            "tool_path": "/usr/bin/rclone",
+            "use_copy": false,
+            "instance_destroy": false
+          }
+    },
+```
+
+As can be seen above, we have two remote entries, both of which have the sync_remote filled in, which is used by the syncer tasks to know where it is syncing from/to.
+
+It is important to note, the rclone_sleeps entries from both remote entries are collated by the syncer, so there is only need for 1 `rclone_sleeps` to be filled in.
+
+`"rclone_extras"`: These are extra rclone parameters that will be passed to the rclone sync command (the `rclone_extras` in the remote entries are not used by the syncer).
+
+`"service"`: This determines which syncer agent to use to perform this task. It currently supports `local` which is as the name suggests, a local sync from the system running cloudplow. `scaleway` is supported, however further documentation will be needed to describe the setup process.
+
+`"sync_from"`: This tells the syncer task, where the sync is coming FROM, in our example above, our local torrents folder.
+
+`"sync_to"`: This tells the syncer task, where the sync is going TO, in our example above, our `gdrive:/downloads/torrents` folder.
+
+`"sync_interval"`: This tells the syncer task how often to execute in hours, when cloudplow is being run in automatic mode.
+
+`"tool_path"`: This tells the syncer task, which binary to use to execute the sync, when using the `local` service, this must be the rclone binary path. When using instance providers such as scaleway, it will be the binary path of the `scw` tool.
+
+`"use_copy"`: This tells the syncer to use the copy rclone mode, instead of the default sync. 
+
+`"instance_destroy"`: This tells the syncer task, upon the finish of a sync task, destroy the instance it created. This is only applicable when a sync task is using a service such as scaleway, rather than the local mode. If this is set to false, it will re-use the existing instance that was previously created/shutdown after the last sync ran. 
+It is able todo this due to the instances being created with the name of the syncer, in our example above `torrents2google`. It would see an instance already exists with that name, start it up, then start the sync, then stop it rather than destroying it.
 
 
 # Usage

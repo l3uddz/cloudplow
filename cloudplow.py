@@ -262,8 +262,10 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     continue
 
                 # send notification that sync is starting
-                notify.send(message='Sync initiated for syncer: %s. %s %s instance...' % (
-                    sync_name, 'Creating' if sync_config['instance_destroy'] else 'Starting', sync_config['service']))
+                if not sync_config['service'].lower() == 'local':
+                    notify.send(message='Sync initiated for syncer: %s. %s %s instance...' % (
+                        sync_name, 'Creating' if sync_config['instance_destroy'] else 'Starting',
+                        sync_config['service']))
 
                 # startup instance
                 resp, instance_id = syncer.startup(service=sync_config['service'], name=sync_name)
@@ -319,7 +321,7 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
 
                 # destroy instance
                 resp = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
-                if not resp:
+                if not resp and not sync_config['service'].lower() == 'local':
                     # send notification of failure to destroy/stop instance
                     notify.send(
                         message="Syncer: %s failed to %s its instance: %s. "
@@ -327,9 +329,10 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                                     sync_name, 'destroy' if sync_config['instance_destroy'] else 'stop', instance_id))
                 else:
                     # send notification of instance destroyed
-                    notify.send(message="Syncer: %s has %s its %s instance" % (
-                        sync_name, 'destroyed' if sync_config['instance_destroy'] else 'stopped',
-                        sync_config['service']))
+                    if not sync_config['service'].lower() == 'local':
+                        notify.send(message="Syncer: %s has %s its %s instance" % (
+                            sync_name, 'destroyed' if sync_config['instance_destroy'] else 'stopped',
+                            sync_config['service']))
 
         except Exception:
             log.exception("Exception occurred while syncing: ")
@@ -580,8 +583,12 @@ if __name__ == "__main__":
             # add syncers to schedule
             init_syncers()
             for syncer_name, syncer_conf in conf.configs['syncer'].items():
-                schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer, syncer_delay,
-                                                                      syncer_name=syncer_name)
+                if syncer_conf['service'].lower() == 'local':
+                    schedule.every(syncer_conf['sync_interval']).hours.do(scheduled_syncer, syncer_delay,
+                                                                          syncer_name=syncer_name)
+                else:
+                    schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer, syncer_delay,
+                                                                          syncer_name=syncer_name)
                 log.info("Added %s syncer to schedule, syncing every %d hours", syncer_name,
                          syncer_conf['sync_interval'])
 
