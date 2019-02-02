@@ -77,7 +77,7 @@ class RcloneUploader:
                                                  cmd_quote(self.config['upload_remote']),
                                                  cmd_quote(self.rclone_config_path))
             if self.service_account != None:
-                cmd += ' --drive-service-account-credentials string %s' % self.service_account
+                cmd += ' --drive-service-account-credentials %s' % self.service_account
             extras = self.__extras2string()
             if len(extras) > 2:
                 cmd += ' %s' % extras
