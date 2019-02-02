@@ -78,5 +78,5 @@ class Local:
 
     def _wrap_command(self, command):
         cmd = "%s %s --config=%s" % (
-            cmd_quote(self.tool_path), cmd_quote(command[7:]), cmd_quote(self.rclone_config_path))
+            cmd_quote(self.tool_path), command[7:], cmd_quote(self.rclone_config_path))
         return cmd
