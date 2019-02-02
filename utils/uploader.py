@@ -21,8 +21,8 @@ class Uploader:
         self.rclone_config_path = rclone_config_path
         self.use_rc = use_rc
 
-    def set_service_file(self,file):
-        self.service_file = file
+    def set_service_account(self,file):
+        self.service_account = file
 
     def upload(self):
         rclone_config = self.rclone_config.copy()
@@ -37,9 +37,9 @@ class Uploader:
                     rclone_config['rclone_excludes'].append(re.escape(item))
 
         # do upload
-        if self.service_file != None:
+        if self.service_account != None:
             rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
-                                    self.dry_run, self.use_rc,self.service_file)
+                                    self.dry_run, self.use_rc, self.service_account)
         else:
             rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
                                     self.dry_run, self.use_rc)
