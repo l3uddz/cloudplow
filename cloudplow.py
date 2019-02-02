@@ -2,6 +2,7 @@
 import logging
 import sys
 import time
+import os
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Manager, Process
 
@@ -194,52 +195,59 @@ def do_upload(remote=None):
                 notify.send(message="Upload of %d GB has begun for remote: %s" % (
                     path.get_size(rclone_config['upload_folder'], uploader_config['size_excludes']), uploader_remote))
 
-                # perform the upload
-                uploader = Uploader(uploader_remote, uploader_config, rclone_config, conf.configs['core']['dry_run'],
-                                    conf.configs['core']['rclone_binary_path'],
-                                    conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
+                if os.path.exists(uploader_config['service_account_path']):
+                    print("Service account path is defined. The following accounts are defined")
+                    #If service_account path provided, loop over the service account files and provide one at a time when starting the uploader. If upload completes successfully, do not attempt to use the other accounts
+                    accounts = [os.path.abspath(file) for file in os.listdir(uploader_config['service_account_path'])]
+                    print("Accounts: {}".format(accounts))
 
-                # start the plex stream monitor before the upload begins, if enabled
-                if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
-                    plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
+                    uploader = Uploader(uploader_remote, uploader_config, rclone_config,conf.configs['core']['dry_run'],
+                                        conf.configs['core']['rclone_binary_path'],
+                                        conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
 
-                # pause the nzbget queue before starting the upload, if enabled
-                if conf.configs['nzbget']['enabled']:
-                    nzbget = Nzbget(conf.configs['nzbget']['url'])
-                    if nzbget.pause_queue():
-                        nzbget_paused = True
-                        log.info("Paused the Nzbget download queue, upload commencing!")
+                    # start the plex stream monitor before the upload begins, if enabled
+                    if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
+                        plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
+
+                    # pause the nzbget queue before starting the upload, if enabled
+                    if conf.configs['nzbget']['enabled']:
+                        nzbget = Nzbget(conf.configs['nzbget']['url'])
+                        if nzbget.pause_queue():
+                            nzbget_paused = True
+                            log.info("Paused the Nzbget download queue, upload commencing!")
+                        else:
+                            log.error("Failed to pause the Nzbget download queue, upload commencing anyway...")
+
+                    resp, resp_trigger = uploader.upload()
+                    if resp:
+                        # ASSUME trigger was met, attempt next service account
+
+                        # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
+                        log.info(
+                            "Upload aborted due to trigger: %r being met, %s will continue automatic uploading normally in "
+                            "%d hours", resp_trigger, uploader_remote, resp)
+
+                        # add remote to uploader_delay
+                        uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
+                        # send aborted upload notification
+                        notify.send(
+                            message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d hours" %
+                                    (uploader_remote, resp_trigger, resp))
                     else:
-                        log.error("Failed to pause the Nzbget download queue, upload commencing anyway...")
+                        # send successful upload notification
+                        notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
 
-                resp, resp_trigger = uploader.upload()
-                if resp:
-                    # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
-                    log.info(
-                        "Upload aborted due to trigger: %r being met, %s will continue automatic uploading normally in "
-                        "%d hours", resp_trigger, uploader_remote, resp)
+                    # remove leftover empty directories from disk
+                    if not conf.configs['core']['dry_run']:
+                        uploader.remove_empty_dirs()
 
-                    # add remote to uploader_delay
-                    uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
-                    # send aborted upload notification
-                    notify.send(
-                        message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d hours" %
-                                (uploader_remote, resp_trigger, resp))
-                else:
-                    # send successful upload notification
-                    notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
-
-                # remove leftover empty directories from disk
-                if not conf.configs['core']['dry_run']:
-                    uploader.remove_empty_dirs()
-
-                # resume the nzbget queue, if enabled
-                if conf.configs['nzbget']['enabled'] and nzbget is not None and nzbget_paused:
-                    if nzbget.resume_queue():
-                        nzbget_paused = False
-                        log.info("Resumed the Nzbget download queue!")
-                    else:
-                        log.error("Failed to resume the Nzbget download queue??")
+                    # resume the nzbget queue, if enabled
+                    if conf.configs['nzbget']['enabled'] and nzbget is not None and nzbget_paused:
+                        if nzbget.resume_queue():
+                            nzbget_paused = False
+                            log.info("Resumed the Nzbget download queue!")
+                        else:
+                            log.error("Failed to resume the Nzbget download queue??")
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
