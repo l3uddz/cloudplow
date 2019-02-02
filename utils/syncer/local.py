@@ -72,19 +72,6 @@ class Local:
         resp, delayed_check, delayed_trigger = rclone.sync(self._wrap_command)
         log.info("Finished syncing for instance: %r", self.instance_id)
 
-        # Use exec cat > rclone config until cp is resolved
-        cmd = "%s --region=%s exec %s cat /root/.config/rclone/rclone.conf > %s" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id),
-            cmd_quote(kwargs['rclone_config']))
-        log.debug("Using: %s", cmd)
-
-        log.debug("Copying rclone config from instance %r to: %r", self.instance_id, kwargs['rclone_config'])
-        config_resp = process.popen(cmd, shell=True)
-        if config_resp is None or len(config_resp) >= 2:
-            log.error("Unexpected response while copying rclone config from instance: %s", config_resp)
-        else:
-            log.info("Copied rclone.conf from instance")
-
         return resp, delayed_check, delayed_trigger
 
     # internals
