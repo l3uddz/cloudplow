@@ -3,13 +3,14 @@ import logging
 import sys
 import time
 from logging.handlers import RotatingFileHandler
-from multiprocessing import Manager, Process
+from multiprocessing import Process
 
 import requests
 import schedule
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from utils import config, lock, path, decorators, version, misc
+from utils.cache import Cache
 from utils.notifications import Notifications
 from utils.nzbget import Nzbget
 from utils.plex import Plex
@@ -33,6 +34,7 @@ root_logger.setLevel(logging.INFO)
 logging.getLogger('schedule').setLevel(logging.ERROR)
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("sqlitedict").setLevel(logging.WARNING)
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Set console logger
@@ -60,6 +62,9 @@ log = root_logger.getChild('cloudplow')
 # Load config from disk
 conf.load()
 
+# Init Cache class
+cache = Cache(conf.settings['cachefile'])
+
 # Init Notifications class
 notify = Notifications()
 
@@ -73,8 +78,8 @@ lock.ensure_lock_folder()
 thread = Thread()
 
 # Logic vars
-uploader_delay = None
-syncer_delay = None
+uploader_delay = cache.get_cache('uploader_bans')
+syncer_delay = cache.get_cache('syncer_bans')
 plex_monitor_thread = None
 
 
@@ -104,9 +109,11 @@ def init_syncers():
 
 
 def check_suspended_uploaders(uploader_to_check=None):
+    global uploader_delay
+
     suspended = False
     try:
-        for uploader_name, suspension_expiry in uploader_delay.copy().items():
+        for uploader_name, suspension_expiry in dict(uploader_delay.items()).items():
             if time.time() < suspension_expiry:
                 # this remote is still delayed due to a previous abort due to triggers
                 use_logger = log.debug if not (uploader_to_check and uploader_name == uploader_to_check) else log.info
@@ -129,10 +136,12 @@ def check_suspended_uploaders(uploader_to_check=None):
     return suspended
 
 
-def check_suspended_syncers(syncers_delays, syncer_to_check=None):
+def check_suspended_syncers(syncer_to_check=None):
+    global syncer_delay
+
     suspended = False
     try:
-        for syncer_name, suspension_expiry in syncers_delays.copy().items():
+        for syncer_name, suspension_expiry in dict(syncer_delay.items()).items():
             if time.time() < suspension_expiry:
                 # this syncer is still delayed due to a previous abort due to triggers
                 use_logger = log.debug if not (syncer_to_check and syncer_name == syncer_to_check) else log.info
@@ -146,7 +155,7 @@ def check_suspended_syncers(syncers_delays, syncer_to_check=None):
             else:
                 log.warning("%s is no longer suspended due to a previous aborted sync!",
                             syncer_name)
-                syncers_delays.pop(syncer_name, None)
+                syncer_delay.pop(syncer_name, None)
                 # send notification that remote is no longer timed out
                 notify.send(message="Sync suspension has expired for syncer: %s" % syncer_name)
 
@@ -170,7 +179,7 @@ def run_process(task, manager_dict, **kwargs):
 
 @decorators.timed
 def do_upload(remote=None):
-    global plex_monitor_thread
+    global plex_monitor_thread, uploader_delay
     nzbget = None
     nzbget_paused = False
 
@@ -215,19 +224,34 @@ def do_upload(remote=None):
                 resp, resp_trigger = uploader.upload()
                 if resp:
                     # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
-                    log.info(
-                        "Upload aborted due to trigger: %r being met, %s will continue automatic uploading normally in "
-                        "%d hours", resp_trigger, uploader_remote, resp)
-
-                    # add remote to uploader_delay
-                    uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
-                    # send aborted upload notification
-                    notify.send(
-                        message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d hours" %
-                                (uploader_remote, resp_trigger, resp))
+                    if uploader_remote not in uploader_delay:
+                        # this uploader was not already in the delay dict, so lets put it there
+                        log.info(
+                            "Upload aborted due to trigger: %r being met, %s will continue automatic uploading "
+                            "normally in %d hours", resp_trigger, uploader_remote, resp)
+                        # add remote to uploader_delay
+                        uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
+                        # send aborted upload notification
+                        notify.send(
+                            message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d"
+                                    " hours" % (uploader_remote, resp_trigger, resp))
+                    else:
+                        # this uploader is already in the delay dict, lets not delay it any further
+                        log.info(
+                            "Upload aborted due to trigger: %r being met for %s uploader",
+                            resp_trigger, uploader_remote)
+                        # send aborted upload notification
+                        notify.send(
+                            message="Upload was aborted for remote: %s due to trigger %r." %
+                                    (uploader_remote, resp_trigger))
                 else:
+                    log.info("Upload completed successfully for uploader: %s", uploader_remote)
                     # send successful upload notification
                     notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
+                    # remove uploader from uploader_delays (as its no longer banned)
+                    if uploader_remote in uploader_delay:
+                        # this uploader was in the delay dict, but upload was successful, lets remove it
+                        uploader_delay.pop(uploader_remote, None)
 
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
@@ -248,7 +272,9 @@ def do_upload(remote=None):
 
 
 @decorators.timed
-def do_sync(use_syncer=None, syncer_delays=syncer_delay):
+def do_sync(use_syncer=None):
+    global syncer_delay
+
     lock_file = lock.sync()
     if lock_file.is_locked():
         log.info("Waiting for running sync to finish before proceeding...")
@@ -304,20 +330,33 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
 
                 elif not resp and resp_delay and resp_trigger:
                     # non 0 resp_delay result indicates a trigger was met, the result is how many hours to sleep
-                    # this syncer for
-                    log.info(
-                        "Sync aborted due to trigger: %r being met, %s will continue automatic syncing normally in "
-                        "%d hours", resp_trigger, sync_name, resp_delay)
-                    # add syncer to syncer_delays (which points to syncer_delay)
-                    syncer_delays[sync_name] = time.time() + ((60 * 60) * resp_delay)
-                    # send aborted sync notification
-                    notify.send(
-                        message="Sync was aborted for syncer: %s due to trigger %r. Syncs suspended for %d hours" %
-                                (sync_name, resp_trigger, resp_delay))
+                    if sync_name not in syncer_delay:
+                        # this syncer was not in the syncer delay dict, so lets put it there
+                        log.info(
+                            "Sync aborted due to trigger: %r being met, %s will continue automatic syncing normally in "
+                            "%d hours", resp_trigger, sync_name, resp_delay)
+                        # add syncer to syncer_delay
+                        syncer_delay[sync_name] = time.time() + ((60 * 60) * resp_delay)
+                        # send aborted sync notification
+                        notify.send(
+                            message="Sync was aborted for syncer: %s due to trigger %r. Syncs suspended for %d hours" %
+                                    (sync_name, resp_trigger, resp_delay))
+                    else:
+                        # this syncer was already in the syncer delay dict, so lets not delay it any further
+                        log.info(
+                            "Sync aborted due to trigger: %r being met for %s syncer", resp_trigger, sync_name)
+                        # send aborted sync notification
+                        notify.send(
+                            message="Sync was aborted for syncer: %s due to trigger %r." %
+                                    (sync_name, resp_trigger))
                 else:
                     log.info("Syncing completed successfully for syncer: %s", sync_name)
                     # send successful sync notification
                     notify.send(message="Sync was completed successfully for syncer: %s" % sync_name)
+                    # remove syncer from syncer_delay(as its no longer banned)
+                    if sync_name in syncer_delay:
+                        # this syncer was in the delay dict, but sync was successful, lets remove it
+                        syncer_delay.pop(sync_name, None)
 
                 # destroy instance
                 resp = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
@@ -525,15 +564,15 @@ def scheduled_uploader(uploader_name, uploader_settings):
         log.exception("Unexpected exception occurred while processing uploader %s: ", uploader_name)
 
 
-def scheduled_syncer(syncer_delays, syncer_name):
+def scheduled_syncer(syncer_name):
     log.info("Scheduled sync triggered for syncer: %s", syncer_name)
     try:
         # check suspended syncers
-        if check_suspended_syncers(syncer_delays, syncer_name):
+        if check_suspended_syncers(syncer_name):
             return
 
         # do sync
-        do_sync(syncer_name, syncer_delays=syncer_delays)
+        do_sync(syncer_name)
 
     except Exception:
         log.exception("Unexpected exception occurred while processing syncer: %s", syncer_name)
@@ -547,11 +586,6 @@ def scheduled_syncer(syncer_delays, syncer_name):
 if __name__ == "__main__":
     # show latest version info from git
     version.check_version()
-
-    # init multiprocessing
-    manager = Manager()
-    uploader_delay = manager.dict()
-    syncer_delay = manager.dict()
 
     # run chosen mode
     try:
@@ -570,7 +604,7 @@ if __name__ == "__main__":
             log.warning("Sync currently has a bug while displaying output to the console. "
                         "Tail the logfile to view readable logs!")
             init_syncers()
-            do_sync(syncer_delays=syncer_delay)
+            do_sync()
         elif conf.args['cmd'] == 'run':
             log.info("Started in run mode")
 
@@ -584,10 +618,9 @@ if __name__ == "__main__":
             init_syncers()
             for syncer_name, syncer_conf in conf.configs['syncer'].items():
                 if syncer_conf['service'].lower() == 'local':
-                    schedule.every(syncer_conf['sync_interval']).hours.do(scheduled_syncer, syncer_delay,
-                                                                          syncer_name=syncer_name)
+                    schedule.every(syncer_conf['sync_interval']).hours.do(scheduled_syncer, syncer_name=syncer_name)
                 else:
-                    schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer, syncer_delay,
+                    schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer,
                                                                           syncer_name=syncer_name)
                 log.info("Added %s syncer to schedule, syncing every %d hours", syncer_name,
                          syncer_conf['sync_interval'])
