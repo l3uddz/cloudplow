@@ -113,7 +113,7 @@ def check_suspended_uploaders(uploader_to_check=None):
 
     suspended = False
     try:
-        for uploader_name, suspension_expiry in dict(uploader_delay.items()):
+        for uploader_name, suspension_expiry in dict(uploader_delay.items()).items():
             if time.time() < suspension_expiry:
                 # this remote is still delayed due to a previous abort due to triggers
                 use_logger = log.debug if not (uploader_to_check and uploader_name == uploader_to_check) else log.info
@@ -141,7 +141,7 @@ def check_suspended_syncers(syncer_to_check=None):
 
     suspended = False
     try:
-        for syncer_name, suspension_expiry in dict(syncer_delay.items()):
+        for syncer_name, suspension_expiry in dict(syncer_delay.items()).items():
             if time.time() < suspension_expiry:
                 # this syncer is still delayed due to a previous abort due to triggers
                 use_logger = log.debug if not (syncer_to_check and syncer_name == syncer_to_check) else log.info
