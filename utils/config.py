@@ -80,6 +80,11 @@ class Config(object):
             'env': 'CLOUDPLOW_LOGFILE',
             'default': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'cloudplow.log')
         },
+        'cachefile': {
+            'argv': '--cachefile',
+            'env': 'CLOUDPLOW_CACHEFILE',
+            'default': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'cache.db')
+        },
         'loglevel': {
             'argv': '--loglevel',
             'env': 'CLOUDPLOW_LOGLEVEL',
@@ -333,6 +338,13 @@ class Config(object):
                             nargs='?',
                             const=None,
                             help='Log file location (default: %s)' % self.base_settings['logfile']['default']
+                            )
+
+        # Cache file
+        parser.add_argument(self.base_settings['cachefile']['argv'],
+                            nargs='?',
+                            const=None,
+                            help='Cache file location (default: %s)' % self.base_settings['cachefile']['default']
                             )
 
         # Logging level
