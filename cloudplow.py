@@ -109,6 +109,8 @@ def init_syncers():
 
 
 def check_suspended_uploaders(uploader_to_check=None):
+    global uploader_delay
+
     suspended = False
     try:
         for uploader_name, suspension_expiry in uploader_delay.copy().items():
@@ -134,10 +136,12 @@ def check_suspended_uploaders(uploader_to_check=None):
     return suspended
 
 
-def check_suspended_syncers(syncers_delays, syncer_to_check=None):
+def check_suspended_syncers(syncer_to_check=None):
+    global syncer_delay
+
     suspended = False
     try:
-        for syncer_name, suspension_expiry in syncers_delays.copy().items():
+        for syncer_name, suspension_expiry in syncer_delay.copy().items():
             if time.time() < suspension_expiry:
                 # this syncer is still delayed due to a previous abort due to triggers
                 use_logger = log.debug if not (syncer_to_check and syncer_name == syncer_to_check) else log.info
@@ -151,7 +155,7 @@ def check_suspended_syncers(syncers_delays, syncer_to_check=None):
             else:
                 log.warning("%s is no longer suspended due to a previous aborted sync!",
                             syncer_name)
-                syncers_delays.pop(syncer_name, None)
+                syncer_delay.pop(syncer_name, None)
                 # send notification that remote is no longer timed out
                 notify.send(message="Sync suspension has expired for syncer: %s" % syncer_name)
 
@@ -175,7 +179,7 @@ def run_process(task, manager_dict, **kwargs):
 
 @decorators.timed
 def do_upload(remote=None):
-    global plex_monitor_thread
+    global plex_monitor_thread, uploader_delay
     nzbget = None
     nzbget_paused = False
 
@@ -268,7 +272,9 @@ def do_upload(remote=None):
 
 
 @decorators.timed
-def do_sync(use_syncer=None, syncer_delays=syncer_delay):
+def do_sync(use_syncer=None):
+    global syncer_delay
+
     lock_file = lock.sync()
     if lock_file.is_locked():
         log.info("Waiting for running sync to finish before proceeding...")
@@ -324,13 +330,13 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
 
                 elif not resp and resp_delay and resp_trigger:
                     # non 0 resp_delay result indicates a trigger was met, the result is how many hours to sleep
-                    if sync_name not in syncer_delays:
+                    if sync_name not in syncer_delay:
                         # this syncer was not in the syncer delay dict, so lets put it there
                         log.info(
                             "Sync aborted due to trigger: %r being met, %s will continue automatic syncing normally in "
                             "%d hours", resp_trigger, sync_name, resp_delay)
-                        # add syncer to syncer_delays (which points to syncer_delay)
-                        syncer_delays[sync_name] = time.time() + ((60 * 60) * resp_delay)
+                        # add syncer to syncer_delay
+                        syncer_delay[sync_name] = time.time() + ((60 * 60) * resp_delay)
                         # send aborted sync notification
                         notify.send(
                             message="Sync was aborted for syncer: %s due to trigger %r. Syncs suspended for %d hours" %
@@ -347,10 +353,10 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     log.info("Syncing completed successfully for syncer: %s", sync_name)
                     # send successful sync notification
                     notify.send(message="Sync was completed successfully for syncer: %s" % sync_name)
-                    # remove syncer from syncer_delays (as its no longer banned)
-                    if sync_name in syncer_delays:
+                    # remove syncer from syncer_delay(as its no longer banned)
+                    if sync_name in syncer_delay:
                         # this syncer was in the delay dict, but sync was successful, lets remove it
-                        syncer_delays.pop(sync_name, None)
+                        syncer_delay.pop(sync_name, None)
 
                 # destroy instance
                 resp = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
@@ -558,15 +564,15 @@ def scheduled_uploader(uploader_name, uploader_settings):
         log.exception("Unexpected exception occurred while processing uploader %s: ", uploader_name)
 
 
-def scheduled_syncer(syncer_delays, syncer_name):
+def scheduled_syncer(syncer_name):
     log.info("Scheduled sync triggered for syncer: %s", syncer_name)
     try:
         # check suspended syncers
-        if check_suspended_syncers(syncer_delays, syncer_name):
+        if check_suspended_syncers(syncer_name):
             return
 
         # do sync
-        do_sync(syncer_name, syncer_delays=syncer_delays)
+        do_sync(syncer_name)
 
     except Exception:
         log.exception("Unexpected exception occurred while processing syncer: %s", syncer_name)
@@ -580,11 +586,6 @@ def scheduled_syncer(syncer_delays, syncer_name):
 if __name__ == "__main__":
     # show latest version info from git
     version.check_version()
-
-    # init multiprocessing
-    manager = Manager()
-    uploader_delay = manager.dict()
-    syncer_delay = manager.dict()
 
     # run chosen mode
     try:
@@ -603,7 +604,7 @@ if __name__ == "__main__":
             log.warning("Sync currently has a bug while displaying output to the console. "
                         "Tail the logfile to view readable logs!")
             init_syncers()
-            do_sync(syncer_delays=syncer_delay)
+            do_sync()
         elif conf.args['cmd'] == 'run':
             log.info("Started in run mode")
 
@@ -617,10 +618,9 @@ if __name__ == "__main__":
             init_syncers()
             for syncer_name, syncer_conf in conf.configs['syncer'].items():
                 if syncer_conf['service'].lower() == 'local':
-                    schedule.every(syncer_conf['sync_interval']).hours.do(scheduled_syncer, syncer_delay,
-                                                                          syncer_name=syncer_name)
+                    schedule.every(syncer_conf['sync_interval']).hours.do(scheduled_syncer, syncer_name=syncer_name)
                 else:
-                    schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer, syncer_delay,
+                    schedule.every(syncer_conf['sync_interval']).hours.do(run_process, scheduled_syncer,
                                                                           syncer_name=syncer_name)
                 log.info("Added %s syncer to schedule, syncing every %d hours", syncer_name,
                          syncer_conf['sync_interval'])
