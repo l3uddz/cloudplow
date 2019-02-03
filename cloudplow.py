@@ -3,7 +3,7 @@ import logging
 import sys
 import time
 from logging.handlers import RotatingFileHandler
-from multiprocessing import Manager, Process
+from multiprocessing import Process
 
 import requests
 import schedule
