@@ -234,13 +234,14 @@ def do_upload(remote=None):
                     else:
                         # this uploader is already in the delay dict, lets not delay it any further
                         log.info(
-                            "Upload aborted due to trigger: %r being met %s",
+                            "Upload aborted due to trigger: %r being met for %s uploader",
                             resp_trigger, uploader_remote)
                         # send aborted upload notification
                         notify.send(
                             message="Upload was aborted for remote: %s due to trigger %r." %
                                     (uploader_remote, resp_trigger))
                 else:
+                    log.info("Upload completed successfully for uploader: %s", uploader_remote)
                     # send successful upload notification
                     notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
                     # remove uploader from uploader_delays (as its no longer banned)
@@ -337,7 +338,7 @@ def do_sync(use_syncer=None, syncer_delays=syncer_delay):
                     else:
                         # this syncer was already in the syncer delay dict, so lets not delay it any further
                         log.info(
-                            "Sync aborted due to trigger: %r being met", resp_trigger, sync_name, resp_delay)
+                            "Sync aborted due to trigger: %r being met for %s syncer", resp_trigger, sync_name)
                         # send aborted sync notification
                         notify.send(
                             message="Sync was aborted for syncer: %s due to trigger %r." %
