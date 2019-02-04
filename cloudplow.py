@@ -249,9 +249,9 @@ def do_upload(remote=None):
                     # send successful upload notification
                     notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
                     # remove uploader from uploader_delays (as its no longer banned)
-                    if uploader_remote in uploader_delay:
+                    if uploader_remote in uploader_delay and uploader_delay.pop(uploader_remote, None) is not None:
                         # this uploader was in the delay dict, but upload was successful, lets remove it
-                        uploader_delay.pop(uploader_remote, None)
+                        log.info("%s is no longer suspended due to a previous aborted upload!", uploader_remote)
 
                 # remove leftover empty directories from disk
                 if not conf.configs['core']['dry_run']:
@@ -354,9 +354,9 @@ def do_sync(use_syncer=None):
                     # send successful sync notification
                     notify.send(message="Sync was completed successfully for syncer: %s" % sync_name)
                     # remove syncer from syncer_delay(as its no longer banned)
-                    if sync_name in syncer_delay:
+                    if sync_name in syncer_delay and syncer_delay.pop(sync_name, None) is not None:
                         # this syncer was in the delay dict, but sync was successful, lets remove it
-                        syncer_delay.pop(sync_name, None)
+                        log.info("%s is no longer suspended due to a previous aborted sync!", sync_name)
 
                 # destroy instance
                 resp = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
