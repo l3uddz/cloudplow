@@ -97,7 +97,7 @@ def init_service_accounts():
         if os.path.exists(uploader_config['service_account_path']):
             # If service_account path provided, loop over the service account files and provide one at a time when starting the uploader. If upload completes successfully, do not attempt to use the other accounts
             accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), file):None for file
-                        in os.listdir(os.path.normpath(uploader_config['service_account_path']))}
+                        in os.listdir(os.path.normpath(uploader_config['service_account_path'])) if file.endswith(".json")}
             log.debug(
                 "Service account path is defined and exists for remote %s. The following accounts are defined: %s",
                 uploader_remote, str(accounts))
