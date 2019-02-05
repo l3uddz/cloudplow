@@ -3,6 +3,9 @@ import time
 
 log = logging.getLogger("misc")
 
+def get_lowest_remaining_time(data):
+    sorted_data = sorted(data.items(),key = lambda x:x[1])
+    return sorted_data[0][1]
 
 def seconds_to_string(seconds):
     """ reference: https://codereview.stackexchange.com/a/120595 """
