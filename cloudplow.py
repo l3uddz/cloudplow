@@ -95,10 +95,12 @@ def init_service_accounts():
     service_accounts = {}
     for uploader_remote, uploader_config in conf.configs['uploader'].items():
         if os.path.exists(uploader_config['service_account_path']):
-            log.debug("Service account path is defined and exists for remote %s. The following accounts are defined:", uploader_remote)
             # If service_account path provided, loop over the service account files and provide one at a time when starting the uploader. If upload completes successfully, do not attempt to use the other accounts
             accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), file):None for file
                         in os.listdir(os.path.normpath(uploader_config['service_account_path']))}
+            log.debug(
+                "Service account path is defined and exists for remote %s. The following accounts are defined: %s",
+                uploader_remote, str(accounts))
             service_accounts[uploader_remote] = accounts
         else:
             service_accounts[uploader_remote] = None
@@ -198,7 +200,6 @@ def do_upload(remote=None):
         try:
             # loop each supplied uploader config
             for uploader_remote, uploader_config in conf.configs['uploader'].items():
-                log.info("UPLOADER CONFIG: %s",str(uploader_config))
                 # if remote is not None, skip this remote if it is not == remote
                 if remote and uploader_remote != remote:
                     continue
