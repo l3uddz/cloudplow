@@ -20,10 +20,10 @@ class Uploader:
         self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
         self.use_rc = use_rc
+        self.service_account = None
 
     def set_service_account(self,file):
         self.service_account = file
-        log.info("SERVICE ACCOUNT SET TO: %s" % self.service_account)
 
     def upload(self):
         rclone_config = self.rclone_config.copy()
@@ -39,7 +39,6 @@ class Uploader:
 
         # do upload
         if self.service_account != None:
-            log.info("INITIALIZING UPLOADER WITH SERVICE_ACCOUNT %s" % self.service_account)
             rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
                                     self.dry_run, self.use_rc, self.service_account)
         else:
