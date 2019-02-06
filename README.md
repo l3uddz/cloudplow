@@ -610,7 +610,8 @@ If multiple uploader tasks are specified, the tasks will run sequentially (vs in
         },
         "size_excludes": [
             "downloads/*"
-        ]
+        ],
+        "service_account_path":"/home/user/config/cloudplow/service_accounts/"
       }
 }
 ```
@@ -626,9 +627,10 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 `"opened_excludes"`: Paths the open file checker will check for when searching for open files. In the example above, any open files with `/downloads/` in it's path, would be ignored.
 
 `"schedule"`: This section allows you to specify a time period, in 24H (HH:MM) format, for when uploads are allowed to start. Uploads in progress will not stop when `allowed_until` is reached. This setting will not affect manual uploads, only the automatic uploader in `run` mode.
-
+;
 `"size_excludes"`: Paths that will not be counted in the total size calculation for `max_size_gb`.
 
+`""service_account_path"`: Path that will be scanned for JSON service account keys to be used when performing upload operations.
 
 ## Syncer
 
