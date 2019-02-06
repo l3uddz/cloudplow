@@ -90,7 +90,8 @@
             },
             "size_excludes": [
                 "downloads/*"
-            ]
+            ],
+            "service_account_path":"/home/daghaian/.config/cloudplow/service_accounts/"
         }
     }
 }
