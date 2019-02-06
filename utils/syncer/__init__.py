@@ -1,12 +1,14 @@
 import logging
 import uuid
 
+from .local import Local
 from .scaleway import Scaleway
 
 log = logging.getLogger("syncer")
 
 SERVICES = {
-    'scaleway': Scaleway
+    'scaleway': Scaleway,
+    'local': Local
 }
 
 
