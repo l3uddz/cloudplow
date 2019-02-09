@@ -13,7 +13,8 @@ class Cache:
             'uploader_bans': SqliteDict(self.cache_file_path, tablename='uploader_bans', encode=json.dumps,
                                         decode=json.loads, autocommit=True),
             'syncer_bans': SqliteDict(self.cache_file_path, tablename='syncer_bans', encode=json.dumps,
-                                      decode=json.loads, autocommit=True)
+                                      decode=json.loads, autocommit=True),
+            'sa_bans': SqliteDict(self.cache_file_path,tablename='sa_bans',encode=json.dumps,decode=json.loads,autocommit=True)
         }
 
     def get_cache(self, cache_name):
