@@ -130,7 +130,6 @@ def check_suspended_sa(uploader_to_check):
         if(sa_delay[uploader_to_check] != None):
             log.debug("Proceeding to check any timeouts which have passed for remote %s",uploader_to_check)
             for account,suspension_expiry in sa_delay[uploader_to_check].items():
-
                 if (suspension_expiry != None):
                     log.debug("Service account %s was previously banned. Checking if timeout has passed",suspension_expiry)
                     # Remove any ban times for service accounts which have passed
@@ -233,6 +232,8 @@ def do_upload(remote=None):
                 if remote and uploader_remote != remote:
                     continue
 
+                # remove any bans which may have passed for service accounts (if using functionality)
+                check_suspended_sa(uploader_remote)
                 # retrieve rclone config for this remote
                 rclone_config = conf.configs['remotes'][uploader_remote]
 
@@ -296,6 +297,9 @@ def do_upload(remote=None):
                             else:
                                 # send successful upload notification
                                 notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
+
+                                # Remove ban for service account
+                                sa_delay[uploader_remote][availableAccounts[i]] = None
                                 break
                 else:
                     resp, resp_trigger = uploader.upload()
@@ -606,7 +610,7 @@ def scheduled_uploader(uploader_name, uploader_settings):
             return
 
         # clear any banned service accounts
-        # check_suspended_sa(uploader_name)
+        check_suspended_sa(uploader_name)
 
         # check used disk space
         used_space = path.get_size(rclone_settings['upload_folder'], uploader_settings['size_excludes'])
@@ -676,6 +680,8 @@ if __name__ == "__main__":
             do_hidden()
         elif conf.args['cmd'] == 'upload':
             log.info("Started in upload mode")
+            # initialize service accounts if provided in confing
+            init_service_accounts()
             do_hidden()
             do_upload()
         elif conf.args['cmd'] == 'sync':
