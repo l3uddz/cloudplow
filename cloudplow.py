@@ -232,8 +232,6 @@ def do_upload(remote=None):
                 if remote and uploader_remote != remote:
                     continue
 
-                # remove any bans which may have passed for service accounts (if using functionality)
-                check_suspended_sa(uploader_remote)
                 # retrieve rclone config for this remote
                 rclone_config = conf.configs['remotes'][uploader_remote]
 
