@@ -1,3 +1,4 @@
+smartencoding
 lockfile~=0.12.2
 schedule~=0.4.3
 requests~=2.20.0

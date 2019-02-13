@@ -2,6 +2,8 @@ import logging
 import shlex
 import subprocess
 
+from smartencoding import smart_unicode
+
 log = logging.getLogger("process")
 
 
@@ -15,7 +17,7 @@ def execute(command, callback=None, logs=True, shell=False):
             break
         if output and len(output):
             if logs:
-                log.info(output)
+                log.info(smart_unicode(output))
             if callback:
                 cancel = callback(output)
                 if cancel:
