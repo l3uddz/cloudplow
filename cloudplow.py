@@ -102,7 +102,7 @@ def init_service_accounts():
     for uploader_remote, uploader_config in conf.configs['uploader'].items():
        if uploader_remote not in sa_delay:
            sa_delay[uploader_remote] = None
-           if os.path.exists(uploader_config['service_account_path']):
+           if 'service_account_path' in uploader_config and os.path.exists(uploader_config['service_account_path']):
                     log.debug("Service Account path is defined for remote %s  and does not currently exist in service account db. Adding...",uploader_remote)
                     # If service_account path provided, loop over the service account files and provide one at a time when starting the uploader. If upload completes successfully, do not attempt to use the other accounts
                     accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), file):None for file
@@ -258,8 +258,8 @@ def do_upload(remote=None):
                                     conf.configs['core']['rclone_binary_path'],
                                     conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
 
-                if(sa_delay[uploader_remote] != None):
-                    availableAccounts = [account for account,lastBanTime in sa_delay[uploader_remote].items() if lastBanTime == None]
+                if(sa_delay[uploader_remote] is not None):
+                    availableAccounts = [account for account,lastBanTime in sa_delay[uploader_remote].items() if lastBanTime is None]
                     log.info("The following accounts are available: %s",str(availableAccounts))
                     #If there are no service accounts available, do not even bother attemping the upload
                     if len(availableAccounts) == 0:
