@@ -84,6 +84,7 @@ uploader_delay = cache.get_cache('uploader_bans')
 syncer_delay = cache.get_cache('syncer_bans')
 plex_monitor_thread = None
 sa_delay = cache.get_cache('sa_bans')
+
 ############################################################
 # MISC FUNCS
 ############################################################
@@ -272,7 +273,9 @@ def do_upload(remote=None):
                             uploader.set_service_account(availableAccounts[i])
                             resp, resp_trigger = uploader.upload()
                             if resp:
-                                    sa_delay[uploader_remote][availableAccounts[i]] = time.time() + ((60 * 60) * resp)
+                                    currentData = sa_delay[uploader_remote]
+                                    currentData[availableAccounts[i]] = time.time() + ((60 * 60) * resp)
+                                    sa_delay[uploader_remote] = currentData
                                     log.debug("Setting account %s as unbanned at %f", availableAccounts[i], sa_delay[uploader_remote][availableAccounts[i]])
                                     if(i != len(availableAccounts)-1):
                                         log.info("Upload aborted due to trigger: %r being met, %s is cycling to service_account file %s", resp_trigger, uploader_remote, availableAccounts[i+1])
