@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import logging
-import os
 import sys
 import time
+import os
+
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process
 
@@ -84,7 +85,6 @@ syncer_delay = cache.get_cache('syncer_bans')
 plex_monitor_thread = None
 sa_delay = cache.get_cache('sa_bans')
 
-
 ############################################################
 # MISC FUNCS
 ############################################################
@@ -97,29 +97,30 @@ def init_notifications():
         log.exception("Exception initializing notification agents: ")
     return
 
-
 def init_service_accounts():
     global sa_delay
+    global uploader_delay
     for uploader_remote, uploader_config in conf.configs['uploader'].items():
-        if uploader_remote not in sa_delay:
-            sa_delay[uploader_remote] = None
-            if 'service_account_path' in uploader_config and os.path.exists(uploader_config['service_account_path']):
-                log.debug("Service Account path is defined for remote %s "
-                          "and does not currently exist in service account db. Adding...",
-                          uploader_remote)
-                # If service_account path provided, loop over the service account files and
-                # provide one at a time when starting the uploader. If upload completes successfully,
-                # o not attempt to use the other accounts
-                accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), file): None for file
-                            in os.listdir(os.path.normpath(uploader_config['service_account_path'])) if
-                            file.endswith(".json")}
-                log.debug(
-                    "The following accounts are defined: %s and are about to added to remote %s",
-                    str(accounts), uploader_remote)
-
-                sa_delay[uploader_remote] = accounts
-
-
+       if uploader_remote not in sa_delay:
+           sa_delay[uploader_remote] = None
+       if 'service_account_path' in uploader_config and os.path.exists(uploader_config['service_account_path']):
+           # If service_account path provided, loop over the service account files and provide one at a time when starting the uploader. If upload completes successfully, do not attempt to use the other accounts
+           accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), file):None for file
+                                in os.listdir(os.path.normpath(uploader_config['service_account_path'])) if file.endswith(".json")}
+           currentAccounts = sa_delay[uploader_remote]
+           if currentAccounts is not None:
+               for account in accounts:
+                     if account not in currentAccounts:
+                          log.debug("New service account %s has been added for remote %s",account,uploader_remote)
+                          currentAccounts[account] = None
+               sa_delay[uploader_remote] = currentAccounts
+               if(len(currentAccounts) < len(accounts)):
+                    log.debug("Additional service accounts were added. Lifiting any current bans for remote: %s",uploader_remote)
+                    uploader_delay.pop(uploader_remote, None)     
+           else:
+               log.debug("The following accounts are defined: %s and are about to added to remote %s",str(accounts),uploader_remote)  
+               sa_delay[uploader_remote] = accounts
+                
 def init_syncers():
     try:
         for syncer_name, syncer_config in conf.configs['syncer'].items():
@@ -131,23 +132,23 @@ def init_syncers():
     except Exception:
         log.exception("Exception initializing syncer agents: ")
 
-
 def check_suspended_sa(uploader_to_check):
     global sa_delay
-    suspended = False
+    suspended=False
     try:
-        if sa_delay[uploader_to_check] is not None:
-            log.debug("Proceeding to check any timeouts which have passed for remote %s", uploader_to_check)
-            for account, suspension_expiry in sa_delay[uploader_to_check].items():
-                if suspension_expiry is not None:
-                    log.debug("Service account %s was previously banned. Checking if timeout has passed",
-                              suspension_expiry)
+        if(sa_delay[uploader_to_check] != None):
+            log.debug("Proceeding to check any timeouts which have passed for remote %s",uploader_to_check)
+            for account,suspension_expiry in sa_delay[uploader_to_check].items():
+                if (suspension_expiry != None):
+                    log.debug("Service account %s was previously banned. Checking if timeout has passed",suspension_expiry)
                     # Remove any ban times for service accounts which have passed
                     if time.time() > suspension_expiry:
                         log.debug("Setting ban status for service_account %s to None since timeout has passed", account)
                         sa_delay[uploader_to_check][account] = None
     except Exception:
         log.exception("Exception checking suspended service accounts: ")
+
+
 
 
 def check_suspended_uploaders(uploader_to_check=None):
@@ -265,56 +266,46 @@ def do_upload(remote=None):
                                     conf.configs['core']['rclone_binary_path'],
                                     conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
 
-                if sa_delay[uploader_remote] is not None:
-                    availableAccounts = [account for account, lastBanTime in sa_delay[uploader_remote].items() if
-                                         lastBanTime is None]
-                    log.info("The following accounts are available: %s", str(availableAccounts))
-                    # If there are no service accounts available, do not even bother attemping the upload
+                if(sa_delay[uploader_remote] is not None):
+                    availableAccounts = [account for account,lastBanTime in sa_delay[uploader_remote].items() if lastBanTime is None]
+                    log.info("The following accounts are available: %s",str(availableAccounts))
+                    #If there are no service accounts available, do not even bother attemping the upload
                     if len(availableAccounts) == 0:
-                        log.info("Upload aborted due to the fact that no service "
-                                 "accounts are currently unbanned and available to use for remote %s",
-                                 uploader_remote)
+                        log.info("Upload aborted due to the fact that no service accounts are currently unbanned and available to use for remote %s",uploader_remote)
                         # add remote to uploader_delay
                         timeTillUnban = misc.get_lowest_remaining_time(sa_delay[uploader_remote])
-                        log.info("Lowest Remaining time till unban is %d", timeTillUnban)
+                        log.info("Lowest Remaining time till unban is %d",timeTillUnban)
                         uploader_delay[uploader_remote] = timeTillUnban
                     else:
-                        for i in range(0, len(availableAccounts)):
+                        for i in range(0,len(availableAccounts)):
                             uploader.set_service_account(availableAccounts[i])
                             resp, resp_trigger = uploader.upload()
                             if resp:
-                                sa_delay[uploader_remote][availableAccounts[i]] = time.time() + ((60 * 60) * resp)
-                                log.debug("Setting account %s as unbanned at %f", availableAccounts[i],
-                                          sa_delay[uploader_remote][availableAccounts[i]])
-                                if i != (len(availableAccounts) - 1):
-                                    log.info("Upload aborted due to trigger: %r being met, "
-                                             "%s is cycling to service_account file %s",
-                                             resp_trigger, uploader_remote, availableAccounts[i + 1])
-                                    # Set unban time for current service account
-                                    log.debug("Setting service account %s as banned for remote %s",
-                                              availableAccounts[i], uploader_remote)
-                                    continue
-                                else:
-                                    # non 0 result indicates a trigger was met,
-                                    # the result is how many hours to sleep this remote for
-                                    log.info("Upload aborted due to trigger: %r being met, %s "
-                                             "will continue automatic uploading normally in "
-                                             "%d hours", resp_trigger, uploader_remote, resp)
+                                    currentData = sa_delay[uploader_remote]
+                                    currentData[availableAccounts[i]] = time.time() + ((60 * 60) * resp)
+                                    sa_delay[uploader_remote] = currentData
+                                    log.debug("Setting account %s as unbanned at %f", availableAccounts[i], sa_delay[uploader_remote][availableAccounts[i]])
+                                    if(i != len(availableAccounts)-1):
+                                        log.info("Upload aborted due to trigger: %r being met, %s is cycling to service_account file %s", resp_trigger, uploader_remote, availableAccounts[i+1])
+                                        #Set unban time for current service account
+                                        log.debug("Setting service account %s as banned for remote %s",availableAccounts[i],uploader_remote)
+                                        continue
+                                    else:
+                                        # non 0 result indicates a trigger was met, the result is how many hours to sleep this remote for
+                                        log.info(
+                                            "Upload aborted due to trigger: %r being met, %s will continue automatic uploading normally in "
+                                            "%d hours", resp_trigger, uploader_remote, resp)
 
-                                    # add remote to uploader_delay
-                                    log.debug("Adding unban time for %s as %f", uploader_remote,
-                                              misc.get_lowest_remaining_time(sa_delay[uploader_remote]))
-                                    uploader_delay[uploader_remote] = misc.get_lowest_remaining_time(
-                                        sa_delay[uploader_remote])
-                                    # send aborted upload notification
-                                    notify.send(
-                                        message="Upload was aborted for remote: %s due to trigger %r. "
-                                                "Uploads suspended for %d hours" %
-                                                (uploader_remote, resp_trigger, resp))
+                                        # add remote to uploader_delay
+                                        log.debug("Adding unban time for %s as %f", uploader_remote, misc.get_lowest_remaining_time(sa_delay[uploader_remote]))
+                                        uploader_delay[uploader_remote] = misc.get_lowest_remaining_time(sa_delay[uploader_remote])
+                                        # send aborted upload notification
+                                        notify.send(
+                                            message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d hours" %
+                                                    (uploader_remote, resp_trigger, resp))
                             else:
                                 # send successful upload notification
-                                notify.send(
-                                    message="Upload was completed successfully for remote: %s" % uploader_remote)
+                                notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
 
                                 # Remove ban for service account
                                 sa_delay[uploader_remote][availableAccounts[i]] = None
