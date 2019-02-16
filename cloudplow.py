@@ -99,20 +99,28 @@ def init_notifications():
 
 def init_service_accounts():
     global sa_delay
+    global uploader_delay
     for uploader_remote, uploader_config in conf.configs['uploader'].items():
        if uploader_remote not in sa_delay:
            sa_delay[uploader_remote] = None
-           if 'service_account_path' in uploader_config and os.path.exists(uploader_config['service_account_path']):
-                    log.debug("Service Account path is defined for remote %s  and does not currently exist in service account db. Adding...",uploader_remote)
-                    # If service_account path provided, loop over the service account files and provide one at a time when starting the uploader. If upload completes successfully, do not attempt to use the other accounts
-                    accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), file):None for file
+       if 'service_account_path' in uploader_config and os.path.exists(uploader_config['service_account_path']):
+           # If service_account path provided, loop over the service account files and provide one at a time when starting the uploader. If upload completes successfully, do not attempt to use the other accounts
+           accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), file):None for file
                                 in os.listdir(os.path.normpath(uploader_config['service_account_path'])) if file.endswith(".json")}
-                    log.debug(
-                        "The following accounts are defined: %s and are about to added to remote %s",
-                        str(accounts),uploader_remote)
-
-                    sa_delay[uploader_remote] = accounts
-
+           currentAccounts = sa_delay[uploader_remote]
+           if currentAccounts is not None:
+               for account in accounts:
+                     if account not in currentAccounts:
+                          log.debug("New service account %s has been added for remote %s",account,uploader_remote)
+                          currentAccounts[account] = None
+               sa_delay[uploader_remote] = currentAccounts
+               if(len(currentAccounts) < len(accounts)):
+                    log.debug("Additional service accounts were added. Lifiting any current bans for remote: %s",uploader_remote)
+                    uploader_delay.pop(uploader_remote, None)     
+           else:
+               log.debug("The following accounts are defined: %s and are about to added to remote %s",str(accounts),uploader_remote)  
+               sa_delay[uploader_remote] = accounts
+                
 def init_syncers():
     try:
         for syncer_name, syncer_config in conf.configs['syncer'].items():
