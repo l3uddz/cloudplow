@@ -101,6 +101,7 @@ def init_notifications():
 def init_service_accounts():
     global sa_delay
     global uploader_delay
+
     for uploader_remote, uploader_config in conf.configs['uploader'].items():
         if uploader_remote not in sa_delay:
             sa_delay[uploader_remote] = None
@@ -119,11 +120,12 @@ def init_service_accounts():
                         current_accounts[account] = None
                 sa_delay[uploader_remote] = current_accounts
                 if len(current_accounts) < len(accounts):
-                    log.debug("Additional service accounts were added. Lifiting any current bans for remote: %s",
+                    log.debug("Additional service accounts were added. Lifting any current bans for remote: %s",
                               uploader_remote)
                     uploader_delay.pop(uploader_remote, None)
             else:
-                log.debug("The following accounts are defined: %s and are about to added to remote %s", str(accounts),
+                log.debug("The following accounts are defined: %s and are about to be added to remote %s",
+                          str(accounts),
                           uploader_remote)
                 sa_delay[uploader_remote] = accounts
 
@@ -274,8 +276,8 @@ def do_upload(remote=None):
                                     conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
 
                 if sa_delay[uploader_remote] is not None:
-                    available_accounts = [account for account, lastBanTime in sa_delay[uploader_remote].items() if
-                                          lastBanTime is None]
+                    available_accounts = [account for account, last_ban_time in sa_delay[uploader_remote].items() if
+                                          last_ban_time is None]
                     log.info("The following accounts are available: %s", str(available_accounts))
                     # If there are no service accounts available, do not even bother attemping the upload
                     if len(available_accounts) == 0:
