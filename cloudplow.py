@@ -311,21 +311,26 @@ def do_upload(remote=None):
                                 else:
                                     # non 0 result indicates a trigger was met, the result is how many hours
                                     # to sleep this remote for
-                                    log.info(
-                                        "Upload aborted due to trigger: %r being met, %s will continue automatic "
-                                        "uploading normally in %d hours", resp_trigger, uploader_remote, resp)
+                                    # Before banning remote, check that a service account did not become unbanned during upload
+                                    check_suspended_sa(sa_delay[uploader_remote])
 
-                                    # add remote to uploader_delay
-                                    log.debug("Adding unban time for %s as %f", uploader_remote,
-                                              misc.get_lowest_remaining_time(sa_delay[uploader_remote]))
-                                    uploader_delay[uploader_remote] = misc.get_lowest_remaining_time(
-                                        sa_delay[uploader_remote])
+                                    unbanTime = misc.get_lowest_remaining_time(sa_delay[uploader_remote])
+                                    if unbanTime is not None:
+                                        log.info(
+                                            "Upload aborted due to trigger: %r being met, %s will continue automatic "
+                                            "uploading normally in %d hours", resp_trigger, uploader_remote, resp)
 
-                                    # send aborted upload notification
-                                    notify.send(
-                                        message="Upload was aborted for remote: %s due to trigger %r. "
-                                                "Uploads suspended for %d hours" %
-                                                (uploader_remote, resp_trigger, resp))
+                                        # add remote to uploader_delay
+                                        log.debug("Adding unban time for %s as %f", uploader_remote,
+                                                  misc.get_lowest_remaining_time(sa_delay[uploader_remote]))
+                                        uploader_delay[uploader_remote] = misc.get_lowest_remaining_time(
+                                            sa_delay[uploader_remote])
+
+                                        # send aborted upload notification
+                                        notify.send(
+                                            message="Upload was aborted for remote: %s due to trigger %r. "
+                                                    "Uploads suspended for %d hours" %
+                                                    (uploader_remote, resp_trigger, resp))
                             else:
                                 # send successful upload notification
                                 notify.send(
