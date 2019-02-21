@@ -155,7 +155,9 @@ def check_suspended_sa(uploader_to_check):
                     # Remove any ban times for service accounts which have passed
                     if time.time() > suspension_expiry:
                         log.debug("Setting ban status for service_account %s to None since timeout has passed", account)
-                        sa_delay[uploader_to_check][account] = None
+                        current_data = sa_delay[uploader_to_check]
+                        current_data[account] = None
+                        sa_delay[uploader_to_check] = current_data
     except Exception:
         log.exception("Exception checking suspended service accounts: ")
 
