@@ -22,7 +22,7 @@ class Uploader:
         self.use_rc = use_rc
         self.service_account = None
 
-    def set_service_account(self,file):
+    def set_service_account(self, file):
         self.service_account = file
 
     def upload(self):
@@ -38,13 +38,17 @@ class Uploader:
                     rclone_config['rclone_excludes'].append(re.escape(item))
 
         # do upload
-        if self.service_account != None:
+        if self.service_account is not None:
             rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
                                     self.dry_run, self.use_rc, self.service_account)
         else:
             rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
                                     self.dry_run, self.use_rc)
+
         log.info("Uploading '%s' to remote: %s", rclone_config['upload_folder'], self.name)
+        self.delayed_check = 0
+        self.delayed_trigger = None
+        self.trigger_tracks = {}
         rclone.upload(self.__logic)
         log.info("Finished uploading to remote: %s", self.name)
         return self.delayed_check, self.delayed_trigger
