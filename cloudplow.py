@@ -300,10 +300,10 @@ def do_upload(remote=None):
                                           sa_delay[uploader_remote][available_accounts[i]])
                                 if i != (len(available_accounts) - 1):
                                     log.info("Upload aborted due to trigger: %r being met, "
-                                             "%s is cycling to service_account file %s",
+                                             "%s is cycling to service_account file: %r",
                                              resp_trigger, uploader_remote, available_accounts[i + 1])
                                     # Set unban time for current service account
-                                    log.debug("Setting service account %s as banned for remote %s",
+                                    log.debug("Setting service account %s as banned for remote: %s",
                                               available_accounts[i], uploader_remote)
                                     continue
                                 else:
