@@ -278,6 +278,9 @@ def do_upload(remote=None):
                 if sa_delay[uploader_remote] is not None:
                     available_accounts = [account for account, last_ban_time in sa_delay[uploader_remote].items() if
                                           last_ban_time is None]
+                    if len(available_accounts):
+                        available_accounts.sort()
+                        
                     log.info("The following accounts are available: %s", str(available_accounts))
                     # If there are no service accounts available, do not even bother attemping the upload
                     if len(available_accounts) == 0:
@@ -289,7 +292,6 @@ def do_upload(remote=None):
                         log.info("Lowest Remaining time till unban is %d", time_till_unban)
                         uploader_delay[uploader_remote] = time_till_unban
                     else:
-                        available_accounts.sort()
                         for i in range(0, len(available_accounts)):
                             uploader.set_service_account(available_accounts[i])
                             resp, resp_trigger = uploader.upload()
