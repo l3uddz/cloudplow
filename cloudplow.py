@@ -289,6 +289,7 @@ def do_upload(remote=None):
                         log.info("Lowest Remaining time till unban is %d", time_till_unban)
                         uploader_delay[uploader_remote] = time_till_unban
                     else:
+                        available_accounts.sort()
                         for i in range(0, len(available_accounts)):
                             uploader.set_service_account(available_accounts[i])
                             resp, resp_trigger = uploader.upload()

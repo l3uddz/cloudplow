@@ -24,6 +24,7 @@ class Uploader:
 
     def set_service_account(self, file):
         self.service_account = file
+        log.info("Using service account: %r", file)
 
     def upload(self):
         rclone_config = self.rclone_config.copy()
