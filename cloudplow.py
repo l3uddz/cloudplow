@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import codecs
 import logging
 import os
 import sys
@@ -25,10 +24,6 @@ from utils.uploader import Uploader
 ############################################################
 # INIT
 ############################################################
-
-# IO Encoding
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 
 # Logging
 log_formatter = logging.Formatter(
@@ -149,7 +144,7 @@ def init_syncers():
 
 def check_suspended_sa(uploader_to_check):
     global sa_delay
-    suspended = False
+    suspended=False
     try:
         if sa_delay[uploader_to_check] is not None:
             log.debug("Proceeding to check any timeouts which have passed for remote %s", uploader_to_check)
@@ -287,7 +282,7 @@ def do_upload(remote=None):
                                           last_ban_time is None]
                     if len(available_accounts):
                         available_accounts.sort()
-
+                        
                     log.info("The following accounts are available: %s", str(available_accounts))
                     # If there are no service accounts available, do not even bother attemping the upload
                     if len(available_accounts) == 0:
