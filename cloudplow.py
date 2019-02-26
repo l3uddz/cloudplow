@@ -27,7 +27,7 @@ from utils.uploader import Uploader
 
 # Logging
 log_formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)-10s - %(name)-20s - %(funcName)-30s - %(message)s')
+    u'%(asctime)s - %(levelname)-10s - %(name)-20s - %(funcName)-30s - %(message)s')
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 
@@ -144,7 +144,7 @@ def init_syncers():
 
 def check_suspended_sa(uploader_to_check):
     global sa_delay
-    suspended=False
+    suspended = False
     try:
         if sa_delay[uploader_to_check] is not None:
             log.debug("Proceeding to check any timeouts which have passed for remote %s", uploader_to_check)
@@ -282,7 +282,7 @@ def do_upload(remote=None):
                                           last_ban_time is None]
                     if len(available_accounts):
                         available_accounts.sort()
-                        
+
                     log.info("The following accounts are available: %s", str(available_accounts))
                     # If there are no service accounts available, do not even bother attemping the upload
                     if len(available_accounts) == 0:
