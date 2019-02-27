@@ -23,8 +23,8 @@ class Local:
         self.rclone_config_path = None
         self.syncer_name = kwargs['syncer_name'] if 'syncer_name' in kwargs else 'Unknown Syncer'
 
-        log.info("Initialized Local syncer agent %s for %s -> %s using tool: %r", self.sync_from_config['sync_remote'],
-                 self.syncer_name, self.sync_to_config['sync_remote'], self.tool_path)
+        log.info("Initialized Local syncer agent %s for %s -> %s using tool: %r", self.syncer_name,
+                 self.sync_from_config['sync_remote'], self.sync_to_config['sync_remote'], self.tool_path)
         return
 
     def startup(self, **kwargs):
