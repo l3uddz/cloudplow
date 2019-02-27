@@ -136,6 +136,7 @@ def init_syncers():
             # remove irrelevant parameters before loading syncer agent
             filtered_config = syncer_config.copy()
             filtered_config.pop('sync_interval', None)
+            filtered_config['syncer_name'] = syncer_name
             # load syncer agent
             syncer.load(**filtered_config)
     except Exception:

@@ -1,6 +1,5 @@
 import logging
 import time
-import os
 
 from utils import process
 from utils.rclone import RcloneSyncer
@@ -31,9 +30,10 @@ class Scaleway:
         self.image = kwargs['image'] if 'image' in kwargs else 'ubuntu-xenial'
         # parse instance_destroy from kwargs (default True)
         self.instance_destroy = kwargs['instance_destroy'] if 'instance_destroy' in kwargs else True
+        self.syncer_name = kwargs['syncer_name'] if 'syncer_name' in kwargs else 'Unknown Syncer'
 
-        log.info("Initialized Scaleway syncer agent for %s -> %s using tool: %r", self.sync_from_config['sync_remote'],
-                 self.sync_to_config['sync_remote'], self.tool_path)
+        log.info("Initialized Scaleway syncer agent %s for %s -> %s using tool: %r", self.syncer_name,
+                 self.sync_from_config['sync_remote'], self.sync_to_config['sync_remote'], self.tool_path)
         return
 
     def startup(self, **kwargs):
