@@ -1,7 +1,6 @@
 import logging
 import random
 
-from utils import process
 from utils.rclone import RcloneSyncer
 
 try:
@@ -22,9 +21,10 @@ class Local:
         self.kwargs = kwargs
         self.instance_id = None
         self.rclone_config_path = None
+        self.syncer_name = kwargs['syncer_name'] if 'syncer_name' in kwargs else 'Unknown Syncer'
 
-        log.info("Initialized Local syncer agent for %s -> %s using tool: %r", self.sync_from_config['sync_remote'],
-                 self.sync_to_config['sync_remote'], self.tool_path)
+        log.info("Initialized Local syncer agent for %r - %s -> %s using tool: %r", self.syncer_name,
+                 self.sync_from_config['sync_remote'], self.sync_to_config['sync_remote'], self.tool_path)
         return
 
     def startup(self, **kwargs):
