@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 
 from . import path
@@ -28,18 +29,32 @@ class UnionfsHiddenFolder:
 
         try:
             rclone = RcloneUploader(name, remote, self.rclone_binary_path, self.rclone_config_path, self.dry_run)
-
-            # clean hidden files from remote
+            # clean hidden files from remote using threadpool
             if self.hidden_files:
-                log.info("Cleaning %d hidden file(s) from remote: %s", len(self.hidden_files), name)
-                for hidden_file in self.hidden_files:
-                    remote_file = self.__hidden2remote(remote, hidden_file)
-                    if remote_file and rclone.delete_file(remote_file):
-                        log.info("Removed file '%s'", remote_file)
-                        delete_success += 1
-                    else:
-                        log.error("Failed removing file '%s'", remote_file)
-                        delete_failed += 1
+                with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+                    log.info("Cleaning %d hidden file(s) from remote: %s", len(self.hidden_files), name)
+                    future_to_remote_file = {}
+                    for hidden_file in self.hidden_files:
+                        remote_file = self.__hidden2remote(remote, hidden_file)
+                        if remote_file:
+                            future_to_remote_file[executor.submit(rclone.delete_file, remote_file)] = remote_file
+                        else:
+                            log.error("Failed mapping file '%s' to a remote file", hidden_file)
+                            delete_failed += 1
+
+                    for future in concurrent.futures.as_completed(future_to_remote_file):
+                        remote_file = future_to_remote_file[future]
+                        try:
+                            if future.result():
+                                log.info("Removed file '%s'", remote_file)
+                                delete_success += 1
+                            else:
+                                log.error("Failed removing file '%s'", remote_file)
+                                delete_failed += 1
+                        except Exception:
+                            log.exception("Exception processing result from rclone delete file future for '%s': ",
+                                          remote_file)
+                            delete_failed += 1
 
             # clean hidden folders from remote
             if self.hidden_folders:
@@ -53,12 +68,15 @@ class UnionfsHiddenFolder:
                         log.error("Failed removing folder '%s'", remote_folder)
                         delete_failed += 1
 
-            if self.hidden_files or self.hidden_folders:
+            if self.hidden_folders or self.hidden_files:
                 log.info("Completed cleaning hidden(s) from remote: %s", name)
                 log.info("%d items were deleted, %d items failed to delete", delete_success, delete_failed)
+
             return True, delete_success, delete_failed
+
         except Exception:
             log.exception("Exception cleaning hidden(s) from %r: ", self.unionfs_fuse)
+
         return False, delete_success, delete_failed
 
     def remove_local_hidden(self):

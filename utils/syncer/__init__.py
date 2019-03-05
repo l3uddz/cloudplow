@@ -1,12 +1,14 @@
 import logging
 import uuid
 
+from .local import Local
 from .scaleway import Scaleway
 
 log = logging.getLogger("syncer")
 
 SERVICES = {
-    'scaleway': Scaleway
+    'scaleway': Scaleway,
+    'local': Local
 }
 
 
@@ -71,6 +73,9 @@ class Syncer:
             for syncer in self.services:
                 if chosen_service and syncer.NAME.lower() != chosen_service:
                     continue
+                if syncer.syncer_name != kwargs['name']:
+                    continue
+
                 return syncer.startup(**kwargs)
         except Exception:
             log.exception("Exception starting instance kwargs=%r: ", kwargs)
