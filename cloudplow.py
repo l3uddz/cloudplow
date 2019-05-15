@@ -145,7 +145,6 @@ def init_syncers():
 
 def check_suspended_sa(uploader_to_check):
     global sa_delay
-    suspended=False
     try:
         if sa_delay[uploader_to_check] is not None:
             log.debug("Proceeding to check any timeouts which have passed for remote %s", uploader_to_check)
