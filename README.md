@@ -228,6 +228,7 @@ Cloudplow has 3 main functions:
               ".unionfs-fuse/**"
             ],
             "rclone_extras": {
+              "--user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36",
               "--checkers": 32,
               "--stats": "60s",
               "--transfers": 16,
@@ -501,6 +502,7 @@ These are the excludes to be used when uploading to this remote.
 
 ```
             "rclone_extras": {
+                "--user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36",
                 "--checkers": 16,
                 "--drive-chunk-size": "64M",
                 "--stats": "60s",
@@ -768,7 +770,7 @@ Further documentation refers to the example configurations below.
 `"service"`: Which syncer agent to use for the syncer task. Choices are `local` and `scaleway`. Other service providers can be added in the future.
 
   - `local`: a remote-to-remote sync that runs locally (i.e. on the same system as the one running cloudplow).
-  
+
   - `scaleway`: a remote-to-remote sync that runs on a Scaleway instance. Further documentation will be needed to describe the setup process.
 
 `"sync_from"`: Where the sync is coming FROM.
@@ -784,7 +786,7 @@ Further documentation refers to the example configurations below.
 `"tool_path"`: Which binary to use to execute the sync.
 
   - When using the `local` service, this will be the rclone binary path.
-  
+
   - When using `scaleway`, this will be the binary path of the `scw` tool.
 
 `"use_copy"`: This tells the syncer to use the `rclone copy` command (vs the default `rclone sync` one). Default is `false`.
@@ -792,9 +794,9 @@ Further documentation refers to the example configurations below.
 `"instance_destroy"`:
 
   - When this is `true`, the instance that is created for the sync task is destroyed after the task finishes.  Only applies to non `local` sync services (e.g. `scaleway`).  
-  
+
   - When this is set to `false`, it will re-use the existing instance that was previously created/shutdown after the last sync ran.
-  
+
     - Note: It is able todo this because the instances being created are named after the `syncer` task (e.g. `torrents2google` in the example above). It uses this name to determine if an instance already exists, to start/stop it, rather than destroy it.
 
 

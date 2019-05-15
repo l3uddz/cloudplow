@@ -17,7 +17,8 @@ log = logging.getLogger('rclone')
 
 
 class RcloneUploader:
-    def __init__(self, name, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False,service_account=None):
+    def __init__(self, name, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False,
+                 service_account=None):
         self.name = name
         self.config = config
         self.rclone_binary_path = rclone_binary_path
@@ -30,8 +31,10 @@ class RcloneUploader:
         try:
             log.debug("Deleting file '%s' from remote %s", path, self.name)
             # build cmd
-            cmd = "%s delete %s --config=%s" % (cmd_quote(self.rclone_binary_path), cmd_quote(path),
-                                                cmd_quote(self.rclone_config_path))
+            cmd = "%s delete %s --config=%s --user-agent=%s" % (cmd_quote(self.rclone_binary_path), cmd_quote(path),
+                                                                cmd_quote(self.rclone_config_path), cmd_quote(
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'))
             if self.dry_run:
                 cmd += ' --dry-run'
 
@@ -50,8 +53,10 @@ class RcloneUploader:
         try:
             log.debug("Deleting folder '%s' from remote %s", path, self.name)
             # build cmd
-            cmd = "%s rmdir %s --config=%s" % (cmd_quote(self.rclone_binary_path), cmd_quote(path),
-                                               cmd_quote(self.rclone_config_path))
+            cmd = "%s rmdir %s --config=%s --user-agent=%s" % (cmd_quote(self.rclone_binary_path), cmd_quote(path),
+                                                               cmd_quote(self.rclone_config_path), cmd_quote(
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'))
             if self.dry_run:
                 cmd += ' --dry-run'
 
@@ -69,13 +74,17 @@ class RcloneUploader:
     def upload(self, callback):
         try:
             log.debug("Uploading '%s' to '%s'", self.config['upload_folder'], self.config['upload_remote'])
-            log.debug("Rclone command set to '%s'", self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')
+            log.debug("Rclone command set to '%s'", self.config['rclone_command'] if (
+                    'rclone_command' in self.config and self.config[
+                'rclone_command'].lower() != 'sync') else 'move')
             # build cmd
             cmd = "%s %s %s %s --config=%s" % (cmd_quote(self.rclone_binary_path),
-                                                 cmd_quote(self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move'),
-                                                 cmd_quote(self.config['upload_folder']),
-                                                 cmd_quote(self.config['upload_remote']),
-                                                 cmd_quote(self.rclone_config_path))
+                                               cmd_quote(self.config['rclone_command'] if (
+                                                       'rclone_command' in self.config and self.config[
+                                                   'rclone_command'].lower() != 'sync') else 'move'),
+                                               cmd_quote(self.config['upload_folder']),
+                                               cmd_quote(self.config['upload_remote']),
+                                               cmd_quote(self.rclone_config_path))
             if self.service_account != None:
                 cmd += ' --drive-service-account-file %s' % cmd_quote(self.service_account)
             extras = self.__extras2string()
@@ -237,7 +246,7 @@ class RcloneThrottler:
                 if 'error' in data:
                     log.error("Failed to throttle %s: %s", self.url, data['error'])
                 elif 'rate' in data and data['rate'] == speed:
-                    log.warning("Successfully throttled %s to: %s", self.url, speed)
+                    log.warning("Successfully throttled %s to %s.", self.url, speed)
                     success = True
 
         except Exception:

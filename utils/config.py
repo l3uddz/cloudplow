@@ -124,7 +124,9 @@ class Config(object):
                     '--checkers': 16,
                     '--stats': '60s',
                     '--verbose': 1,
-                    '--skip-links': None
+                    '--skip-links': None,
+                    '--user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 '
+                                    '(KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
                 },
                 'rclone_sleeps': {
                     'Failed to copy: googleapi: Error 403: User rate limit exceeded': {

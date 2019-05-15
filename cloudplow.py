@@ -27,7 +27,7 @@ from utils.uploader import Uploader
 
 # Logging
 log_formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)-10s - %(name)-20s - %(funcName)-30s - %(message)s')
+    u'%(asctime)s - %(levelname)-10s - %(name)-20s - %(funcName)-30s - %(message)s')
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 
@@ -136,6 +136,7 @@ def init_syncers():
             # remove irrelevant parameters before loading syncer agent
             filtered_config = syncer_config.copy()
             filtered_config.pop('sync_interval', None)
+            filtered_config['syncer_name'] = syncer_name
             # load syncer agent
             syncer.load(**filtered_config)
     except Exception:
@@ -280,6 +281,9 @@ def do_upload(remote=None):
                 if sa_delay[uploader_remote] is not None:
                     available_accounts = [account for account, last_ban_time in sa_delay[uploader_remote].items() if
                                           last_ban_time is None]
+                    if len(available_accounts):
+                        available_accounts.sort()
+
                     log.info("The following accounts are available: %s", str(available_accounts))
                     # If there are no service accounts available, do not even bother attemping the upload
                     if len(available_accounts) == 0:
@@ -543,22 +547,22 @@ def do_plex_monitor():
     # create the plex object
     plex = Plex(conf.configs['plex']['url'], conf.configs['plex']['token'])
     if not plex.validate():
-        log.error("Aborting Plex stream monitor due to failure to validate supplied server url/token...")
+        log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
         plex_monitor_thread = None
         return
 
     # sleep 15 seconds to allow rclone to start
-    log.info("Plex server url + token were validated, sleeping 15 seconds before checking Rclone rc url...")
+    log.info("Plex Media Server URL + Token were validated. Sleeping for 15 seconds before checking Rclone RC URL.")
     time.sleep(15)
 
     # create the rclone throttle object
     rclone = RcloneThrottler(conf.configs['plex']['rclone']['url'])
     if not rclone.validate():
-        log.error("Aborting Plex stream monitor due to failure to validate supplied rclone rc url...")
+        log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
         plex_monitor_thread = None
         return
     else:
-        log.info("Rclone rc url was validated, Plex streams monitoring will begin now!")
+        log.info("Rclone RC URL was validated. Plex Media Server streams monitoring will now begin.")
 
     throttled = False
     throttle_speed = None
@@ -566,7 +570,7 @@ def do_plex_monitor():
     while lock_file.is_locked():
         streams = plex.get_streams()
         if streams is None:
-            log.error("Failed to check Plex stream(s), trying again in %d seconds...",
+            log.error("Failed to check Plex Media Server stream(s). Trying again in %d seconds...",
                       conf.configs['plex']['poll_interval'])
         else:
             # we had a response
@@ -577,11 +581,11 @@ def do_plex_monitor():
 
             # are we already throttled?
             if not throttled and stream_count >= conf.configs['plex']['max_streams_before_throttle']:
-                log.info("There was %d playing stream(s) on Plex while we were currently un-throttled, streams:",
+                log.info("There was %d playing stream(s) on Plex Media Server while it was currently un-throttled.",
                          stream_count)
                 for stream in streams:
                     log.info(stream)
-                log.info("Upload throttling will now commence...")
+                log.info("Upload throttling will now commence.")
 
                 # send throttle request
                 throttle_speed = misc.get_nearest_less_element(conf.configs['plex']['rclone']['throttle_speeds'],
@@ -597,8 +601,8 @@ def do_plex_monitor():
             elif throttled:
                 if stream_count < conf.configs['plex']['max_streams_before_throttle']:
                     log.info(
-                        "There was less than %d playing stream(s) on Plex while we were currently throttled, "
-                        "removing throttle!", conf.configs['plex']['max_streams_before_throttle'])
+                        "There was less than %d playing stream(s) on Plex Media Server while it was currently throttled. "
+                        "Removing throttle ...", conf.configs['plex']['max_streams_before_throttle'])
                     # send un-throttle request
                     throttled = not rclone.no_throttle()
                     throttle_speed = None
@@ -607,7 +611,7 @@ def do_plex_monitor():
                     if not throttled:
                         notify.send(
                             message="Un-throttled current upload because there was less than %d playing stream(s) on "
-                                    "Plex" % conf.configs['plex']['max_streams_before_throttle'])
+                                    "Plex Media Server" % conf.configs['plex']['max_streams_before_throttle'])
 
                 elif misc.get_nearest_less_element(conf.configs['plex']['rclone']['throttle_speeds'],
                                                    stream_count) != throttle_speed:
@@ -615,17 +619,17 @@ def do_plex_monitor():
                     throttle_speed = misc.get_nearest_less_element(conf.configs['plex']['rclone']['throttle_speeds'],
                                                                    stream_count)
                     log.info("Adjusting throttle speed for current upload to %s because there "
-                             "was now %d playing stream(s) on Plex", throttle_speed, stream_count)
+                             "was now %d playing stream(s) on Plex Media Server", throttle_speed, stream_count)
 
                     throttled = rclone.throttle(throttle_speed)
                     if throttled and conf.configs['plex']['verbose_notifications']:
                         notify.send(
                             message='Throttle for current upload was adjusted to %s due to %d playing stream(s)'
-                                    ' on Plex' % (throttle_speed, stream_count))
+                                    ' on Plex Media Server' % (throttle_speed, stream_count))
 
                 else:
-                    log.info("There was %d playing stream(s) on Plex while we were already throttled to %s, throttling "
-                             "will continue..", stream_count, throttle_speed)
+                    log.info("There was %d playing stream(s) on Plex Media Server it was already throttled to %s. Throttling "
+                             "will continue.", stream_count, throttle_speed)
 
         # the lock_file exists, so we can assume an upload is in progress at this point
         time.sleep(conf.configs['plex']['poll_interval'])
