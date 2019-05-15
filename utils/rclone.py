@@ -245,7 +245,7 @@ class RcloneThrottler:
                     if data['transfers'] > 0:
                         # Sum total speed of all active transfers to determine if greater than current_speed
                         current_speed = sum([float(transfer['speed']) for transfer in data['transferring']])
-                        if ((current_speed/1000000)-5) > float(speed.rstrip('M')):
+                        if ((current_speed/1000000)-10) > float(speed.rstrip('M')):
                             return False
                         else:
                             return True
