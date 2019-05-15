@@ -579,7 +579,7 @@ def do_plex_monitor():
                     stream_count += 1
 
             # are we already throttled?
-            if (not throttled and stream_count >= conf.configs['plex']['max_streams_before_throttle']) or (throttled and not rclone.throttle_active(throttle_speed)):
+            if ((not throttled or (throttled and not rclone.throttle_active(throttle_speed))) and stream_count >= conf.configs['plex']['max_streams_before_throttle']):
                 log.info("There was %d playing stream(s) on Plex Media Server while it was currently un-throttled.",
                          stream_count)
                 for stream in streams:
