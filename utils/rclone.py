@@ -242,12 +242,13 @@ class RcloneThrottler:
                 resp = requests.post(urljoin(self.url,'core/stats'),timeout=15,verify=False)
                 if '{' in resp.text and '}' in resp.text:
                     data = resp.json()
-                    # Sum total speed of all active transfers to determine if greater than current_speed
-                    current_speed = sum([float(transfer['speed']) for transfer in data['transferring']])
-                    if (current_speed/1000000) > float(speed.rstrip('M')):
-                        return False
-                    else:
-                        return True
+                    if data['transfers'] > 0:
+                        # Sum total speed of all active transfers to determine if greater than current_speed
+                        current_speed = sum([float(transfer['speed']) for transfer in data['transferring']])
+                        if ((current_speed/1000000)-5) > float(speed.rstrip('M')):
+                            return False
+                        else:
+                            return True
             except Exception:
                 log.exception("Exception checking if throttle currently active")
 
