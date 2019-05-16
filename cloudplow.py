@@ -562,7 +562,7 @@ def do_plex_monitor():
         plex_monitor_thread = None
         return
     else:
-        log.info("Rclone RC URL was validated. Plex Media Server streams monitoring will now begin.")
+        log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
 
     throttled = False
     throttle_speed = None
