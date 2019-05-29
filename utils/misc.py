@@ -54,8 +54,11 @@ def get_nearest_less_element(data, num):
     return data[str(num)] if str(num) in data else data[min(data.keys(), key=lambda k: abs(int(k) - num))]
 
 
-def is_time_between(time_range, current_time=time.strftime('%H:%M')):
+def is_time_between(time_range, current_time=None):
     """ reference: https://stackoverflow.com/a/45265202 """
+    if not current_time:
+        current_time = time.strftime('%H:%M')
+
     try:
         if time_range[1] < time_range[0]:
             return current_time >= time_range[0] or current_time <= time_range[1]
