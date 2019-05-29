@@ -395,12 +395,12 @@ def do_upload(remote=None):
                         continue
 
                     # validate we have the bare minimum config settings set
-                    required_configs = ['move_from_remote', 'move_to_remote']
+                    required_configs = ['move_from_remote', 'move_to_remote', 'rclone_extras']
                     required_set = True
                     for setting in required_configs:
                         if setting not in uploader_config['mover']:
-                            log.error("Unable to move from unknown remotes as there was no '%s' setting in the mover "
-                                      "configuration", setting)
+                            log.error("Unable to act on '%s' mover because there was no '%s' setting in the mover "
+                                      "configuration", uploader_remote, setting)
                             required_set = False
                             break
 
