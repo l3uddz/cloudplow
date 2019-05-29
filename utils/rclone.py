@@ -16,6 +16,63 @@ except ImportError:
 log = logging.getLogger('rclone')
 
 
+class RcloneMover:
+    def __init__(self, config, rclone_binary_path, rclone_config_path, dry_run=False):
+        self.config = config
+        self.rclone_binary_path = rclone_binary_path
+        self.rclone_config_path = rclone_config_path
+        self.dry_run = dry_run
+
+    def move(self):
+        try:
+            log.debug("Moving '%s' to '%s'", self.config['move_from_remote'], self.config['move_to_remote'])
+
+            # build cmd
+            cmd = "%s %s %s %s --config=%s" % (cmd_quote(self.rclone_binary_path),
+                                               'move',
+                                               cmd_quote(self.config['move_from_remote']),
+                                               cmd_quote(self.config['move_to_remote']),
+                                               cmd_quote(self.rclone_config_path))
+            extras = self.__extras2string()
+            if len(extras) > 2:
+                cmd += ' %s' % extras
+            excludes = self.__excludes2string()
+            if len(excludes) > 2:
+                cmd += ' %s' % excludes
+            if self.dry_run:
+                cmd += ' --dry-run'
+
+            # exec
+            log.debug("Using: %s", cmd)
+            process.execute(cmd, logs=True)
+            return True
+
+        except Exception:
+            log.exception("Exception occurred while moving '%s' to '%s':", self.config['move_from_remote'],
+                          self.config['move_to_remote'])
+        return False
+
+    # internals
+    def __extras2string(self):
+        if 'rclone_extras' not in self.config:
+            return ''
+
+        return ' '.join(
+            "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in
+            self.config['rclone_extras'].items()).replace('=None', '').strip()
+
+    def __excludes2string(self):
+        if 'rclone_excludes' not in self.config:
+            return ''
+
+        return ' '.join(
+            "--exclude=%s" % (
+                cmd_quote(glob.escape(value) if value.startswith(os.path.sep) else value) if isinstance(value,
+                                                                                                        str) else value)
+            for value in
+            self.config['rclone_excludes']).replace('=None', '').strip()
+
+
 class RcloneUploader:
     def __init__(self, name, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False,
                  service_account=None):
@@ -85,7 +142,7 @@ class RcloneUploader:
                                                cmd_quote(self.config['upload_folder']),
                                                cmd_quote(self.config['upload_remote']),
                                                cmd_quote(self.rclone_config_path))
-            if self.service_account != None:
+            if self.service_account is not None:
                 cmd += ' --drive-service-account-file %s' % cmd_quote(self.service_account)
             extras = self.__extras2string()
             if len(extras) > 2:

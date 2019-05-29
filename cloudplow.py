@@ -15,7 +15,7 @@ from utils.cache import Cache
 from utils.notifications import Notifications
 from utils.nzbget import Nzbget
 from utils.plex import Plex
-from utils.rclone import RcloneThrottler
+from utils.rclone import RcloneThrottler, RcloneMover
 from utils.syncer import Syncer
 from utils.threads import Thread
 from utils.unionfs import UnionfsHiddenFolder
@@ -285,7 +285,7 @@ def do_upload(remote=None):
                         available_accounts = misc.sorted_list_by_digit_asc(available_accounts)
 
                     log.info("The following accounts are available: %s", str(available_accounts))
-                    # If there are no service accounts available, do not even bother attemping the upload
+                    # If there are no service accounts available, do not even bother attempting the upload
                     if len(available_accounts) == 0:
                         log.info("Upload aborted due to the fact that no service accounts "
                                  "are currently unbanned and available to use for remote %s",
@@ -315,7 +315,8 @@ def do_upload(remote=None):
                                 else:
                                     # non 0 result indicates a trigger was met, the result is how many hours
                                     # to sleep this remote for
-                                    # Before banning remote, check that a service account did not become unbanned during upload
+                                    # Before banning remote, check that a service account did not become unbanned
+                                    # during upload
                                     check_suspended_sa(sa_delay[uploader_remote])
 
                                     unbanTime = misc.get_lowest_remaining_time(sa_delay[uploader_remote])
@@ -386,6 +387,35 @@ def do_upload(remote=None):
                         log.info("Resumed the Nzbget download queue!")
                     else:
                         log.error("Failed to resume the Nzbget download queue??")
+
+                # move from staging remote to main ?
+                if 'mover' in uploader_config and 'enabled' in uploader_config['mover']:
+                    if not uploader_config['mover']['enabled']:
+                        # if not enabled, continue the uploader loop
+                        continue
+
+                    # validate we have the bare minimum config settings set
+                    required_configs = ['move_from_remote', 'move_to_remote']
+                    required_set = True
+                    for setting in required_configs:
+                        if setting not in uploader_config['mover']:
+                            log.error("Unable to move from unknown remotes as there was no '%s' setting in the mover "
+                                      "configuration", setting)
+                            required_set = False
+                            break
+
+                    # do move if good
+                    if required_set:
+                        mover = RcloneMover(uploader_config['mover'], conf.configs['core']['rclone_binary_path'],
+                                            conf.configs['core']['rclone_config_path'],
+                                            conf.configs['core']['dry_run'])
+                        if mover.move():
+                            log.info("Move completed successfully from %r -> %r",
+                                     uploader_config['mover']['move_from_remote'],
+                                     uploader_config['mover']['move_to_remote'])
+                        else:
+                            log.error("Move failed from %r -> %r ....?", uploader_config['mover']['move_from_remote'],
+                                      uploader_config['mover']['move_to_remote'])
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
