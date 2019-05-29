@@ -282,7 +282,7 @@ def do_upload(remote=None):
                     available_accounts = [account for account, last_ban_time in sa_delay[uploader_remote].items() if
                                           last_ban_time is None]
                     if len(available_accounts):
-                        available_accounts.sort()
+                        available_accounts = misc.sorted_list_by_digit_asc(available_accounts)
 
                     log.info("The following accounts are available: %s", str(available_accounts))
                     # If there are no service accounts available, do not even bother attemping the upload
@@ -547,7 +547,8 @@ def do_plex_monitor():
     # create the plex object
     plex = Plex(conf.configs['plex']['url'], conf.configs['plex']['token'])
     if not plex.validate():
-        log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
+        log.error(
+            "Aborting Plex Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
         plex_monitor_thread = None
         return
 
@@ -628,8 +629,9 @@ def do_plex_monitor():
                                     ' on Plex Media Server' % (throttle_speed, stream_count))
 
                 else:
-                    log.info("There was %d playing stream(s) on Plex Media Server it was already throttled to %s. Throttling "
-                             "will continue.", stream_count, throttle_speed)
+                    log.info(
+                        "There was %d playing stream(s) on Plex Media Server it was already throttled to %s. Throttling "
+                        "will continue.", stream_count, throttle_speed)
 
         # the lock_file exists, so we can assume an upload is in progress at this point
         time.sleep(conf.configs['plex']['poll_interval'])

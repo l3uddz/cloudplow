@@ -1,11 +1,14 @@
 import logging
+import re
 import time
 
 log = logging.getLogger("misc")
 
+
 def get_lowest_remaining_time(data):
-    sorted_data = sorted(data.items(),key = lambda x:x[1])
+    sorted_data = sorted(data.items(), key=lambda x: x[1])
     return sorted_data[0][1]
+
 
 def seconds_to_string(seconds):
     """ reference: https://codereview.stackexchange.com/a/120595 """
@@ -60,3 +63,8 @@ def is_time_between(time_range, current_time=time.strftime('%H:%M')):
     except Exception:
         log.exception("Exception determining if current time was between the supplied range: ")
     return True
+
+
+def sorted_list_by_digit_asc(list_to_sort):
+    """ reference: https://stackoverflow.com/a/46772952 """
+    return sorted(list_to_sort, key=lambda x: [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', x) if s])
