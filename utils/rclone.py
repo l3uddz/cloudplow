@@ -17,11 +17,12 @@ log = logging.getLogger('rclone')
 
 
 class RcloneMover:
-    def __init__(self, config, rclone_binary_path, rclone_config_path, dry_run=False):
+    def __init__(self, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False):
         self.config = config
         self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
         self.dry_run = dry_run
+        self.use_rc = use_rc
 
     def move(self):
         try:
@@ -41,6 +42,8 @@ class RcloneMover:
                 cmd += ' %s' % excludes
             if self.dry_run:
                 cmd += ' --dry-run'
+            if self.use_rc:
+                cmd += ' --rc --rc-addr=%s' % cmd_quote('localhost:7949')
 
             # exec
             log.debug("Using: %s", cmd)

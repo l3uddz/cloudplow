@@ -408,7 +408,10 @@ def do_upload(remote=None):
                     if required_set:
                         mover = RcloneMover(uploader_config['mover'], conf.configs['core']['rclone_binary_path'],
                                             conf.configs['core']['rclone_config_path'],
-                                            conf.configs['core']['dry_run'])
+                                            conf.configs['core']['dry_run'], conf.configs['plex']['enabled'])
+                        log.info("Move starting from %r -> %r",
+                                 uploader_config['mover']['move_from_remote'],
+                                 uploader_config['mover']['move_to_remote'])
                         if mover.move():
                             log.info("Move completed successfully from %r -> %r",
                                      uploader_config['mover']['move_from_remote'],
