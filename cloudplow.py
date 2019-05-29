@@ -412,13 +412,29 @@ def do_upload(remote=None):
                         log.info("Move starting from %r -> %r",
                                  uploader_config['mover']['move_from_remote'],
                                  uploader_config['mover']['move_to_remote'])
+
+                        # send notification that mover has started
+                        notify.send(
+                            message="Move has started for %s -> %s" % (uploader_config['mover']['move_from_remote'],
+                                                                       uploader_config['mover']['move_to_remote']))
+
                         if mover.move():
                             log.info("Move completed successfully from %r -> %r",
                                      uploader_config['mover']['move_from_remote'],
                                      uploader_config['mover']['move_to_remote'])
+                            # send notification move has finished
+                            notify.send(
+                                message="Move finished successfully for %s -> %s" % (
+                                    uploader_config['mover']['move_from_remote'],
+                                    uploader_config['mover']['move_to_remote']))
                         else:
                             log.error("Move failed from %r -> %r ....?", uploader_config['mover']['move_from_remote'],
                                       uploader_config['mover']['move_to_remote'])
+                            # send notification move has failed
+                            notify.send(
+                                message="Move failed for %s -> %s" % (
+                                    uploader_config['mover']['move_from_remote'],
+                                    uploader_config['mover']['move_to_remote']))
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
