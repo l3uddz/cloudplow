@@ -310,9 +310,8 @@ class Config(object):
         parser = argparse.ArgumentParser(
             description=(
                 'Script to assist cloud mount users. \n'
-                'Can remove hidden files from rclone remotes, '
-                'upload local content to remotes as-well as keeping remotes \n'
-                'in sync with the assistance of Scaleway.'
+                'Can remove UnionFS hidden files from Rclone remotes, '
+                'upload local content to Rclone remotes, and keep Rclone remotes in sync.'
             ),
             formatter_class=argparse.RawTextHelpFormatter
         )
@@ -321,10 +320,10 @@ class Config(object):
         parser.add_argument('cmd',
                             choices=('clean', 'upload', 'sync', 'run'),
                             help=(
-                                '"clean": clean HIDDEN files from configured unionfs mounts and rclone remotes\n'
-                                '"upload": perform clean and upload local content to configured chosen unionfs rclone remotes\n'
-                                '"sync": perform sync of configured remotes\n'
-                                '"run": starts the application'
+                                '"clean": perform clean of UnionFS HIDDEN files from Rclone remotes\n'
+                                '"upload": perform clean of UnionFS HIDDEN files and upload local content to Rclone remotes\n'
+                                '"sync": perform sync between Rclone remotes\n'
+                                '"run": starts the application in automatic mode'
                             )
                             )
 
