@@ -252,6 +252,40 @@ Cloudplow has 3 main functions:
             "sync_remote": "box:/Backups",
             "upload_folder": "/mnt/local/Media",
             "upload_remote": "box:/Media"
+          },
+          "google_with_mover": {
+              "hidden_remote": "google:",
+              "rclone_excludes": [
+                  "**partial~",
+                  "**_HIDDEN~",
+                  ".unionfs/**",
+                  ".unionfs-fuse/**"
+              ],
+              "rclone_extras": {
+                  "--checkers": 16,
+                  "--drive-chunk-size": "64M",
+                  "--stats": "60s",
+                  "--transfers": 8,
+                  "--verbose": 1,
+                  "--skip-links": null
+              },
+              "rclone_sleeps": {
+                  "Failed to copy: googleapi: Error 403: User rate limit exceeded": {
+                      "count": 5,
+                      "sleep": 25,
+                      "timeout": 3600
+                  },
+                  " 0/s,": {
+                      "count": 15,
+                      "sleep": 25,
+                      "timeout": 140
+                  }
+              },
+              "rclone_command": "move",
+              "remove_empty_dir_depth": 2,
+              "sync_remote": "google:/Backups",
+              "upload_folder": "/mnt/local/Media",
+              "upload_remote": "google:/Media"
           }
     },
     "syncer": {
@@ -302,6 +336,32 @@ Cloudplow has 3 main functions:
                 "downloads/*"
             ]
         },
+        "google_with_mover": {
+            "check_interval": 30,
+            "exclude_open_files": true,
+            "max_size_gb": 400,
+            "opened_excludes": [
+                "/downloads/"
+            ],
+            "schedule": {},
+            "size_excludes": [
+                "downloads/*"
+            ],
+            "service_account_path":"/home/user/.config/cloudplow/service_accounts/",
+            "mover": {
+                "enabled": false,
+                "move_from_remote": "staging:Media",
+                "move_to_remote": "gdrive:Media",
+                "rclone_extras": {
+                    "--delete-empty-src-dirs": null,
+                    "--create-empty-src-dirs": null,
+                    "--stats": "60s",
+                    "--verbose": 1,
+                    "--no-traverse": null,
+                    "--user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36"
+                }
+            }
+        }
     }
 }
 ```
@@ -633,6 +693,38 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 `"size_excludes"`: Paths that will not be counted in the total size calculation for `max_size_gb`.
 
 `""service_account_path"`: Path that will be scanned for JSON service account keys to be used when performing upload operations.
+
+
+### Mover
+
+Move operations occur at the end of an upload task (regardless if the task was successful or aborted).
+
+Can be used to move uploads from one folder to another on the same remote (i.e. server side move) or moves between Google Team Drives and Google "My Drives" with the same ownership (for this we recommend [Rclone beta v1.47.0-019](https://beta.rclone.org/v1.47.0-019-g3d475dc0-beta/)).
+
+```json
+    "mover": {
+        "enabled": true,
+        "move_from_remote": "staging:Media",
+        "move_to_remote": "gdrive:Media",
+        "rclone_extras": {
+            "--delete-empty-src-dirs": null,
+            "--create-empty-src-dirs": null,
+            "--stats": "60s",
+            "--verbose": 1,
+            "--no-traverse": null,
+            "--user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36"
+        }
+    }
+```
+
+`"enabled"` - Enable or disable mover function.
+
+`"move_from_remote"` - Where to move the file/folders from.
+
+`"move_to_remote"` - Where to move the file/folders to.
+
+`"rclone_extras"` - Optional Rclone parameters.
+
 
 ## Syncer
 
