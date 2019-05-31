@@ -1,11 +1,12 @@
-# Cloudplow
+<img src="assets/logo.svg" width="600" alt="Cloudplow">
 
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/)
-[![License: GPL 3](https://img.shields.io/badge/License-GPL%203-blue.svg)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE.md)
-[![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord)](https://discord.io/cloudbox)
-[![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/cloudplow)
-[![Beerpay](https://beerpay.io/l3uddz/cloudplow/badge.svg?style=flat)](https://beerpay.io/l3uddz/cloudplow)
-[![Beerpay](https://beerpay.io/l3uddz/cloudplow/make-wish.svg?style=flat)](https://beerpay.io/l3uddz/cloudplow)
+
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE.md)
+[![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/cloudplow/develop.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/l3uddz/cloudplow/commits/develop)
+[![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.io/cloudbox)
+[![Contributing](https://img.shields.io/badge/Contributing-gray.svg?style=flat-square)](CONTRIBUTING.md)
+[![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](#donate)
 
 ---
 
@@ -27,6 +28,7 @@
 - [Usage](#usage)
   - [Automatic (Scheduled)](#automatic-scheduled)
   - [Manual (CLI)](#manual-cli)
+- [Donate](#donate)
 
 <!-- /TOC -->
 
@@ -941,9 +943,14 @@ optional arguments:
 
 ***
 
-_If you find this project helpful, feel free to make a small donation via [Monzo](https://monzo.me/jamesbayliss9) (Credit Cards, Apple Pay, Google Pay, and others; no fees), [Paypal](https://www.paypal.me/l3uddz) (l3uddz@gmail.com), and Bitcoin (3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL)._
+# Donate
 
-## Support on Beerpay
-Hey dude! Help me out for a couple of :beers:!
+If you find this project helpful, feel free to make a small donation to the developer:
 
-[![Beerpay](https://beerpay.io/l3uddz/cloudplow/badge.svg?style=beer-square)](https://beerpay.io/l3uddz/cloudplow)  [![Beerpay](https://beerpay.io/l3uddz/cloudplow/make-wish.svg?style=flat-square)](https://beerpay.io/l3uddz/cloudplow?focus=wish)
+  - [Monzo](https://monzo.me/jamesbayliss9): Credit Cards, Apple Pay, Google Pay
+
+  - [Beerpay](https://beerpay.io/l3uddz/cloudplow): Credit Cards
+
+  - [Paypal: l3uddz@gmail.com](https://www.paypal.me/l3uddz)
+
+  - BTC: 3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL
