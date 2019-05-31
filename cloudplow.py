@@ -145,7 +145,6 @@ def init_syncers():
 
 def check_suspended_sa(uploader_to_check):
     global sa_delay
-    suspended = False
     try:
         if sa_delay[uploader_to_check] is not None:
             log.debug("Proceeding to check any timeouts which have passed for remote %s", uploader_to_check)
@@ -630,7 +629,7 @@ def do_plex_monitor():
                     stream_count += 1
 
             # are we already throttled?
-            if not throttled and stream_count >= conf.configs['plex']['max_streams_before_throttle']:
+            if ((not throttled or (throttled and not rclone.throttle_active(throttle_speed))) and (stream_count >= conf.configs['plex']['max_streams_before_throttle'])):
                 log.info("There was %d playing stream(s) on Plex Media Server while it was currently un-throttled.",
                          stream_count)
                 for stream in streams:

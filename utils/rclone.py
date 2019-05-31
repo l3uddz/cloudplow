@@ -296,6 +296,24 @@ class RcloneThrottler:
             log.exception("Exception validating rc url %s: ", self.url)
         return success
 
+    def throttle_active(self, speed):
+        if speed:
+            try:
+                resp = requests.post(urljoin(self.url,'core/stats'),timeout=15,verify=False)
+                if '{' in resp.text and '}' in resp.text:
+                    data = resp.json()
+                    if 'transferring' in data and len(data['transferring']) > 0:
+                        # Sum total speed of all active transfers to determine if greater than current_speed
+                        current_speed = sum([float(transfer['speed']) for transfer in data['transferring']])
+                        if ((current_speed/1000000)-10) > float(speed.rstrip('M')):
+                            return False
+                        else:
+                            return True
+            except Exception:
+                log.exception("Exception checking if throttle currently active")
+
+        return False
+
     def throttle(self, speed):
         success = False
         payload = {'rate': speed}
