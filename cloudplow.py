@@ -280,12 +280,16 @@ def do_upload(remote=None):
                 if sa_delay[uploader_remote] is not None:
                     available_accounts = [account for account, last_ban_time in sa_delay[uploader_remote].items() if
                                           last_ban_time is None]
-                    if len(available_accounts):
+                    available_accounts_size = len(available_accounts)
+
+                    if available_accounts_size:
                         available_accounts = misc.sorted_list_by_digit_asc(available_accounts)
 
-                    log.info("The following accounts are available: %s", str(available_accounts))
+                    log.info("There is %d service accounts available: %s", available_accounts_size,
+                             str(available_accounts))
+
                     # If there are no service accounts available, do not even bother attempting the upload
-                    if len(available_accounts) == 0:
+                    if not available_accounts_size:
                         log.info("Upload aborted due to the fact that no service accounts "
                                  "are currently unbanned and available to use for remote %s",
                                  uploader_remote)
@@ -294,7 +298,7 @@ def do_upload(remote=None):
                         log.info("Lowest Remaining time till unban is %d", time_till_unban)
                         uploader_delay[uploader_remote] = time_till_unban
                     else:
-                        for i in range(0, len(available_accounts)):
+                        for i in range(0, available_accounts_size):
                             uploader.set_service_account(available_accounts[i])
                             resp, resp_trigger = uploader.upload()
                             if resp:
@@ -629,7 +633,8 @@ def do_plex_monitor():
                     stream_count += 1
 
             # are we already throttled?
-            if ((not throttled or (throttled and not rclone.throttle_active(throttle_speed))) and (stream_count >= conf.configs['plex']['max_streams_before_throttle'])):
+            if ((not throttled or (throttled and not rclone.throttle_active(throttle_speed))) and (
+                    stream_count >= conf.configs['plex']['max_streams_before_throttle'])):
                 log.info("There was %d playing stream(s) on Plex Media Server while it was currently un-throttled.",
                          stream_count)
                 for stream in streams:
