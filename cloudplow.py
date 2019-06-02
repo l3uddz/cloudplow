@@ -285,8 +285,8 @@ def do_upload(remote=None):
                     if available_accounts_size:
                         available_accounts = misc.sorted_list_by_digit_asc(available_accounts)
 
-                    log.info("There is %d service accounts available: %s", available_accounts_size,
-                             str(available_accounts))
+                    log.info("There is %d available service accounts", available_accounts_size)
+                    log.debug("Available service accounts: %s", str(available_accounts))
 
                     # If there are no service accounts available, do not even bother attempting the upload
                     if not available_accounts_size:
