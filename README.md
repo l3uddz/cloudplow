@@ -359,6 +359,7 @@ Cloudplow has 3 main functions:
                     "--stats": "60s",
                     "--verbose": 1,
                     "--no-traverse": null,
+                    "--drive-server-side-across-configs": null,
                     "--user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36"
                 }
             }
@@ -643,7 +644,7 @@ This is the depth to min-depth to delete empty folders from relative to `upload_
 
 `"upload_folder"`: is the local path that is uploaded by the `uploader` task, once it reaches the size threshold as specified in `max_size_gb`.
 
-`"upload_remote"`: is the remote path that `uploader` task will  uploaded to.
+`"upload_remote"`: is the remote path that the `uploader` task will uploaded to.
 
 #### Sync From/To Paths
 
@@ -704,7 +705,7 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 
 Move operations occur at the end of an upload task (regardless if the task was successful or aborted).
 
-Can be used to move uploads from one folder to another on the same remote (i.e. server side move) or moves between Google Team Drives and Google "My Drives" with the same ownership (for this we recommend [Rclone beta v1.47.0-019](https://beta.rclone.org/v1.47.0-019-g3d475dc0-beta/)).
+Can be used to move uploads from one folder to another on the same remote (i.e. server side move) or moves between Google Team Drives and Google "My Drives" with the same ownership (for this we recommend Rclone 1.48+ with the `--drive-server-side-across-configs` argument).
 
 ```json
     "mover": {
@@ -717,6 +718,7 @@ Can be used to move uploads from one folder to another on the same remote (i.e. 
             "--stats": "60s",
             "--verbose": 1,
             "--no-traverse": null,
+            "--drive-server-side-across-configs": null,
             "--user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36"
         }
     }
