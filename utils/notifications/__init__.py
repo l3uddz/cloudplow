@@ -1,11 +1,13 @@
 import logging
 
+from .apprise import Apprise
 from .pushover import Pushover
 from .slack import Slack
 
 log = logging.getLogger("notifications")
 
 SERVICES = {
+    'apprise': Apprise,
     'pushover': Pushover,
     'slack': Slack
 }

@@ -3,3 +3,4 @@ schedule~=0.4.3
 requests~=2.20.0
 GitPython~=2.1.10
 sqlitedict~=1.6.0
+apprise~=0.7.7

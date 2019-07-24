@@ -9,7 +9,7 @@ log = logging.getLogger("slack")
 class Slack:
     NAME = "Slack"
 
-    def __init__(self, webhook_url, sender_name='cloudplow', sender_icon=':heavy_exclamation_mark:', channel=None):
+    def __init__(self, webhook_url, sender_name='Cloudplow', sender_icon=':heavy_exclamation_mark:', channel=None):
         self.webhook_url = webhook_url
         self.sender_name = sender_name
         self.sender_icon = sender_icon

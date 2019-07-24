@@ -381,9 +381,9 @@ Cloudplow has 3 main functions:
 
 `"dry_run": true` - prevent any files being uploaded or deleted - use this to test out your config.
 
-`rclone_binary_path` - full path to rclone binary file.
+`rclone_binary_path` - full path to Rclone binary file.
 
-`rclone_config_path` - full path to rclone config file.
+`rclone_config_path` - full path to Rclone config file.
 
 ## Hidden
 UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corresponding files on rclone remotes.
@@ -405,14 +405,58 @@ The specific remote path, where those corresponding files are, will be specified
 
 ## Notifications
 
-Notification alerts during tasks.
+```json
+"notifications": {
+  "apprise": {
+    "service": "apprise",
+    "url": "",
+    "title": ""
+  }
+},
+```
 
+Notifications alerts for both scheduled and manual Cloudplow tasks.
 
-Currently, only Pushover and Slack are supported. But more will be added later.
+Supported `services`:
+ - `apprise`
+ - `pushover`
+ - `slack`
+
+_Note: The key name can be anything, but the `service` key must be must be the exact service name (e.g. `pushover`). See below for example._
+
+```json
+"notifications": {
+  "anyname": {
+    "service": "pushover",
+  }
+},
+```
+
+### Apprise
+
+```json
+"notifications": {
+  "Apprise": {
+    "service": "apprise",
+    "url": "",
+    "title": ""
+  }
+},
+```
+
+`url` - Apprise service URL (see [here](https://github.com/caronc/apprise)).
+
+ - Required.
+
+`title` - Notification Title.
+
+ - Optional.
+
+ - Default is `Cloudplow`.
 
 ### Pushover
 
-```
+```json
 "notifications": {
     "Pushover": {
         "app_token": "",
@@ -423,33 +467,59 @@ Currently, only Pushover and Slack are supported. But more will be added later.
 },
 ```
 
-Retrieve `app_token` and `user_token` from Pushover.net and fill it in.
+`app_token`  - App Token from [Pushover.net](https://pushover.net).
 
-You can specify a priority for the messages send via Pushover using the `priority` key. It can be any Pushover priority value (https://pushover.net/api#priority)
+ - Required.
 
-Note: The key name can be anything (e.g. `"Pushover":`), however, the `"service"` must be `"pushover"`.
+`user_token` - User Token from [Pushover.net](https://pushover.net).
+
+ - Required.
+
+`priority` - [Priority](https://pushover.net/api#priority) of the notifications.
+
+ - Optional.
+
+ - Choices are: `-2`, `-1`, `0`, `1`, `2`.
+
+ - Values are not quoted.
+
+ - Default is `0`.
 
 ### Slack
 
-```
+```json
 "notifications": {
     "Slack": {
+        "service": "slack",
         "webhook_url": "",
-        "sender_name": "cloudplow",
-        "sender_icon": ":heavy_exclamation_mark:",
         "channel": "",
-        "service": "slack"
+        "sender_name": "Cloudplow",
+        "sender_icon": ":heavy_exclamation_mark:"
     }
 },
 ```
 
-Retrieve the `webhook_url` when registering your webhook to Slack
-(via https://my.slack.com/services/new/incoming-webhook/).
+`webhook_url` - [Webhook URL](https://my.slack.com/services/new/incoming-webhook/).
 
-You can use `sender_name`, `sender_icon` and `channel` to specify settings
-for your webhook. You can however leave these out and use the defaults.
+ - Required.
 
-Note: The key name can be anything (e.g. `"Slack":`), however, the `"service"` must be `"slack"`.
+`channel` - Slack channel to send the notifications to.
+
+ - Optional.
+
+ - Default is blank.
+
+`sender_name` - Sender's name for the notifications.
+
+ - Optional.
+
+ - Default is `Cloudplow`.
+
+`sender_icon` - Icon to use for the notifications.
+
+ - Optional.
+
+ - Default is `:heavy_exclamation_mark:`
 
 
 ## NZBGet
