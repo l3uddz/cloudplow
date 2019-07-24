@@ -148,7 +148,7 @@ Cloudplow has 3 main functions:
         "enabled": true,
         "max_streams_before_throttle": 1,
         "poll_interval": 60,
-        "verbose_notifications": false,
+        "notifications": false,
         "rclone": {
             "throttle_speeds": {
                 "0": "100M",
@@ -477,7 +477,7 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
     "enabled": true,
     "max_streams_before_throttle": 1,
     "poll_interval": 60,
-    "verbose_notifications": false,
+    "notifications": false,
     "rclone": {
         "throttle_speeds": {
             "0": "1000M",
@@ -505,7 +505,7 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
 
 `max_streams_before_throttle` - How many playing streams are allowed before enabling throttling.
 
-`verbose_notifications` - Send notifications when rate limit is adjusted due to more/less streams.
+`notifications` - Send notifications when throttling is set, adjusted, or unset, depending on stream count.
 
 `rclone`
 

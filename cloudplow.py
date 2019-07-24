@@ -647,7 +647,7 @@ def do_plex_monitor():
                 throttled = rclone.throttle(throttle_speed)
 
                 # send notification
-                if throttled:
+                if throttled and conf.configs['plex']['notifications']:
                     notify.send(
                         message="Throttled current upload to %s because there was %d playing stream(s) on Plex" %
                                 (throttle_speed, stream_count))
@@ -662,7 +662,7 @@ def do_plex_monitor():
                     throttle_speed = None
 
                     # send notification
-                    if not throttled:
+                    if not throttled and conf.configs['plex']['notifications']:
                         notify.send(
                             message="Un-throttled current upload because there was less than %d playing stream(s) on "
                                     "Plex Media Server" % conf.configs['plex']['max_streams_before_throttle'])
@@ -676,7 +676,9 @@ def do_plex_monitor():
                              "was now %d playing stream(s) on Plex Media Server", throttle_speed, stream_count)
 
                     throttled = rclone.throttle(throttle_speed)
-                    if throttled and conf.configs['plex']['verbose_notifications']:
+
+                    # send notification
+                    if throttled and conf.configs['plex']['notifications']:
                         notify.send(
                             message='Throttle for current upload was adjusted to %s due to %d playing stream(s)'
                                     ' on Plex Media Server' % (throttle_speed, stream_count))
