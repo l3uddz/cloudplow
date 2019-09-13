@@ -68,11 +68,11 @@ def check_version():
     latest = latest_version()
 
     if current == 'Unknown' or latest == 'Unknown':
-        log.error("Unable to check version due to failure to determine current/latest commits")
+        log.debug("Unable to check version due to failure to determine current/latest commits")
         return
 
     if current != latest:
-        log.warning("You are NOT using the latest %s: %s", active_branch(), latest)
+        log.debug("You are NOT using the latest %s: %s", active_branch(), latest)
     else:
-        log.info("You are using the latest %s: %s", active_branch(), latest)
+        log.debug("You are using the latest %s: %s", active_branch(), latest)
     return

@@ -236,7 +236,7 @@ class Config(object):
 
         # Only rewrite config file if new fields added
         if len(fields):
-            log.warning("Upgraded config, added %d new field(s): %r", len(fields), fields)
+            log.info("Upgraded config. Added %d new field(s): %r", len(fields), fields)
             self.save(cfg)
 
         # Update in-memory config with environment settings
@@ -250,6 +250,7 @@ class Config(object):
             self.save(self.default_config)
 
         cfg = {}
+        log.debug("Upgrading config...")
         with open(self.settings['config'], 'r') as fp:
             cfg, upgraded = self.upgrade_settings(json.load(fp))
 
@@ -257,6 +258,8 @@ class Config(object):
             if upgraded:
                 self.save(cfg)
                 exit(0)
+            else:
+                log.debug("Config was not upgraded as there were no changes to add.")
 
         self.configs = cfg
 
@@ -264,8 +267,8 @@ class Config(object):
         with open(self.settings['config'], 'w') as fp:
             json.dump(cfg, fp, indent=4, sort_keys=True)
 
-            log.warning(
-                "Please configure/review config before running again: %r",
+            log.info(
+                "Your config was upgraded. You may check the changes here: %r",
                 self.settings['config']
             )
 
@@ -318,12 +321,13 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('clean', 'upload', 'sync', 'run'),
+                            choices=('clean', 'upload', 'sync', 'run', 'update_config'),
                             help=(
                                 '"clean": perform clean of UnionFS HIDDEN files from Rclone remotes\n'
                                 '"upload": perform clean of UnionFS HIDDEN files and upload local content to Rclone remotes\n'
                                 '"sync": perform sync between Rclone remotes\n'
-                                '"run": starts the application in automatic mode'
+                                '"run": starts the application in automatic mode\n'
+                                '"update_config": perform simple update of config'
                             )
                             )
 

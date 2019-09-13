@@ -771,14 +771,16 @@ if __name__ == "__main__":
 
     # run chosen mode
     try:
-        # init notifications
-        init_notifications()
 
         if conf.args['cmd'] == 'clean':
             log.info("Started in clean mode")
+            # init notifications
+            init_notifications()
             do_hidden()
         elif conf.args['cmd'] == 'upload':
             log.info("Started in upload mode")
+            # init notifications
+            init_notifications()
             # initialize service accounts if provided in confing
             init_service_accounts()
             do_hidden()
@@ -787,11 +789,15 @@ if __name__ == "__main__":
             log.info("Starting in sync mode")
             log.warning("Sync currently has a bug while displaying output to the console. "
                         "Tail the logfile to view readable logs!")
+            # init notifications
+            init_notifications()
             init_syncers()
             do_sync()
         elif conf.args['cmd'] == 'run':
             log.info("Started in run mode")
 
+            # init notifications
+            init_notifications()
             # initialize service accounts if provided in confing
             init_service_accounts()
 
@@ -819,6 +825,8 @@ if __name__ == "__main__":
                 except Exception:
                     log.exception("Unhandled exception occurred while processing scheduled tasks: ")
                 time.sleep(1)
+        elif conf.args['cmd'] == 'update_config':
+            exit(0)
         else:
             log.error("Unknown command: %r", conf.args['cmd'])
 
