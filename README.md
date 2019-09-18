@@ -1019,7 +1019,7 @@ optional arguments:
 
 If you find this project helpful, feel free to make a small donation to the developer:
 
-  - [Monzo](https://monzo.me/jamesbayliss9): Credit Cards, Apple Pay, Google Pay
+  - [Monzo](https://monzo.me/today): Credit Cards, Apple Pay, Google Pay
 
   - [Beerpay](https://beerpay.io/l3uddz/cloudplow): Credit Cards
 
