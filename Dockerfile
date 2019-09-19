@@ -20,7 +20,8 @@ ADD . /opt/cloudplow
 
 RUN cd /opt/cloudplow && \
     # install pip requirements
-    python3 -m pip install --no-cache-dir -r requirements.txt
+    python3 -m pip install --no-cache-dir -r requirements.txt && \
+    ln -sf /config/locks/ /opt/cloudplow/locks
 
 ADD docker-utils/start-cloudplow.sh /
 RUN chmod +x /start-cloudplow.sh
