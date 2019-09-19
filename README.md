@@ -28,6 +28,7 @@
 - [Usage](#usage)
   - [Automatic (Scheduled)](#automatic-scheduled)
   - [Manual (CLI)](#manual-cli)
+- [Docker](#Docker)
 - [Donate](#donate)
 
 <!-- /TOC -->
@@ -1020,6 +1021,23 @@ optional arguments:
   --loglevel {WARN,INFO,DEBUG}
                         Log level (default: INFO)
 ```
+
+# Docker
+
+Sample docker-compose.yml v3 configuration, where cloudplow's config is stored in `/opt/cloudplow`, the host's rclone.conf is stored in `~/.config/rclone` and media to upload is stored in `/imported_media`:
+```
+    cloudplow:
+        image: sabrsorensen/alpine-cloudplow
+        container_name: cloudplow
+        volumes:
+            - /opt/cloudplow:/config/:rw
+            - /home/<user>/.config/rclone:/config/rclone/:rw
+            - /imported_media:/data/imported_media:rw
+        restart: unless-stopped
+```
+
+Upon first run, the container will generate a sample config.json at `/config/config.json`. Edit this config.json to your liking, making sure to set rclone_config_path to the location of the rclone.conf you mapped into the container, and adjusting the paths of your remotes relative to the container mappings.
+
 
 ***
 
