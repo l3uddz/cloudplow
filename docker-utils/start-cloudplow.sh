@@ -2,6 +2,7 @@
 
 cd /opt/cloudplow
 git pull
+rm -rf locks
 
 if [ ! -f ${CLOUDPLOW_CONFIG} ]
 then
