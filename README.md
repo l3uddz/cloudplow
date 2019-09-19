@@ -1033,6 +1033,7 @@ Sample docker-compose.yml v3 configuration, where cloudplow's config is stored i
             - /opt/cloudplow:/config/:rw
             - /home/<user>/.config/rclone:/config/rclone/:rw
             - /imported_media:/data/imported_media:rw
+            - /etc/localtime:/etc/localtime:ro
         restart: unless-stopped
 ```
 
