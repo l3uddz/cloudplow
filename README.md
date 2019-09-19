@@ -28,7 +28,7 @@
 - [Usage](#usage)
   - [Automatic (Scheduled)](#automatic-scheduled)
   - [Manual (CLI)](#manual-cli)
-- [Docker](#Docker)
+- [Docker](#docker)
 - [Donate](#donate)
 
 <!-- /TOC -->
