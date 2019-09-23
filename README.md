@@ -571,6 +571,12 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
 
 `token` - Your Plex Access Token.
 
+- Run the Plex Token script by [Werner Beroux](https://github.com/wernight): `/opt/cloudplow/scripts/plex_token.sh`.
+
+  or
+
+- Visit https://support.plex.tv/hc/en-us/articles/204059436-Finding-an-authentication-token-X-Plex-Token
+
 `poll_interval` - How often (in seconds) Plex is checked for active streams.
 
 `max_streams_before_throttle` - How many playing streams are allowed before enabling throttling.
