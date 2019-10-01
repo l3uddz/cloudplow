@@ -386,6 +386,7 @@ Cloudplow has 3 main functions:
 `rclone_config_path` - full path to Rclone config file.
 
 ## Hidden
+
 UnionFS Hidden File Cleaner: Deletion of UnionFS whiteout files and their corresponding files on rclone remotes.
 
 ```
@@ -402,6 +403,7 @@ This is where you specify the location of the UnionFS `_HIDDEN~` files (i.e. whi
 
 The specific remote path, where those corresponding files are, will be specified in the `remotes` section.
 
+Note: If you plan on using this with any other file system, eg MergerFS, you can leave this section blank (`"hidden": {}`).
 
 ## Notifications
 
