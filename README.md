@@ -1027,8 +1027,11 @@ optional arguments:
 Sample docker-compose.yml v3 configuration, where cloudplow's config is stored in `/opt/cloudplow`, the host's rclone.conf is stored in `~/.config/rclone` and media to upload is stored in `/imported_media`:
 ```
     cloudplow:
-        image: sabrsorensen/alpine-cloudplow
+        image: cloudbox/cloudplow
         container_name: cloudplow
+        environment:
+            - PUID: `id -u cloudplow`
+            - PGID: `id -g cloudplow`
         volumes:
             - /opt/cloudplow:/config/:rw
             - /home/<user>/.config/rclone:/config/rclone/:rw
