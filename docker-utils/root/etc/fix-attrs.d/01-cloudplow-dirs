@@ -1,0 +1,2 @@
+/opt/cloudplow true cloudplow:cloudplow 0600 0700
+/config true cloudplow:cloudplow 0640 0750
