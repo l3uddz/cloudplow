@@ -30,7 +30,7 @@ RUN useradd -U -r -m -s /bin/false cloudplow
 # configure environment variables to keep the start script clean
 ENV CLOUDPLOW_CONFIG /config/config.json
 ENV CLOUDPLOW_LOGFILE /config/cloudplow.log
-ENV CLOUDPLOW_LOGLEVEL DEBUG
+ENV CLOUDPLOW_LOGLEVEL INFO
 ENV CLOUDPLOW_CACHEFILE /config/cache.db
 
 ADD . /opt/cloudplow
