@@ -9,13 +9,21 @@ LABEL org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.build-date=$BUILD_DATE
 
 # linking the base image's rclone binary to the path expected by cloudplow's default config
-RUN ln /root/rclone /usr/bin/rclone
+RUN ln /usr/local/bin/rclone /usr/bin/rclone
 
 WORKDIR /
 
 # install dependencies for cloudplow and user management, upgrade pip
-RUN apk -U add --no-cache coreutils git python3 py3-pip grep shadow && \
-    python3 -m pip install --upgrade pip
+RUN apk -U add --no-cache \
+        coreutils \
+        findutils \
+        git \
+        grep \
+        py3-pip \
+        python3 \
+        shadow \
+        tzdata && \
+        python3 -m pip install --upgrade pip
 
 # install s6-overlay for process management
 ADD https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz /tmp/
@@ -30,7 +38,7 @@ RUN useradd -U -r -m -s /bin/false cloudplow
 # configure environment variables to keep the start script clean
 ENV CLOUDPLOW_CONFIG /config/config.json
 ENV CLOUDPLOW_LOGFILE /config/cloudplow.log
-ENV CLOUDPLOW_LOGLEVEL INFO
+ENV CLOUDPLOW_LOGLEVEL DEBUG
 ENV CLOUDPLOW_CACHEFILE /config/cache.db
 
 ADD . /opt/cloudplow
