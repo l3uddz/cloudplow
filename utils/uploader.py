@@ -22,9 +22,9 @@ class Uploader:
         self.dry_run = dry_run
         self.service_account = None
 
-    def set_service_account(self, file):
-        self.service_account = file
-        log.info("Using service account: %r", file)
+    def set_service_account(self, sa_file):
+        self.service_account = sa_file
+        log.info("Using service account: %r", sa_file)
 
     def upload(self):
         rclone_config = self.rclone_config.copy()

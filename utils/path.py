@@ -14,21 +14,21 @@ import logging
 log = logging.getLogger('path')
 
 
-def get_file_extension(file):
-    extensions = Path(file).suffixes
+def get_file_extension(filepath):
+    extensions = Path(filepath).suffixes
     extension = ''.join(extensions).lstrip('.')
     return extension.lower()
 
 
-def get_file_hash(file):
+def get_file_hash(filepath):
     # get file size for hash
     file_size = 0
     try:
-        file_size = os.path.getsize(file)
+        file_size = os.path.getsize(filepath)
     except Exception:
-        log.exception("Exception getting file size of %r: ", file)
+        log.exception("Exception getting file size of %r: ", filepath)
     # set basic string to use for hash
-    key = "{filename}-{size}".format(filename=os.path.basename(file), size=file_size)
+    key = "{filename}-{size}".format(filename=os.path.basename(filepath), size=file_size)
     return hashlib.md5(key.encode('utf-8')).hexdigest()
 
 
@@ -40,13 +40,13 @@ def find_files(folder, extension=None, depth=None):
             if depth and path.count(os.sep) - start_count >= depth:
                 del subdirs[:]
                 continue
-            file = os.path.join(path, name)
+            filepath = os.path.join(path, name)
             if not extension:
-                file_list.append(file)
+                file_list.append(filepath)
             else:
-                # file_extension = get_file_extension(file)
-                if file.lower().endswith(extension.lower()):
-                    file_list.append(file)
+                # file_extension = get_file_extension(filepath)
+                if filepath.lower().endswith(extension.lower()):
+                    file_list.append(filepath)
 
     return sorted(file_list, key=lambda x: x.count(os.path.sep), reverse=True)
 
@@ -59,11 +59,11 @@ def find_folders(folder, extension=None, depth=None):
             if depth and path.count(os.sep) - start_count >= depth:
                 del subdirs[:]
                 continue
-            file = os.path.join(path, name)
+            filepath = os.path.join(path, name)
             if not extension:
-                folder_list.append(file)
-            elif file.lower().endswith(extension.lower()):
-                folder_list.append(file)
+                folder_list.append(filepath)
+            elif filepath.lower().endswith(extension.lower()):
+                folder_list.append(filepath)
     return sorted(folder_list, key=lambda x: x.count(os.path.sep), reverse=True)
 
 

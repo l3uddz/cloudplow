@@ -109,22 +109,31 @@ def init_service_accounts():
             # If service_account path provided, loop over the service account files and provide
             # one at a time when starting the uploader. If upload completes successfully, do not attempt
             # to use the other accounts
-            accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), file): None for file
+            accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), sa_file): None for sa_file
                         in os.listdir(os.path.normpath(uploader_config['service_account_path'])) if
-                        file.endswith(".json")}
+                        sa_file.endswith(".json")}
             current_accounts = sa_delay[uploader_remote]
             if current_accounts is not None:
+                # Service account files may have moved, invalidate any missing cached accounts.
+                cached_accounts = list(current_accounts)
+                for cached_account in cached_accounts:
+                    log.debug("Checking for service account file '%s' for remote '%s'", cached_account, uploader_remote)
+                    if not os.path.exists(cached_account):
+                        log.debug("Cached service account file '%s' for remote '%s' could not be located, removing from available accounts", cached_account, uploader_remote)
+                        current_accounts.pop(cached_account)
+
+                # Add any new account files.
                 for account in accounts:
                     if account not in current_accounts:
-                        log.debug("New service account %s has been added for remote %s", account, uploader_remote)
+                        log.debug("New service account '%s' has been added for remote '%s'", account, uploader_remote)
                         current_accounts[account] = None
                 sa_delay[uploader_remote] = current_accounts
                 if len(current_accounts) < len(accounts):
-                    log.debug("Additional service accounts were added. Lifting any current bans for remote: %s",
+                    log.debug("Additional service accounts were added. Lifting any current bans for remote '%s'",
                               uploader_remote)
                     uploader_delay.pop(uploader_remote, None)
             else:
-                log.debug("The following accounts are defined: %s and are about to be added to remote %s",
+                log.debug("The following accounts are defined: '%s' and are about to be added to remote '%s'",
                           str(accounts),
                           uploader_remote)
                 sa_delay[uploader_remote] = accounts
