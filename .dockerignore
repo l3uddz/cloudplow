@@ -1,0 +1,9 @@
+.dockerignore
+.github/*
+hooks/*
+Dockerfile
+CONTRIBUTING.md
+LICENSE.md
+README.md
+assets/*
+systemd/*
