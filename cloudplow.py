@@ -277,9 +277,14 @@ def do_upload(remote=None):
                 notify.send(message="Upload of %d GB has begun for remote: %s" % (
                     path.get_size(rclone_config['upload_folder'], uploader_config['size_excludes']), uploader_remote))
 
-                # start the plex stream monitor before the upload begins, if enabled
+                # start the plex stream monitor before the upload begins, if enabled for both plex and the uploader
                 if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
-                    plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
+                    # Only disable throttling if 'can_be_throttled' is both present in uploader_config and is set to False.
+                    if 'can_be_throttled' in uploader_config and not uploader_config['can_be_throttled']:
+                        log.debug("Skipping check for Plex stream due to throttling disabled in remote: %s", uploader_remote)
+                    # Otherwise, assume throttling is desired.
+                    else:
+                        plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
 
                 # pause the nzbget queue before starting the upload, if enabled
                 if conf.configs['nzbget']['enabled']:
