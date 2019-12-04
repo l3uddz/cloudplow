@@ -1,4 +1,9 @@
 #!/usr/bin/with-contenv sh
 
+user=cloudplow
+if [ -n $PUID ] && [ $PUID == 0 ]
+then
+    user=root
+fi
 cd /opt/cloudplow
-exec s6-setuidgid cloudplow git pull
+exec s6-setuidgid $user git pull
