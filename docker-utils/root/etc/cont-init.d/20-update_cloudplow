@@ -7,3 +7,4 @@ then
 fi
 cd /opt/cloudplow
 exec s6-setuidgid $user git pull
+exec s6-setuidgid $user python3 -m pip install --no-cache-dir --upgrade -r requirements.txt
