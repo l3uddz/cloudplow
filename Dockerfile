@@ -45,7 +45,7 @@ ADD https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6
 RUN tar -xz -f /tmp/s6-overlay-amd64.tar.gz -C /
 
 # add s6-overlay scripts and config
-COPY docker-utils/root/ /
+COPY docker-root/ /
 
 # copy cloudplow src into /opt/cloudplow
 COPY . /opt/cloudplow/
