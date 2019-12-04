@@ -51,6 +51,9 @@ COPY docker-root/ /
 COPY . /opt/cloudplow/
 WORKDIR /opt/cloudplow/
 
+# modify git remote to use HTTPS instead of SSH since the image doesn't include Docker Hub's SSH deploy key.
+RUN sed -i -e 's/git@github.com:/https:\/\/github.com\//' .git/config
+
 # install pip dependencies
 RUN python3 -m pip install --no-cache-dir --upgrade -r requirements.txt
 
