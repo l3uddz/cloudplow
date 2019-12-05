@@ -29,7 +29,9 @@ def latest_version():
 
     try:
         fetch_info = repo.remotes.origin.fetch()
-        return str(fetch_info[0].commit)
+        for fetch in fetch_info:
+            if fetch.name == ("origin/%s" % active_branch()):
+                return str(fetch.commit)
 
     except Exception as ex:
         log.exception("Exception retrieving the latest commit id: ")
