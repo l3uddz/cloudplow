@@ -2,16 +2,17 @@
 
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE.md)
-[![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/cloudplow/develop.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/l3uddz/cloudplow/commits/develop)
-[![Docker Automated build](https://img.shields.io/docker/cloud/automated/cloudbox/cloudplow?label=Docker+Cloud+build+type)](https://hub.docker.com/r/cloudbox/cloudplow)
-[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/cloudbox/cloudplow?label=Docker+Cloud+build+status)](https://hub.docker.com/r/cloudbox/cloudplow)
-[![Docker Pulls](https://img.shields.io/docker/pulls/cloudbox/cloudplow)](https://hub.docker.com/r/cloudbox/cloudplow)
-[![Docker image size](https://images.microbadger.com/badges/image/cloudbox/cloudplow.svg)](https://microbadger.com/images/cloudbox/cloudplow "Get your own image badge on microbadger.com")
-[![rclone version](https://img.shields.io/github/v/release/rclone/rclone?label=Docker%20image%20rclone%20version)](https://hub.docker.com/r/rclone/rclone)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/sabrsorensen/cloudplow/blob/master/LICENSE.md)
+[![last commit (develop)](https://img.shields.io/github/last-commit/sabrsorensen/cloudplow/develop.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/sabrsorensen/cloudplow/commits/develop)
 [![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.io/cloudbox)
-[![Contributing](https://img.shields.io/badge/Contributing-gray.svg?style=flat-square)](CONTRIBUTING.md)
-[![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](#donate)
+[![Contributing](https://img.shields.io/badge/Contributing-gray.svg?style=flat-square)](https://github.com/sabrsorensen/cloudplow/blob/master/CONTRIBUTING.md)
+[![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](https://github.com/l3uddz/cloudplow#donate)
+
+[![Docker Hub Automated build](https://img.shields.io/docker/cloud/automated/sabrsorensen/cloudplow?label=Docker+Hub+build+type)](https://hub.docker.com/r/sabrsorensen/cloudplow)
+[![Docker Hub Build Status](https://img.shields.io/docker/cloud/build/sabrsorensen/cloudplow?label=Docker+Hub+build+status)](https://hub.docker.com/r/sabrsorensen/cloudplow)
+[![Docker Pulls](https://img.shields.io/docker/pulls/sabrsorensen/cloudplow)](https://hub.docker.com/r/sabrsorensen/cloudplow)
+[![Docker image size](https://images.microbadger.com/badges/image/sabrsorensen/cloudplow.svg)](https://microbadger.com/images/sabrsorensen/cloudplow "Get your own image badge on microbadger.com")
+[![rclone version](https://img.shields.io/github/v/release/rclone/rclone?label=Docker%20image%20rclone%20version)](https://hub.docker.com/r/rclone/rclone)
 
 ---
 
@@ -1036,7 +1037,7 @@ optional arguments:
 Sample docker-compose.yml v3 configuration, where cloudplow's config is stored on the host in `/opt/cloudplow`, the host's rclone.conf is stored in `~/.config/rclone`, service account .json files are stored in `~/google_drive_service_accounts`, and media to upload is stored in `/imported_media`:
 ```
     cloudplow:
-        image: cloudbox/cloudplow
+        image: sabrsorensen/cloudplow
         container_name: cloudplow
         environment:
             - PUID=`id -u cloudplow`
