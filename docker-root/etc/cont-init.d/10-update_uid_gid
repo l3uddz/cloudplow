@@ -5,12 +5,24 @@ then
     exit
 fi
 
+UID=1000
+if [ -n $PUID ]
+then
+    UID=$PUID
+fi
+
+GID=1000
+if [ -n $PGID ]
+then
+    GID=$PGID
+fi
+
 id cloudplow 2> /dev/null > /dev/null
 cloudplow_exists=$?
 if [ $cloudplow_exists != 0 ]
 then
-    groupadd -g $PGID -r cloudplow
-    useradd -u $PUID -g $PGID -N -r -m -s /bin/false cloudplow
+    groupadd -g $GID -r cloudplow
+    useradd -u $UID -g $GID -N -r -m -s /bin/false cloudplow
     update="true"
 fi
 
