@@ -317,6 +317,7 @@ Cloudplow has 3 main functions:
     },
     "uploader": {
         "google": {
+            "can_be_throttled": true,
             "check_interval": 30,
             "exclude_open_files": true,
             "max_size_gb": 400,
@@ -745,6 +746,7 @@ If multiple uploader tasks are specified, the tasks will run sequentially (vs in
 ```
 "uploader": {
     "google": {
+        "can_be_throttled": true,
         "check_interval": 30,
         "exclude_open_files": true,
         "max_size_gb": 500,
@@ -765,6 +767,8 @@ If multiple uploader tasks are specified, the tasks will run sequentially (vs in
 ```
 
 In the example above, the uploader references `"google"` from the `remotes` section.
+
+`"can_be_throttled"`: When this attribute is missing or set to `true`, this uploader can be throttled if enabled in the Plex config section. When set to `false`, no throttling will be attempted on this uploader.
 
 `"check_interval"`: How often (in minutes) to check the size of this remotes `upload_folder`. Once it reaches the size threshold as specified in `max_size_gb`, the uploader will start.
 
