@@ -4,6 +4,11 @@
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/cloudplow/blob/master/LICENSE.md)
 [![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/cloudplow/develop.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/l3uddz/cloudplow/commits/develop)
+[![Docker Automated build](https://img.shields.io/docker/cloud/automated/cloudbox/cloudplow?label=Docker+Cloud+build+type)](https://hub.docker.com/r/cloudbox/cloudplow)
+[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/cloudbox/cloudplow?label=Docker+Cloud+build+status)](https://hub.docker.com/r/cloudbox/cloudplow)
+[![Docker Pulls](https://img.shields.io/docker/pulls/cloudbox/cloudplow)](https://hub.docker.com/r/cloudbox/cloudplow)
+[![Docker image size](https://images.microbadger.com/badges/image/cloudbox/cloudplow.svg)](https://microbadger.com/images/cloudbox/cloudplow "Get your own image badge on microbadger.com")
+[![rclone version](https://img.shields.io/github/v/release/rclone/rclone?label=Docker%20image%20rclone%20version)](https://hub.docker.com/r/rclone/rclone)
 [![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.io/cloudbox)
 [![Contributing](https://img.shields.io/badge/Contributing-gray.svg?style=flat-square)](CONTRIBUTING.md)
 [![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](#donate)
@@ -28,6 +33,7 @@
 - [Usage](#usage)
   - [Automatic (Scheduled)](#automatic-scheduled)
   - [Manual (CLI)](#manual-cli)
+- [Docker](#docker)
 - [Donate](#donate)
 
 <!-- /TOC -->
@@ -970,7 +976,7 @@ Further documentation refers to the example configurations below.
 
 `"instance_destroy"`:
 
-  - When this is `true`, the instance that is created for the sync task is destroyed after the task finishes.  This only applies to non-local sync services (e.g. `scaleway`).  
+  - When this is `true`, the instance that is created for the sync task is destroyed after the task finishes.  This only applies to non-local sync services (e.g. `scaleway`).
 
   - When this is set to `false`, it will re-use the existing instance that was previously created/shutdown after the last sync ran.
 
@@ -1020,6 +1026,29 @@ optional arguments:
   --loglevel {WARN,INFO,DEBUG}
                         Log level (default: INFO)
 ```
+
+# Docker
+
+Sample docker-compose.yml v3 configuration, where cloudplow's config is stored on the host in `/opt/cloudplow`, the host's rclone.conf is stored in `~/.config/rclone`, service account .json files are stored in `~/google_drive_service_accounts`, and media to upload is stored in `/imported_media`:
+```
+    cloudplow:
+        image: cloudbox/cloudplow
+        container_name: cloudplow
+        environment:
+            - PUID=`id -u cloudplow`
+            - PGID=`id -g cloudplow`
+            - CLOUDPLOW_LOGLEVEL=INFO
+        volumes:
+            - /opt/cloudplow:/config/:rw
+            - /home/<user>/.config/rclone/:/rclone_config/:rw
+            - /home/<user>/google_drive_service_accounts/:/service_accounts/:rw
+            - /imported_media:/data/imported_media:rw
+            - /etc/localtime:/etc/localtime:ro
+        restart: unless-stopped
+```
+
+Upon first run, the container will generate a sample config.json at `/config/config.json`. Edit this config.json to your liking, making sure to set rclone_config_path to the location of the rclone.conf you mapped into the container, and adjusting the paths of your remotes relative to the container mappings.
+
 
 ***
 

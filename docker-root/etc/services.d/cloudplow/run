@@ -1,0 +1,31 @@
+#!/usr/bin/with-contenv sh
+
+user=cloudplow
+if [ -n $PUID ] && [ $PUID == 0 ]
+then
+    user=root
+fi
+if [ ! -f ${CLOUDPLOW_CONFIG} ]
+then
+    exec s6-setuidgid $user python3 /opt/cloudplow/cloudplow.py run
+    echo "************************************************************************************"
+    echo "Default config.json generated, please configure for your environment. Exiting."
+    echo "************************************************************************************"
+    exit 1
+elif grep -qP "\"rclone_config_path\":\s*\"/home/(seed|user)/\.config/rclone/rclone\.conf\"" ${CLOUDPLOW_CONFIG}
+then
+    echo "************************************************************************************"
+    echo "config.json has not been configured, exiting."
+    echo "Along with configuring other settings, rclone_config_path needs to point to your rclone.conf file, expected to be mapped into this container under /rclone_config/."
+    echo "************************************************************************************"
+    exit 1
+elif grep -qP "\"rclone_config_path\":\s*\"/rclone_config/.*\.conf\"" ${CLOUDPLOW_CONFIG}
+then
+    exec s6-setuidgid $user python3 /opt/cloudplow/cloudplow.py run
+else
+    echo "************************************************************************************"
+    echo "${CLOUDPLOW_CONFIG}:core.rclone_config_path does not point to the expected /rclone_config/*.conf path."
+    echo "************************************************************************************"
+    exit 1
+fi
+
