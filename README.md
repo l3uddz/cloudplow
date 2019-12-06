@@ -976,7 +976,7 @@ Further documentation refers to the example configurations below.
 
 `"instance_destroy"`:
 
-  - When this is `true`, the instance that is created for the sync task is destroyed after the task finishes.  This only applies to non-local sync services (e.g. `scaleway`).  
+  - When this is `true`, the instance that is created for the sync task is destroyed after the task finishes.  This only applies to non-local sync services (e.g. `scaleway`).
 
   - When this is set to `false`, it will re-use the existing instance that was previously created/shutdown after the last sync ran.
 
@@ -1029,17 +1029,19 @@ optional arguments:
 
 # Docker
 
-Sample docker-compose.yml v3 configuration, where cloudplow's config is stored in `/opt/cloudplow`, the host's rclone.conf is stored in `~/.config/rclone` and media to upload is stored in `/imported_media`:
+Sample docker-compose.yml v3 configuration, where cloudplow's config is stored on the host in `/opt/cloudplow`, the host's rclone.conf is stored in `~/.config/rclone`, service account .json files are stored in `~/google_drive_service_accounts`, and media to upload is stored in `/imported_media`:
 ```
     cloudplow:
         image: cloudbox/cloudplow
         container_name: cloudplow
         environment:
-            - PUID: `id -u cloudplow`
-            - PGID: `id -g cloudplow`
+            - PUID=`id -u cloudplow`
+            - PGID=`id -g cloudplow`
+            - CLOUDPLOW_LOGLEVEL=INFO
         volumes:
             - /opt/cloudplow:/config/:rw
-            - /home/<user>/.config/rclone:/config/rclone/:rw
+            - /home/<user>/.config/rclone/:/rclone_config/:rw
+            - /home/<user>/google_drive_service_accounts/:/service_accounts/:rw
             - /imported_media:/data/imported_media:rw
             - /etc/localtime:/etc/localtime:ro
         restart: unless-stopped
