@@ -47,8 +47,12 @@ RUN tar -xz -f /tmp/s6-overlay-amd64.tar.gz -C /
 # add s6-overlay scripts and config
 COPY docker-root/ /
 
-# copy cloudplow src into /opt/cloudplow
-COPY . /opt/cloudplow/
+# copy necessary cloudplow src into /opt/cloudplow
+COPY .git /opt/cloudplow/.git
+COPY cloudplow.py requirements.txt /opt/cloudplow/
+COPY scripts /opt/cloudplow/scripts
+COPY utils /opt/cloudplow/utils
+
 WORKDIR /opt/cloudplow/
 
 # modify git remote to use HTTPS instead of SSH since the image doesn't include Docker Hub's SSH deploy key.
