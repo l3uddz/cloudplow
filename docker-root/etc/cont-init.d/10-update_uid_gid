@@ -1,40 +1,30 @@
 #!/usr/bin/with-contenv sh
 
-if [ -n $PUID ] && [ $PUID == 0 ]
+uid=${PUID:-1000}
+gid=${PGID:-1000}
+if [ $uid == 0 ]
 then
     exit
-fi
-
-UID=1000
-if [ -n $PUID ]
-then
-    UID=$PUID
-fi
-
-GID=1000
-if [ -n $PGID ]
-then
-    GID=$PGID
 fi
 
 id cloudplow 2> /dev/null > /dev/null
 cloudplow_exists=$?
 if [ $cloudplow_exists != 0 ]
 then
-    groupadd -g $GID -r cloudplow
-    useradd -u $UID -g $GID -N -r -m -s /bin/false cloudplow
+    groupadd -g $gid -r cloudplow
+    useradd -u $uid -g $gid -N -r -m -s /bin/false cloudplow
     update="true"
 fi
 
-if [ -n $PUID ] && [ $PUID != $(id -u cloudplow) ] && [ $PUID != 0 ]
+if [ $uid != $(id -u cloudplow) ] && [ $uid != 0 ]
 then
-    usermod -o -u "$PUID" cloudplow
+    usermod -o -u $uid cloudplow
     update="true"
 fi
 
-if [ -n $PGID ] && [ $PGID != $(id -g cloudplow) ] && [ $PGID != 0 ]
+if [ $gid != $(id -g cloudplow) ] && [ $gid != 0 ]
 then
-    groupmod -o -g "$PGID" cloudplow
+    groupmod -o -g $gid cloudplow
     update="true"
 fi
 

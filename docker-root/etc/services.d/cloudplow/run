@@ -1,7 +1,8 @@
 #!/usr/bin/with-contenv sh
 
+uid=${PUID:-1000}
 user=cloudplow
-if [ -n $PUID ] && [ $PUID == 0 ]
+if [ $uid == 0 ]
 then
     user=root
 fi
