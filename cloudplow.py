@@ -272,10 +272,13 @@ def do_upload(remote=None):
                     else:
                         log.error("Failed to pause the Nzbget download queue, upload commencing anyway...")
 
-                uploader = Uploader(uploader_remote, uploader_config, rclone_config,
-                                    conf.configs['core']['dry_run'],
+                uploader = Uploader(uploader_remote,
+                                    uploader_config,
+                                    rclone_config,
                                     conf.configs['core']['rclone_binary_path'],
-                                    conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
+                                    conf.configs['core']['rclone_config_path'],
+                                    conf.configs['plex'],
+                                    conf.configs['core']['dry_run'])
 
                 if sa_delay[uploader_remote] is not None:
                     available_accounts = [account for account, last_ban_time in sa_delay[uploader_remote].items() if
@@ -409,9 +412,11 @@ def do_upload(remote=None):
 
                     # do move if good
                     if required_set:
-                        mover = RcloneMover(uploader_config['mover'], conf.configs['core']['rclone_binary_path'],
+                        mover = RcloneMover(uploader_config['mover'],
+                                            conf.configs['core']['rclone_binary_path'],
                                             conf.configs['core']['rclone_config_path'],
-                                            conf.configs['core']['dry_run'], conf.configs['plex']['enabled'])
+                                            conf.configs['plex'],
+                                            conf.configs['core']['dry_run'])
                         log.info("Move starting from %r -> %r",
                                  uploader_config['mover']['move_from_remote'],
                                  uploader_config['mover']['move_to_remote'])
