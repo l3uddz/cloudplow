@@ -1,7 +1,9 @@
 #!/usr/bin/with-contenv sh
 
 uid=${PUID:-1000}
+echo UID: $uid
 gid=${PGID:-1000}
+echo GID: $gid
 if [ $uid == 0 ]
 then
     exit
@@ -9,6 +11,8 @@ fi
 
 id cloudplow 2> /dev/null > /dev/null
 cloudplow_exists=$?
+id cloudplow
+echo cloudplow user exists: $cloudplow_exists
 if [ $cloudplow_exists != 0 ]
 then
     groupadd -g $gid -r cloudplow
