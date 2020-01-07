@@ -64,7 +64,7 @@ else
 fi
 
 chown -R $uid:$gid /config
-find /config -type d -exec chmod 0775 {} +
+find /config -type d -exec chmod 0777 {} +
 chmod 0666 /config/config.json
 
 chown -R $uid:$gid /opt/cloudplow
