@@ -1,0 +1,76 @@
+#!/usr/bin/with-contenv sh
+
+debug=false
+if [ $CLOUDPLOW_LOGLEVEL == "DEBUG" ]
+then
+    debug=true
+fi
+
+debug_echo()
+{
+    if [ $debug = true ]
+    then
+        echo "$@"
+    fi
+}
+
+uid=${PUID:-1000}
+debug_echo "
+    PUID: $PUID
+    UID: $uid
+    "
+
+gid=${PGID:-1000}
+debug_echo "
+    PGID: $PGID
+    GID: $gid
+    "
+
+if [ $uid == 0 ] && [ $gid == 0 ]
+then
+    echo "Running as root, no permission changes necessary. Exiting successfully."
+    exit 0
+fi
+
+group=$(getent group $gid | awk -F: '{print $1}')
+if [ $group ]
+then
+    debug_echo "Group '$group' for running cloudplow exists: $(getent group $gid)"
+else
+    debug_echo "Group for running cloudplow does not exist, creating group 'cloudplow'."
+    groupadd -g $gid -r cloudplow
+    debug_echo "Group 'cloudplow' created."
+    group="cloudplow"
+fi
+
+user=$(getent passwd $uid | awk -F: '{print $1}')
+if [ $user ]
+then
+    debug_echo "User '$user' for running cloudplow exists: $(getent passwd $uid)"
+    groups $user | grep &>/dev/null "\b$group\b"
+    if [ $? != 0 ]
+    then
+        usermod -a -G $group $user
+        debug_echo "Supplemental group '$group' added to user '$user', now a member of groups: $(id -nG $uid)"
+    fi
+else
+    debug_echo "User account for running cloudplow does not exist, creating service user 'cloudplow'."
+    useradd -u $uid -g $gid -N -r -m -s /sbin/nologin cloudplow
+    debug_echo "User 'cloudplow' created.
+        ------------------------------------
+        New user ID info:    $(id $uid)
+        ------------------------------------
+        "
+fi
+
+chown -R $uid:$gid /config
+find /config -type d -exec chmod 0775 {} +
+chmod 0666 /config/config.json
+
+chown -R $uid:$gid /opt/cloudplow
+find /opt/cloudplow -type d -exec chmod 0775 {} +
+find /opt/cloudplow -type f -exec chmod 0664 {} +
+chmod -R 0775 /opt/cloudplow/cloudplow.py /opt/cloudplow/scripts
+
+echo "Permissions on /config and /opt/cloudplow restored successfully."
+exit 0

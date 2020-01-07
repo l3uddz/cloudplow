@@ -1,5 +1,5 @@
 FROM rclone/rclone
-MAINTAINER sabrsorensen@gmail.com
+LABEL maintainer="sabrsorensen@gmail.com"
 
 ARG BUILD_DATE
 ARG VCS_REF
