@@ -4,7 +4,7 @@ uid=${PUID:-1000}
 user=$(getent passwd $uid | awk -F: '{print $1}')
 if [ ! -f ${CLOUDPLOW_CONFIG} ]
 then
-    exec s6-setuidgid $user python3 /opt/cloudplow/cloudplow.py run
+    exec s6-setuidgid $user env python3 /opt/cloudplow/cloudplow.py run
     echo "************************************************************************************"
     echo "INFO: Default config.json generated at ${CLOUDPLOW_CONFIG}, please configure for your environment. Exiting."
     echo "************************************************************************************"
@@ -19,7 +19,7 @@ then
     exit 1
 elif rclone --config ${rclone_conf_path} config show &> /dev/null
 then
-    exec s6-setuidgid $user python3 /opt/cloudplow/cloudplow.py run
+    exec s6-setuidgid $user env python3 /opt/cloudplow/cloudplow.py run
     exit 0
 else
     echo "************************************************************************************"
