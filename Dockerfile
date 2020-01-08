@@ -1,5 +1,5 @@
 FROM rclone/rclone
-MAINTAINER sabrsorensen@gmail.com
+LABEL maintainer="sabrsorensen@gmail.com"
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -49,11 +49,12 @@ COPY docker-root/ /
 
 # copy necessary cloudplow src into /opt/cloudplow
 COPY .git /opt/cloudplow/.git
-COPY cloudplow.py requirements.txt /opt/cloudplow/
+COPY cloudplow.py cloudplow requirements.txt /opt/cloudplow/
 COPY scripts /opt/cloudplow/scripts
 COPY utils /opt/cloudplow/utils
 
 WORKDIR /opt/cloudplow/
+ENV PATH=/opt/cloudplow:${PATH}
 
 # modify git remote to use HTTPS instead of SSH since the image doesn't include Docker Hub's SSH deploy key.
 RUN sed -i -e 's/git@github.com:/https:\/\/github.com\//' .git/config
@@ -61,4 +62,5 @@ RUN sed -i -e 's/git@github.com:/https:\/\/github.com\//' .git/config
 # install pip dependencies
 RUN python3 -m pip install --no-cache-dir --upgrade -r requirements.txt
 
-ENTRYPOINT ["/init"]
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["/init"]

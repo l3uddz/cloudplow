@@ -1,5 +1,0 @@
-/opt/cloudplow true cloudplow:cloudplow,0:0 0664 0775
-/opt/cloudplow/cloudplow.py true cloudplow:cloudplow,0:0 0755 0775
-/opt/cloudplow/scripts true cloudplow:cloudplow,0:0 0755 0775
-/config true cloudplow:cloudplow,0:0 0644 0755
-/config/config.json true cloudplow:cloudplow,0:0 0666 0775

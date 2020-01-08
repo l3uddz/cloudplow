@@ -1034,7 +1034,7 @@ optional arguments:
 
 # Docker
 
-Sample docker-compose.yml v3 configuration, where cloudplow's config is stored on the host in `/opt/cloudplow`, the host's rclone.conf is stored in `~/.config/rclone`, service account .json files are stored in `~/google_drive_service_accounts`, and media to upload is stored in `/imported_media`:
+Sample docker-compose.yml v3 configuration, where cloudplow's config is stored on the host in `/opt/cloudplow`, the host's rclone.conf is stored in `~/.config/rclone`, service account .json files are stored in `~/google_drive_service_accounts`, and directories/files to upload are stored in `/directory/to/upload/`:
 ```
     cloudplow:
         image: sabrsorensen/cloudplow
@@ -1042,17 +1042,18 @@ Sample docker-compose.yml v3 configuration, where cloudplow's config is stored o
         environment:
             - PUID=`id -u cloudplow`
             - PGID=`id -g cloudplow`
-            - CLOUDPLOW_LOGLEVEL=INFO
+            - CLOUDPLOW_LOGLEVEL=DEBUG
         volumes:
             - /opt/cloudplow:/config/:rw
             - /home/<user>/.config/rclone/:/rclone_config/:rw
             - /home/<user>/google_drive_service_accounts/:/service_accounts/:rw
-            - /imported_media:/data/imported_media:rw
+            - /directory/to/upload/1:/data/dir1/:rw
+            - /directory/to/upload/2:/data/dir2/:rw
             - /etc/localtime:/etc/localtime:ro
         restart: unless-stopped
 ```
 
-Upon first run, the container will generate a sample config.json at `/config/config.json`. Edit this config.json to your liking, making sure to set rclone_config_path to the location of the rclone.conf you mapped into the container, and adjusting the paths of your remotes relative to the container mappings.
+Upon first run, the container will generate a sample config.json at `/config/config.json`. Edit this config.json to your liking, making sure to set rclone_config_path to the location of the rclone.conf you mapped into the container (`/rclone_config/rclone.conf` in the above example), and adjusting the paths of your remotes relative to the container mappings.
 
 
 ***

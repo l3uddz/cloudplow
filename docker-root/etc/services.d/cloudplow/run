@@ -1,32 +1,29 @@
 #!/usr/bin/with-contenv sh
 
 uid=${PUID:-1000}
-user=cloudplow
-if [ $uid == 0 ]
-then
-    user=root
-fi
+user=$(getent passwd $uid | awk -F: '{print $1}')
 if [ ! -f ${CLOUDPLOW_CONFIG} ]
 then
-    exec s6-setuidgid $user python3 /opt/cloudplow/cloudplow.py run
+    exec s6-setuidgid $user env python3 /opt/cloudplow/cloudplow.py run
     echo "************************************************************************************"
-    echo "Default config.json generated, please configure for your environment. Exiting."
-    echo "************************************************************************************"
-    exit 1
-elif grep -qP "\"rclone_config_path\":\s*\"/home/(seed|user)/\.config/rclone/rclone\.conf\"" ${CLOUDPLOW_CONFIG}
-then
-    echo "************************************************************************************"
-    echo "config.json has not been configured, exiting."
-    echo "Along with configuring other settings, rclone_config_path needs to point to your rclone.conf file, expected to be mapped into this container under /rclone_config/."
-    echo "************************************************************************************"
-    exit 1
-elif grep -qP "\"rclone_config_path\":\s*\"/rclone_config/.*\.conf\"" ${CLOUDPLOW_CONFIG}
-then
-    exec s6-setuidgid $user python3 /opt/cloudplow/cloudplow.py run
-else
-    echo "************************************************************************************"
-    echo "${CLOUDPLOW_CONFIG}:core.rclone_config_path does not point to the expected /rclone_config/*.conf path."
+    echo "INFO: Default config.json generated at ${CLOUDPLOW_CONFIG}, please configure for your environment. Exiting."
     echo "************************************************************************************"
     exit 1
 fi
-
+rclone_conf_path=$(grep -P "rclone_config_path" ${CLOUDPLOW_CONFIG} | awk -F: '{print $2}' | awk -F\" '{print $2}')
+if [ ! -f ${rclone_conf_path} ]
+then
+    echo "************************************************************************************"
+    echo "ERROR: ${CLOUDPLOW_CONFIG}:core.rclone_config_path does not point to an existing file."
+    echo "************************************************************************************"
+    exit 1
+elif rclone --config ${rclone_conf_path} config show &> /dev/null
+then
+    exec s6-setuidgid $user env python3 /opt/cloudplow/cloudplow.py run
+    exit 0
+else
+    echo "************************************************************************************"
+    echo "ERROR: ${CLOUDPLOW_CONFIG}:core.rclone_config_path is not a valid rclone config file."
+    echo "************************************************************************************"
+    exit 1
+fi
