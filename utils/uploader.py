@@ -9,17 +9,17 @@ log = logging.getLogger("uploader")
 
 
 class Uploader:
-    def __init__(self, name, uploader_config, rclone_config, dry_run, rclone_binary_path, rclone_config_path, use_rc):
+    def __init__(self, name, uploader_config, rclone_config, rclone_binary_path, rclone_config_path, plex, dry_run):
         self.name = name
         self.uploader_config = uploader_config
         self.rclone_config = rclone_config
-        self.dry_run = dry_run
         self.trigger_tracks = {}
         self.delayed_check = 0
         self.delayed_trigger = None
         self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
-        self.use_rc = use_rc
+        self.plex = plex
+        self.dry_run = dry_run
         self.service_account = None
 
     def set_service_account(self, sa_file):
@@ -41,10 +41,10 @@ class Uploader:
         # do upload
         if self.service_account is not None:
             rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
-                                    self.dry_run, self.use_rc, self.service_account)
+                                    self.plex, self.dry_run, self.service_account)
         else:
             rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
-                                    self.dry_run, self.use_rc)
+                                    self.plex, self.dry_run)
 
         log.info("Uploading '%s' to remote: %s", rclone_config['upload_folder'], self.name)
         self.delayed_check = 0
