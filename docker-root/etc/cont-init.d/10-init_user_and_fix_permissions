@@ -70,7 +70,7 @@ chmod 0666 /config/config.json
 chown -R $uid:$gid /opt/cloudplow
 find /opt/cloudplow -type d -exec chmod 0775 {} +
 find /opt/cloudplow -type f -exec chmod 0664 {} +
-chmod -R 0775 /opt/cloudplow/cloudplow.py /opt/cloudplow/scripts
+chmod -R 0775 /opt/cloudplow/cloudplow.py /opt/cloudplow/cloudplow /opt/cloudplow/scripts
 
 echo "Permissions on /config and /opt/cloudplow restored successfully."
 exit 0
