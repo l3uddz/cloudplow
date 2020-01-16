@@ -1,0 +1,6 @@
+{
+    "default": true,
+    "MD013": { "code_block_line_length": 154},
+    "MD033": { "allowed_elements": ["img"] },
+    "no-hard-tabs": true
+}
