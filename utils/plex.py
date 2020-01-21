@@ -75,21 +75,22 @@ class PlexStream:
             self.user = stream['User']['title']
         else:
             self.user = 'Unknown'
+
         if 'Player' in stream:
             self.player = stream['Player']['product']
             self.ip = stream['Player']['remotePublicAddress']
+            self.state = stream['Player']['state']
+            self.local = stream['Player']['local']
         else:
             self.player = 'Unknown'
             self.ip = 'Unknown'
+            self.state = 'Unknown'
+            self.local = None
 
         if 'Session' in stream:
             self.session_id = stream['Session']['id']
         else:
             self.session_id = 'Unknown'
-        if 'Player' in stream:
-            self.state = stream['Player']['state']
-        else:
-            self.state = 'Unknown'
 
         if 'Media' in stream:
             self.type = self.get_decision(stream['Media'])
@@ -140,11 +141,12 @@ class PlexStream:
             stream_type = self.type
 
         return u"{user} is playing {media} using {player}. " \
-               "Stream state: {state}, type: {type}.".format(user=self.user,
-                                                             media=self.title,
-                                                             player=self.player,
-                                                             state=self.state,
-                                                             type=stream_type)
+               "Stream state: {state}, local: {local}, type: {type}.".format(user=self.user,
+                                                                             media=self.title,
+                                                                             player=self.player,
+                                                                             state=self.state,
+                                                                             local=self.local,
+                                                                             type=stream_type)
 
     def __repr__(self):
         return str(self)

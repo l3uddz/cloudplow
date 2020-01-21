@@ -657,7 +657,7 @@ def do_plex_monitor():
             # we had a response
             stream_count = 0
             for stream in streams:
-                if stream.state == 'playing' or stream.state == 'buffering':
+                if (stream.state == 'playing' or stream.state == 'buffering') and not stream.local:
                     stream_count += 1
 
             # are we already throttled?
