@@ -1,0 +1,60 @@
+name: Build 'latest' Docker image from 'master'.
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'README.md'
+      - '.devcontainer/**'
+      - '.git/**'
+      - '.gitignore'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
+           COMMIT_AUTHOR="`git log -1 --pretty=format:'%an'`"
+           VCS_REF=`git rev-parse --short HEAD`
+           VCS_URL=`git config --get remote.origin.url`
+           docker build .
+           --tag ${GITHUB_REPOSITORY}:${GITHUB_SHA}
+           --build-arg BUILD_DATE
+           --build-arg COMMIT_AUTHOR
+           --build-arg VCS_REF
+           --build-arg VCS_URL
+
+    - name: Tag Docker image as 'latest' for Docker Hub
+      run: docker tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} ${GITHUB_REPOSITORY}:latest
+
+    - name: Docker Hub Login
+      uses: Azure/docker-login@v1
+      with:
+        # Container registry username
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        # Container registry password
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        # Container registry server url
+        login-server: https://index.docker.io/v1/
+
+    - name: Push Docker image to Docker Hub
+      run: docker push ${GITHUB_REPOSITORY}:latest
+
+    - name: GitHub Packages Login
+      uses: Azure/docker-login@v1
+      with:
+        # Container registry username
+        username: ${{ secrets.GITHUBPACKAGES_USERNAME }}
+        # Container registry password
+        password: ${{ secrets.GITHUB_TOKEN }}
+        # Container registry server url
+        login-server: https://docker.pkg.github.com
+
+    - name: Tag Docker image as 'githubTest' for GitHub Packages
+      run: docker tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} docker.pkg.github.com/${GITHUB_REPOSITORY}/latest:${GITHUB_SHA}
+
+    - name: Push Docker image to GitHub Packages
+      run: docker push docker.pkg.github.com/${GITHUB_REPOSITORY}/latest:${GITHUB_SHA}
