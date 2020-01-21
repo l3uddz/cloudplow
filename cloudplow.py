@@ -326,10 +326,10 @@ def do_upload(remote=None):
                     else:
                         for i in range(0, available_accounts_size):
                             uploader.set_service_account(available_accounts[i])
-                            resp, resp_trigger = uploader.upload()
-                            if resp:
+                            resp_delay, resp_trigger = uploader.upload()
+                            if resp_delay:
                                 current_data = sa_delay[uploader_remote]
-                                current_data[available_accounts[i]] = time.time() + ((60 * 60) * resp)
+                                current_data[available_accounts[i]] = time.time() + ((60 * 60) * resp_delay)
                                 sa_delay[uploader_remote] = current_data
                                 log.debug("Setting account %s as unbanned at %f", available_accounts[i],
                                           sa_delay[uploader_remote][available_accounts[i]])
@@ -352,7 +352,7 @@ def do_upload(remote=None):
                                     if unbanTime is not None:
                                         log.info(
                                             "Upload aborted due to trigger: %r being met, %s will continue automatic "
-                                            "uploading normally in %d hours", resp_trigger, uploader_remote, resp)
+                                            "uploading normally in %d hours", resp_trigger, uploader_remote, resp_delay)
 
                                         # add remote to uploader_delay
                                         log.debug("Adding unban time for %s as %f", uploader_remote,
@@ -364,7 +364,7 @@ def do_upload(remote=None):
                                         notify.send(
                                             message="Upload was aborted for remote: %s due to trigger %r. "
                                                     "Uploads suspended for %d hours" %
-                                                    (uploader_remote, resp_trigger, resp))
+                                                    (uploader_remote, resp_trigger, resp_delay))
                             else:
                                 # send successful upload notification
                                 notify.send(
@@ -374,19 +374,19 @@ def do_upload(remote=None):
                                 sa_delay[uploader_remote][available_accounts[i]] = None
                                 break
                 else:
-                    resp, resp_trigger = uploader.upload()
-                    if resp:
+                    resp_delay, resp_trigger = uploader.upload()
+                    if resp_delay:
                         if uploader_remote not in uploader_delay:
                             # this uploader was not already in the delay dict, so lets put it there
                             log.info(
                                 "Upload aborted due to trigger: %r being met, %s will continue automatic uploading "
-                                "normally in %d hours", resp_trigger, uploader_remote, resp)
+                                "normally in %d hours", resp_trigger, uploader_remote, resp_delay)
                             # add remote to uploader_delay
-                            uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp)
+                            uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp_delay)
                             # send aborted upload notification
                             notify.send(
                                 message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d"
-                                        " hours" % (uploader_remote, resp_trigger, resp))
+                                        " hours" % (uploader_remote, resp_trigger, resp_delay))
                         else:
                             # this uploader is already in the delay dict, lets not delay it any further
                             log.info(

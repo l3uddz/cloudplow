@@ -165,8 +165,8 @@ class RcloneUploader:
 
             # exec
             log.debug("Using: %s", cmd)
-            process.execute(cmd, callback)
-            return True
+            return_code = process.execute(cmd, callback)
+            return True, return_code
         except Exception:
             log.exception("Exception occurred while uploading '%s' to remote: %s", self.config['upload_folder'],
                           self.name)
