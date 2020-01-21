@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from urllib.parse import urljoin
+import re
 
 import requests
 
@@ -17,12 +18,12 @@ log = logging.getLogger('rclone')
 
 
 class RcloneMover:
-    def __init__(self, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False):
+    def __init__(self, config, rclone_binary_path, rclone_config_path, plex, dry_run=False):
         self.config = config
         self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
+        self.plex = plex
         self.dry_run = dry_run
-        self.use_rc = use_rc
 
     def move(self):
         try:
@@ -40,10 +41,12 @@ class RcloneMover:
             excludes = self.__excludes2string()
             if len(excludes) > 2:
                 cmd += ' %s' % excludes
+            if self.plex.get('enabled'):
+                r = re.compile(r"https?://(www\.)?")
+                rc_url = r.sub('', self.plex['rclone']['url']).strip().strip('/')
+                cmd += ' --rc --rc-addr=%s' % cmd_quote(rc_url)
             if self.dry_run:
                 cmd += ' --dry-run'
-            if self.use_rc:
-                cmd += ' --rc --rc-addr=%s' % cmd_quote('localhost:7949')
 
             # exec
             log.debug("Using: %s", cmd)
@@ -77,14 +80,14 @@ class RcloneMover:
 
 
 class RcloneUploader:
-    def __init__(self, name, config, rclone_binary_path, rclone_config_path, dry_run=False, use_rc=False,
+    def __init__(self, name, config, rclone_binary_path, rclone_config_path, plex, dry_run=False,
                  service_account=None):
         self.name = name
         self.config = config
         self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
+        self.plex = plex
         self.dry_run = dry_run
-        self.use_rc = use_rc
         self.service_account = service_account
 
     def delete_file(self, path):
@@ -153,10 +156,12 @@ class RcloneUploader:
             excludes = self.__excludes2string()
             if len(excludes) > 2:
                 cmd += ' %s' % excludes
+            if self.plex.get('enabled'):
+                r = re.compile(r"https?://(www\.)?")
+                rc_url = r.sub('', self.plex['rclone']['url']).strip().strip('/')
+                cmd += ' --rc --rc-addr=%s' % cmd_quote(rc_url)
             if self.dry_run:
                 cmd += ' --dry-run'
-            if self.use_rc:
-                cmd += ' --rc --rc-addr=%s' % cmd_quote('localhost:7949')
 
             # exec
             log.debug("Using: %s", cmd)

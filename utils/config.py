@@ -142,6 +142,7 @@ class Config(object):
         # add example uploader
         cfg['uploader'] = {
             'google': {
+                'can_be_throttled': True,
                 'check_interval': 30,
                 'max_size_gb': 200,
                 'size_excludes': [

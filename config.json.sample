@@ -78,6 +78,7 @@
     },
     "uploader": {
         "google": {
+            "can_be_throttled": true,
             "check_interval": 30,
             "exclude_open_files": true,
             "max_size_gb": 200,

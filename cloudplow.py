@@ -101,7 +101,7 @@ def init_notifications():
 def init_service_accounts():
     global sa_delay
     global uploader_delay
-
+    log.debug("Start initializing of service accounts.")
     for uploader_remote, uploader_config in conf.configs['uploader'].items():
         if uploader_remote not in sa_delay:
             sa_delay[uploader_remote] = None
@@ -109,17 +109,25 @@ def init_service_accounts():
             # If service_account path provided, loop over the service account files and provide
             # one at a time when starting the uploader. If upload completes successfully, do not attempt
             # to use the other accounts
-            accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), sa_file): None for sa_file
-                        in os.listdir(os.path.normpath(uploader_config['service_account_path'])) if
+            accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']),
+                        sa_file): None for sa_file in
+                        os.listdir(os.path.normpath(uploader_config['service_account_path'])) if
                         sa_file.endswith(".json")}
             current_accounts = sa_delay[uploader_remote]
             if current_accounts is not None:
                 # Service account files may have moved, invalidate any missing cached accounts.
                 cached_accounts = list(current_accounts)
                 for cached_account in cached_accounts:
-                    log.debug("Checking for service account file '%s' for remote '%s'", cached_account, uploader_remote)
+                    log.debug("Checking for cached service account file '%s' for remote '%s'", cached_account,
+                              uploader_remote)
+                    if not cached_account.startswith(os.path.normpath(uploader_config['service_account_path'])):
+                        log.debug("Cached service account file '%s' for remote '%s' is not located in specified"
+                                  " service_account_path ('%s'). Removing from available accounts.", cached_account,
+                                  uploader_remote, uploader_config['service_account_path'])
+                        current_accounts.pop(cached_account)
                     if not os.path.exists(cached_account):
-                        log.debug("Cached service account file '%s' for remote '%s' could not be located, removing from available accounts", cached_account, uploader_remote)
+                        log.debug("Cached service account file '%s' for remote '%s' could not be located. "
+                                  "Removing from available accounts.", cached_account, uploader_remote)
                         current_accounts.pop(cached_account)
 
                 # Add any new account files.
@@ -137,6 +145,7 @@ def init_service_accounts():
                           str(accounts),
                           uploader_remote)
                 sa_delay[uploader_remote] = accounts
+    log.debug("Finished initializing of service accounts.")
 
 
 def init_syncers():
@@ -268,9 +277,14 @@ def do_upload(remote=None):
                 notify.send(message="Upload of %d GB has begun for remote: %s" % (
                     path.get_size(rclone_config['upload_folder'], uploader_config['size_excludes']), uploader_remote))
 
-                # start the plex stream monitor before the upload begins, if enabled
+                # start the plex stream monitor before the upload begins, if enabled for both plex and the uploader
                 if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
-                    plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
+                    # Only disable throttling if 'can_be_throttled' is both present in uploader_config and is set to False.
+                    if 'can_be_throttled' in uploader_config and not uploader_config['can_be_throttled']:
+                        log.debug("Skipping check for Plex stream due to throttling disabled in remote: %s", uploader_remote)
+                    # Otherwise, assume throttling is desired.
+                    else:
+                        plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
 
                 # pause the nzbget queue before starting the upload, if enabled
                 if conf.configs['nzbget']['enabled']:
@@ -281,10 +295,13 @@ def do_upload(remote=None):
                     else:
                         log.error("Failed to pause the Nzbget download queue, upload commencing anyway...")
 
-                uploader = Uploader(uploader_remote, uploader_config, rclone_config,
-                                    conf.configs['core']['dry_run'],
+                uploader = Uploader(uploader_remote,
+                                    uploader_config,
+                                    rclone_config,
                                     conf.configs['core']['rclone_binary_path'],
-                                    conf.configs['core']['rclone_config_path'], conf.configs['plex']['enabled'])
+                                    conf.configs['core']['rclone_config_path'],
+                                    conf.configs['plex'],
+                                    conf.configs['core']['dry_run'])
 
                 if sa_delay[uploader_remote] is not None:
                     available_accounts = [account for account, last_ban_time in sa_delay[uploader_remote].items() if
@@ -418,9 +435,11 @@ def do_upload(remote=None):
 
                     # do move if good
                     if required_set:
-                        mover = RcloneMover(uploader_config['mover'], conf.configs['core']['rclone_binary_path'],
+                        mover = RcloneMover(uploader_config['mover'],
+                                            conf.configs['core']['rclone_binary_path'],
                                             conf.configs['core']['rclone_config_path'],
-                                            conf.configs['core']['dry_run'], conf.configs['plex']['enabled'])
+                                            conf.configs['plex'],
+                                            conf.configs['core']['dry_run'])
                         log.info("Move starting from %r -> %r",
                                  uploader_config['mover']['move_from_remote'],
                                  uploader_config['mover']['move_to_remote'])
@@ -790,7 +809,7 @@ if __name__ == "__main__":
             log.info("Started in upload mode")
             # init notifications
             init_notifications()
-            # initialize service accounts if provided in confing
+            # initialize service accounts if provided in config
             init_service_accounts()
             do_hidden()
             do_upload()
