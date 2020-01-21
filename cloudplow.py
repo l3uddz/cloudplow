@@ -101,7 +101,7 @@ def init_notifications():
 def init_service_accounts():
     global sa_delay
     global uploader_delay
-
+    log.debug("Start initializing of service accounts.")
     for uploader_remote, uploader_config in conf.configs['uploader'].items():
         if uploader_remote not in sa_delay:
             sa_delay[uploader_remote] = None
@@ -109,17 +109,25 @@ def init_service_accounts():
             # If service_account path provided, loop over the service account files and provide
             # one at a time when starting the uploader. If upload completes successfully, do not attempt
             # to use the other accounts
-            accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']), sa_file): None for sa_file
-                        in os.listdir(os.path.normpath(uploader_config['service_account_path'])) if
+            accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']),
+                        sa_file): None for sa_file in
+                        os.listdir(os.path.normpath(uploader_config['service_account_path'])) if
                         sa_file.endswith(".json")}
             current_accounts = sa_delay[uploader_remote]
             if current_accounts is not None:
                 # Service account files may have moved, invalidate any missing cached accounts.
                 cached_accounts = list(current_accounts)
                 for cached_account in cached_accounts:
-                    log.debug("Checking for service account file '%s' for remote '%s'", cached_account, uploader_remote)
+                    log.debug("Checking for cached service account file '%s' for remote '%s'", cached_account,
+                              uploader_remote)
+                    if not cached_account.startswith(os.path.normpath(uploader_config['service_account_path'])):
+                        log.debug("Cached service account file '%s' for remote '%s' is not located in specified"
+                                  " service_account_path ('%s'). Removing from available accounts.", cached_account,
+                                  uploader_remote, uploader_config['service_account_path'])
+                        current_accounts.pop(cached_account)
                     if not os.path.exists(cached_account):
-                        log.debug("Cached service account file '%s' for remote '%s' could not be located, removing from available accounts", cached_account, uploader_remote)
+                        log.debug("Cached service account file '%s' for remote '%s' could not be located. "
+                                  "Removing from available accounts.", cached_account, uploader_remote)
                         current_accounts.pop(cached_account)
 
                 # Add any new account files.
@@ -137,6 +145,7 @@ def init_service_accounts():
                           str(accounts),
                           uploader_remote)
                 sa_delay[uploader_remote] = accounts
+    log.debug("Finished initializing of service accounts.")
 
 
 def init_syncers():
@@ -800,7 +809,7 @@ if __name__ == "__main__":
             log.info("Started in upload mode")
             # init notifications
             init_notifications()
-            # initialize service accounts if provided in confing
+            # initialize service accounts if provided in config
             init_service_accounts()
             do_hidden()
             do_upload()
