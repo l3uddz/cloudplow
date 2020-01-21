@@ -165,8 +165,10 @@ class RcloneUploader:
 
             # exec
             log.debug("Using: %s", cmd)
-            process.execute(cmd, callback)
-            return True
+            return_code = process.execute(cmd, callback)
+            if return_code == 7:
+                log.debug("Received 'Transfer Exceeded' response from Rclone.")
+            return True, return_code
         except Exception:
             log.exception("Exception occurred while uploading '%s' to remote: %s", self.config['upload_folder'],
                           self.name)

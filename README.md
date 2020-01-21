@@ -178,7 +178,9 @@ Cloudplow has 3 main functions:
                 "--stats": "60s",
                 "--transfers": 8,
                 "--verbose": 1,
-                "--skip-links": null
+                "--skip-links": null,
+                "--drive-stop-on-upload-limit": null,
+                "--user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36"
             },
             "rclone_sleeps": {
                 "Failed to copy: googleapi: Error 403: User rate limit exceeded": {

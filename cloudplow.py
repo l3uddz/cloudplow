@@ -326,8 +326,8 @@ def do_upload(remote=None):
                     else:
                         for i in range(0, available_accounts_size):
                             uploader.set_service_account(available_accounts[i])
-                            resp, resp_trigger = uploader.upload()
-                            if resp:
+                            resp, resp_trigger, return_code = uploader.upload()
+                            if resp or return_code == 7:
                                 current_data = sa_delay[uploader_remote]
                                 current_data[available_accounts[i]] = time.time() + ((60 * 60) * resp)
                                 sa_delay[uploader_remote] = current_data
@@ -374,7 +374,7 @@ def do_upload(remote=None):
                                 sa_delay[uploader_remote][available_accounts[i]] = None
                                 break
                 else:
-                    resp, resp_trigger = uploader.upload()
+                    resp, resp_trigger, return_code = uploader.upload()
                     if resp:
                         if uploader_remote not in uploader_delay:
                             # this uploader was not already in the delay dict, so lets put it there

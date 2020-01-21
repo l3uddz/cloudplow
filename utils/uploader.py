@@ -50,9 +50,10 @@ class Uploader:
         self.delayed_check = 0
         self.delayed_trigger = None
         self.trigger_tracks = {}
-        rclone.upload(self.__logic)
-        log.info("Finished uploading to remote: %s", self.name)
-        return self.delayed_check, self.delayed_trigger
+        upload_status, return_code = rclone.upload(self.__logic)
+        if upload_status:
+            log.info("Finished uploading to remote: %s", self.name)
+        return self.delayed_check, self.delayed_trigger, return_code
 
     def remove_empty_dirs(self):
         path.remove_empty_dirs(self.rclone_config['upload_folder'], self.rclone_config['remove_empty_dir_depth'])
