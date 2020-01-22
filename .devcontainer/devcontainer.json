@@ -1,0 +1,54 @@
+{
+  "name": "cloudplow Dev Container",
+
+  // Sets the run context to one level up instead of the .devcontainer folder.
+  "context": "..",
+
+  // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
+  "dockerFile": "..\\Dockerfile",
+
+  // Uncomment the next line to have VS Code connect as an existing non-root user in the container.
+  // On Linux, by default, the container user's UID/GID will be updated to match your local user. See
+  // https://aka.ms/vscode-remote/containers/non-root for details on adding a non-root user if none exist.
+  // "remoteUser": "vscode",
+
+  // Uncomment the next line if you will use a ptrace-based debugger like C++, Go, and Rust
+  // "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
+
+  // Uncomment the next line to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker for details.
+  // "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+
+  // Use 'settings' to set *default* container specific settings.json values on container create.
+  // You can edit these settings after create using File > Preferences > Settings > Remote.
+  "settings": {
+    // This will ignore your local shell user setting for Linux since shells like zsh are typically
+    // not in base container images. You can also update this to an specific shell to ensure VS Code
+    // uses the right one for terminals and tasks. For example, /bin/bash (or /bin/ash for Alpine).
+    "terminal.integrated.shell.linux": null,
+    "python.pythonPath": "/usr/bin/python3"
+  },
+
+  // Use 'appPort' to create a container with published ports. If the port isn't working, be sure
+  // your server accepts connections from all interfaces (0.0.0.0 or '*'), not just localhost.
+  //"appPort": [],
+
+  // Uncomment the next line to run commands after the container is created - for example installing git.
+  "postCreateCommand": "apk add -U --no-cache gcc musl-dev python3-dev openssh-client && python3 -m pip install --no-cache-dir --upgrade --force pylint",
+
+  // Add the IDs of extensions you want installed when the container is created in the array below.
+  "extensions": [
+    "davidanson.vscode-markdownlint",
+    "esbenp.prettier-vscode",
+    "github.vscode-pull-request-github",
+    "ms-azuretools.vscode-docker",
+    "me-dutour-mathieu.vscode-github-actions",
+    "ms-python.python"
+  ],
+
+  // Disable the default echo/sleep while loop
+  "overrideCommand": true,
+
+  "containerEnv": {
+    "CLOUDPLOW_LOGLEVEL": "DEBUG"
+  }
+}
