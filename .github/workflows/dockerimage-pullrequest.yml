@@ -29,10 +29,10 @@ jobs:
            VCS_URL=`git config --get remote.origin.url`
            docker build .
            --tag ${GITHUB_REPOSITORY}:${{ steps.extract_branch.outputs.branch }}
-           --build-arg BUILD_DATE
-           --build-arg COMMIT_AUTHOR
-           --build-arg VCS_REF
-           --build-arg VCS_URL
+           --build-arg $BUILD_DATE
+           --build-arg $COMMIT_AUTHOR
+           --build-arg $VCS_REF
+           --build-arg $VCS_URL
 
     - name: Docker Hub Login
       uses: Azure/docker-login@v1
