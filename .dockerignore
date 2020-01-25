@@ -1,9 +1,11 @@
+.devcontainer/*
 .dockerignore
 .github/*
-hooks/*
-Dockerfile
-CONTRIBUTING.md
-LICENSE.md
-README.md
+.markdownlint.json
 assets/*
+hooks/*
 systemd/*
+CONTRIBUTING.md
+Dockerfile
+LICENSE
+README.md

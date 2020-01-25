@@ -34,11 +34,11 @@ RUN apk -U add --no-cache \
         findutils \
         git \
         grep \
-        py3-pip \
         python3 \
+        py3-pip \
         shadow \
         tzdata && \
-        python3 -m pip install --no-cache-dir --upgrade pip
+        python3 -m pip install --no-cache-dir --upgrade --force pip
 
 # install s6-overlay for process management
 ADD https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz /tmp/
@@ -60,7 +60,7 @@ ENV PATH=/opt/cloudplow:${PATH}
 RUN sed -i -e 's/git@github.com:/https:\/\/github.com\//' .git/config
 
 # install pip dependencies
-RUN python3 -m pip install --no-cache-dir --upgrade -r requirements.txt
+RUN python3 -m pip install --no-cache-dir --upgrade --force -r requirements.txt
 
 ENTRYPOINT ["/bin/sh", "-c"]
 CMD ["/init"]
