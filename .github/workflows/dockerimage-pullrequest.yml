@@ -1,4 +1,4 @@
-name: Build 'pull_requests' Docker image from PR branch.
+name: Build 'pr#' Docker image from PR branch.
 
 on:
   pull_request:
@@ -57,7 +57,7 @@ jobs:
         # Container registry server url
         login-server: https://docker.pkg.github.com
 
-    - name: Tag Docker image as 'githubTest' for GitHub Packages
+    - name: Tag Docker image as 'pr#/<commitHash>' for GitHub Packages
       run: docker tag ${GITHUB_REPOSITORY}:${{ steps.extract_pr.outputs.prnumber }} docker.pkg.github.com/${GITHUB_REPOSITORY}/${{ steps.extract_pr.outputs.prnumber }}:${GITHUB_SHA}
 
     - name: Push Docker image to GitHub Packages
