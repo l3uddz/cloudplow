@@ -1,0 +1,20 @@
+name: Delete branch tag from Docker Hub on branch delete
+
+on: delete
+
+jobs:
+  Delete_tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: BRANCH=${GITHUB_REF#refs/head/} && echo "##[set-output name=branch;]$(echo $BRANCH)"
+        id: extract_branch
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
+
+      - name: Delete Docker Hub tag for deleted branch
+        run: python3 .github/workflows/prune_dockerhub_tags.py --user ${{ secrets.DOCKERHUB_USERNAME }} --pass ${{ secrets.DOCKERHUB_PASSWORD }} --repo ${GITHUB_REPOSITORY}
