@@ -329,7 +329,10 @@ def do_upload(remote=None):
                             resp, resp_trigger, return_code = uploader.upload()
                             if resp or return_code == 7:
                                 current_data = sa_delay[uploader_remote]
-                                current_data[available_accounts[i]] = time.time() + ((60 * 60) * resp)
+                                if return_code == 7:
+                                    current_data[available_accounts[i]] = time.time() + ((60 * 60) * 25)
+                                else:
+                                    current_data[available_accounts[i]] = time.time() + ((60 * 60) * resp)
                                 sa_delay[uploader_remote] = current_data
                                 log.debug("Setting account %s as unbanned at %f", available_accounts[i],
                                           sa_delay[uploader_remote][available_accounts[i]])
