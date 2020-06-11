@@ -656,9 +656,15 @@ def do_plex_monitor():
         else:
             # we had a response
             stream_count = 0
+            local_stream_count = 0
             for stream in streams:
                 if (stream.state == 'playing' or stream.state == 'buffering') and not stream.local:
                     stream_count += 1
+                if (stream.state == 'playing' or stream.state == 'buffering') and stream.local:
+                    local_stream_count += 1
+            
+            if not conf.configs['plex']['ignore_local_streams']:
+                stream_count += local_stream_count
 
             # are we already throttled?
             if ((not throttled or (throttled and not rclone.throttle_active(throttle_speed))) and (
