@@ -23,6 +23,7 @@
         "token": "",
         "poll_interval": 60,
         "max_streams_before_throttle": 1,
+        "ignore_local_streams": true,
         "notifications": false,
         "rclone": {
             "throttle_speeds": {
