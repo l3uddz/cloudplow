@@ -50,6 +50,7 @@ class Config(object):
             'token': '',
             'poll_interval': 60,
             'max_streams_before_throttle': 1,
+            'ignore_local_streams': True,
             'notifications': False,
             'rclone': {
                 'url': 'http://localhost:7949',

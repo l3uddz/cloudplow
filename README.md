@@ -147,6 +147,7 @@ Cloudplow has 3 main functions:
     "plex": {
         "enabled": true,
         "max_streams_before_throttle": 1,
+        "ignore_local_streams": true,
         "poll_interval": 60,
         "notifications": false,
         "rclone": {
@@ -551,6 +552,7 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
 "plex": {
     "enabled": true,
     "max_streams_before_throttle": 1,
+    "ignore_local_streams": true,
     "poll_interval": 60,
     "notifications": false,
     "rclone": {
@@ -585,6 +587,8 @@ Cloudplow can throttle Rclone uploads during active, playing Plex streams (pause
 `poll_interval` - How often (in seconds) Plex is checked for active streams.
 
 `max_streams_before_throttle` - How many playing streams are allowed before enabling throttling.
+
+`ignore_local_streams` - Whether streaming local files should count for throttling.
 
 `notifications` - Send notifications when throttling is set, adjusted, or unset, depending on stream count.
 
