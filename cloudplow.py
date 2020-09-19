@@ -15,6 +15,7 @@ from utils.cache import Cache
 from utils.notifications import Notifications
 from utils.nzbget import Nzbget
 from utils.plex import Plex
+from utils.emby import Emby
 from utils.rclone import RcloneThrottler, RcloneMover
 from utils.syncer import Syncer
 from utils.threads import Thread
@@ -249,10 +250,11 @@ def run_process(task, manager_dict, **kwargs):
 ############################################################
 
 
-@decorators.timed
+# @decorators.timed
 def do_upload(remote=None):
     global plex_monitor_thread, uploader_delay
     global sa_delay
+
 
     nzbget = None
     nzbget_paused = False
@@ -284,7 +286,10 @@ def do_upload(remote=None):
                         log.debug("Skipping check for Plex stream due to throttling disabled in remote: %s", uploader_remote)
                     # Otherwise, assume throttling is desired.
                     else:
+                        # t=do_plex_monitor()
+                        # t2=do_emby_monitor()
                         plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
+                        emby_monitor_thread = thread.start(do_emby_monitor, 'emby-monitor')
 
                 # pause the nzbget queue before starting the upload, if enabled
                 if conf.configs['nzbget']['enabled']:
@@ -626,24 +631,24 @@ def do_plex_monitor():
 
     # create the plex object
     plex = Plex(conf.configs['plex']['url'], conf.configs['plex']['token'])
-    if not plex.validate():
-        log.error(
-            "Aborting Plex Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
-        plex_monitor_thread = None
-        return
+    # if not plex.validate():
+    #     log.error(
+    #         "Aborting Plex Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
+    #     plex_monitor_thread = None
+    #     return
 
     # sleep 15 seconds to allow rclone to start
     log.info("Plex Media Server URL + Token were validated. Sleeping for 15 seconds before checking Rclone RC URL.")
-    time.sleep(15)
+    # time.sleep(15)
 
     # create the rclone throttle object
     rclone = RcloneThrottler(conf.configs['plex']['rclone']['url'])
-    if not rclone.validate():
-        log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
-        plex_monitor_thread = None
-        return
-    else:
-        log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
+    # if not rclone.validate():
+    #     log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
+    #     plex_monitor_thread = None
+    #     return
+    # else:
+    #     log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
 
     throttled = False
     throttle_speed = None
@@ -721,6 +726,105 @@ def do_plex_monitor():
 
     log.info("Finished monitoring Plex stream(s)!")
     plex_monitor_thread = None
+
+@decorators.timed
+def do_emby_monitor():
+    emby = Emby(conf.configs['emby']['url'],conf.configs['emby']['api'])
+    if not emby.validate():
+        log.error(
+            "Aborting Emby Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
+        plex_monitor_thread = None
+        return
+    log.info("Emby + api were validated. Sleeping for 15 seconds before checking Rclone RC URL.")
+    # time.sleep(15)
+
+
+    # create the rclone throttle object
+    rclone = RcloneThrottler(conf.configs['emby']['rclone']['url'])
+    # if not rclone.validate():
+    #     log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
+    #     plex_monitor_thread = None
+    #     return
+    # else:
+    #     log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
+
+    throttled = False
+    throttle_speed = None
+    lock_file = lock.upload()
+    while lock_file.is_locked():
+        streams = emby.get_streams()
+        if streams is None:
+            log.error("Failed to check Emby Media Server stream(s). Trying again in %d seconds...",
+                      conf.configs['emby']['poll_interval'])
+        else:
+            # we had a response
+            stream_count = 0
+            for stream in streams:
+                stream_count += 1
+
+            # are we already throttled?
+            if ((not throttled or (throttled and not rclone.throttle_active(throttle_speed))) and (
+                    stream_count >= conf.configs['emby']['max_streams_before_throttle'])):
+                log.info("There was %d playing stream(s) on Emby Media Server while it was currently un-throttled.",
+                         stream_count)
+                for stream in streams:
+                    log.info(stream)
+                log.info("Upload throttling will now commence.")
+
+                # send throttle request
+                throttle_speed = misc.get_nearest_less_element(conf.configs['emby']['rclone']['throttle_speeds'],
+                                                               stream_count)
+                throttled = rclone.throttle(throttle_speed)
+
+                # send notification
+                if throttled and conf.configs['emby']['notifications']:
+                    notify.send(
+                        message="Throttled current upload to %s because there was %d playing stream(s) on Emby" %
+                                (throttle_speed, stream_count))
+
+                elif throttled:
+                    if stream_count < conf.configs['emby']['max_streams_before_throttle']:
+                        log.info(
+                            "There was less than %d playing stream(s) on Plex Media Server while it was currently throttled. "
+                            "Removing throttle ...", conf.configs['emby']['max_streams_before_throttle'])
+                        # send un-throttle request
+                        throttled = not rclone.no_throttle()
+                        throttle_speed = None
+
+                        # send notification
+                        if not throttled and conf.configs['emby']['notifications']:
+                            notify.send(
+                                message="Un-throttled current upload because there was less than %d playing stream(s) on "
+                                        "Emby Media Server" % conf.configs['emby']['max_streams_before_throttle'])
+
+                    elif misc.get_nearest_less_element(conf.configs['emby']['rclone']['throttle_speeds'],
+                                                       stream_count) != throttle_speed:
+                        # throttle speed changed, probably due to more/less streams, re-throttle
+                        throttle_speed = misc.get_nearest_less_element(
+                            conf.configs['emby']['rclone']['throttle_speeds'],
+                            stream_count)
+                        log.info("Adjusting throttle speed for current upload to %s because there "
+                                 "was now %d playing stream(s) on Emby Media Server", throttle_speed, stream_count)
+
+                        throttled = rclone.throttle(throttle_speed)
+            #
+                        # send notification
+                        if throttled and conf.configs['emby']['notifications']:
+                            notify.send(
+                                message='Throttle for current upload was adjusted to %s due to %d playing stream(s)'
+                                        ' on Emby Media Server' % (throttle_speed, stream_count))
+
+                    else:
+                        log.info(
+                            "There was %d playing stream(s) on Emby Media Server it was already throttled to %s. Throttling "
+                            "will continue.", stream_count, throttle_speed)
+            #
+                # the lock_file exists, so we can assume an upload is in progress at this point
+                time.sleep(conf.configs['emby']['poll_interval'])
+            #
+            log.info("Finished monitoring Emby stream(s)!")
+            emby_monitor_thread = None
+
 
 
 ############################################################
