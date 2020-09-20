@@ -360,6 +360,7 @@ class Config(object):
                             )
 
         # Print help by default if no arguments
+        #changed
         if len(sys.argv) == 1:
             parser.print_help()
 
