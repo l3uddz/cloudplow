@@ -765,7 +765,7 @@ def do_emby_monitor():
         streams = emby.get_streams()
         if streams is None:
             log.error("Failed to check Emby Media Server stream(s). Trying again in %d seconds...",
-                      conf.configs['emby']['poll_interval']) fff
+                      conf.configs['emby']['poll_interval'])
         else:
             # we had a response
             stream_count = 0
