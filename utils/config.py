@@ -51,15 +51,25 @@ class Config(object):
             'poll_interval': 60,
             'max_streams_before_throttle': 1,
             'notifications': False,
-            'rclone': {
-                'url': 'http://localhost:7949',
-                'throttle_speeds': {
-                    '1': '50M',
-                    '2': '40M',
-                    '3': '30M',
-                    '4': '20M',
-                    '5': '10M'
-                }
+        },
+        # emby
+        'emby': {
+            'enabled': False,
+            'url': 'https://plex.domain.com',
+            'api': '',
+            'poll_interval': 60,
+            'max_streams_before_throttle': 1,
+            'notifications': False,
+        },
+        # rclone settings
+        'rclone': {
+            'url': 'http://localhost:7949',
+            'throttle_speeds': {
+                '1': '50M',
+                '2': '40M',
+                '3': '30M',
+                '4': '20M',
+                '5': '10M'
             }
         },
         # nzbget settings
@@ -363,7 +373,6 @@ class Config(object):
         #changed
         if len(sys.argv) == 1:
             parser.print_help()
-
             sys.exit(0)
 
         else:
