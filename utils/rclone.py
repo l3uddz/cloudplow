@@ -18,11 +18,10 @@ log = logging.getLogger('rclone')
 
 
 class RcloneMover:
-    def __init__(self, config, rclone_binary_path, rclone_config_path, plex, dry_run=False):
+    def __init__(self, config, rclone_binary_path, rclone_config_path,dry_run=False):
         self.config = config
         self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
-        self.plex = plex
         self.dry_run = dry_run
 
     def move(self):
@@ -41,9 +40,9 @@ class RcloneMover:
             excludes = self.__excludes2string()
             if len(excludes) > 2:
                 cmd += ' %s' % excludes
-            if self.plex.get('enabled'):
+            if self.config['plex']['enabled'] or self.config['emby']['enabled'] :
                 r = re.compile(r"https?://(www\.)?")
-                rc_url = r.sub('', self.plex['rclone']['url']).strip().strip('/')
+                rc_url = r.sub('', self.config['rclone']['url']).strip().strip('/')
                 cmd += ' --rc --rc-addr=%s' % cmd_quote(rc_url)
             if self.dry_run:
                 cmd += ' --dry-run'
@@ -80,13 +79,15 @@ class RcloneMover:
 
 
 class RcloneUploader:
-    def __init__(self, name, config, rclone_binary_path, rclone_config_path, plex, dry_run=False,
+    def __init__(self, name, config,plex,emby,rclone_throttle, rclone_binary_path, rclone_config_path, dry_run=False,
                  service_account=None):
         self.name = name
         self.config = config
+        self.plex=plex
+        self.emby=emby
+        self.rclone_throttle=rclone_throttle
         self.rclone_binary_path = rclone_binary_path
-        self.rclone_config_path = rclone_config_path
-        self.plex = plex
+        self.config_path = rclone_config_path
         self.dry_run = dry_run
         self.service_account = service_account
 
@@ -147,7 +148,7 @@ class RcloneUploader:
                                                    'rclone_command'].lower() != 'sync') else 'move'),
                                                cmd_quote(self.config['upload_folder']),
                                                cmd_quote(self.config['upload_remote']),
-                                               cmd_quote(self.rclone_config_path))
+                                               cmd_quote(self.config_path))
             if self.service_account is not None:
                 cmd += ' --drive-service-account-file %s' % cmd_quote(self.service_account)
             extras = self.__extras2string()
@@ -156,9 +157,9 @@ class RcloneUploader:
             excludes = self.__excludes2string()
             if len(excludes) > 2:
                 cmd += ' %s' % excludes
-            if self.plex.get('enabled'):
+            if self.plex['enabled'] or self.emby['enabled']:
                 r = re.compile(r"https?://(www\.)?")
-                rc_url = r.sub('', self.plex['rclone']['url']).strip().strip('/')
+                rc_url = r.sub('', self.rclone_throttle['url']).strip().strip('/')
                 cmd += ' --rc --rc-addr=%s' % cmd_quote(rc_url)
             if self.dry_run:
                 cmd += ' --dry-run'

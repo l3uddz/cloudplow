@@ -283,12 +283,20 @@ def do_upload(remote=None):
                 if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
                     # Only disable throttling if 'can_be_throttled' is both present in uploader_config and is set to False.
                     if 'can_be_throttled' in uploader_config and not uploader_config['can_be_throttled']:
-                        log.debug("Skipping check for Plex stream due to throttling disabled in remote: %s", uploader_remote)
+                        log.debug("Skipping check for Plex stream due to throttling disabled in remote: %s",
+                                  uploader_remote)
                     # Otherwise, assume throttling is desired.
                     else:
-                        # t=do_plex_monitor()
-                        # t2=do_emby_monitor()
                         plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
+
+                # start the plex stream monitor before the upload begins, if enabled for both plex and the uploader
+                if conf.configs['emby']['enabled'] and plex_monitor_thread is None:
+                    # Only disable throttling if 'can_be_throttled' is both present in uploader_config and is set to False.
+                    if 'can_be_throttled' in uploader_config and not uploader_config['can_be_throttled']:
+                        log.debug("Skipping check for Emby stream due to throttling disabled in remote: %s",
+                                  uploader_remote)
+                    # Otherwise, assume throttling is desired.
+                    else:
                         emby_monitor_thread = thread.start(do_emby_monitor, 'emby-monitor')
 
                 # pause the nzbget queue before starting the upload, if enabled
@@ -303,9 +311,11 @@ def do_upload(remote=None):
                 uploader = Uploader(uploader_remote,
                                     uploader_config,
                                     rclone_config,
+                                    conf.configs['plex'],
+                                    conf.configs['emby'],
+                                    conf.configs['rclone'],
                                     conf.configs['core']['rclone_binary_path'],
                                     conf.configs['core']['rclone_config_path'],
-                                    conf.configs['plex'],
                                     conf.configs['core']['dry_run'])
 
                 if sa_delay[uploader_remote] is not None:
@@ -639,16 +649,16 @@ def do_plex_monitor():
 
     # sleep 15 seconds to allow rclone to start
     log.info("Plex Media Server URL + Token were validated. Sleeping for 15 seconds before checking Rclone RC URL.")
-    # time.sleep(15)
+    time.sleep(15)
 
     # create the rclone throttle object
-    rclone = RcloneThrottler(conf.configs['plex']['rclone']['url'])
-    # if not rclone.validate():
-    #     log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
-    #     plex_monitor_thread = None
-    #     return
-    # else:
-    #     log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
+    rclone = RcloneThrottler(conf.configs['rclone']['url'])
+    if not rclone.validate():
+        log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
+        plex_monitor_thread = None
+        return
+    else:
+        log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
 
     throttled = False
     throttle_speed = None
@@ -736,17 +746,17 @@ def do_emby_monitor():
         plex_monitor_thread = None
         return
     log.info("Emby + api were validated. Sleeping for 15 seconds before checking Rclone RC URL.")
-    # time.sleep(15)
+    time.sleep(15)
 
 
     # create the rclone throttle object
-    rclone = RcloneThrottler(conf.configs['emby']['rclone']['url'])
-    # if not rclone.validate():
-    #     log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
-    #     plex_monitor_thread = None
-    #     return
-    # else:
-    #     log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
+    rclone = RcloneThrottler(conf.configs['rclone']['url'])
+    if not rclone.validate():
+        log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
+        plex_monitor_thread = None
+        return
+    else:
+        log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
 
     throttled = False
     throttle_speed = None
@@ -822,8 +832,8 @@ def do_emby_monitor():
                 # the lock_file exists, so we can assume an upload is in progress at this point
                 time.sleep(conf.configs['emby']['poll_interval'])
             #
-            log.info("Finished monitoring Emby stream(s)!")
-            emby_monitor_thread = None
+    log.info("Finished monitoring Emby stream(s)!")
+    emby_monitor_thread = None
 
 
 

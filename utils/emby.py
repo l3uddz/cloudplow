@@ -42,9 +42,6 @@ class Emby():
             r = requests.get(request_url, timeout=15, verify=False)
             if r.status_code == 200:
                 result = r.json()
-                # if '"NowPlayingItem' not in result:
-                #     log.error("Failed to retrieve streams from server at %r", self.url)
-                #     return None
                 streams=[]
                 length=len(result)
                 for i in range(0,length):
