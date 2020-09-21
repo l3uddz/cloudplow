@@ -154,6 +154,7 @@ class Config(object):
             'google': {
                 'can_be_throttled': True,
                 'check_interval': 30,
+                'post_script': '',
                 'max_size_gb': 200,
                 'size_excludes': [
                     'downloads/*'

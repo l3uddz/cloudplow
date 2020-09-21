@@ -5,6 +5,7 @@ import sys
 import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process
+import subprocess
 
 
 import requests
@@ -490,6 +491,7 @@ def do_upload(remote=None):
             log.exception("Exception occurred while uploading: ")
 
     log.info("Finished upload")
+    do_postscript(uploader_config['post_script'])
 
 
 @decorators.timed
@@ -839,6 +841,15 @@ def do_emby_monitor():
     log.info("Finished monitoring Emby stream(s)!")
     emby_monitor_thread = None
 
+def do_postscript(script):
+    if os.path.isfile(script)==False:
+        log.error("Script file does not exist")
+    else:
+        log.info("Script File: %s is running",script)
+        try:
+            subprocess.call(script)
+        except:
+            log.error("Please Make sure your script has a shell, and is properly formated" )
 
 
 ############################################################
@@ -846,12 +857,10 @@ def do_emby_monitor():
 ############################################################
 
 def inotify_uploader(uploader_name,uploader_settings):
-    source=conf.configs['remotes'][uploader_name]['upload_folder']
-    if path.check_file_operations(source):
+    if path.check_file_operations(conf.configs['remotes'][uploader_name]['upload_folder']):
         do_upload(uploader_name)
-        do_upload()
-    else:
-        return
+        do_hidden()
+
 
 
 
@@ -894,6 +903,9 @@ def scheduled_uploader(uploader_name, uploader_settings):
             do_hidden()
             # upload
             do_upload(uploader_name)
+
+
+
 
         else:
             log.info(
@@ -944,6 +956,7 @@ if __name__ == "__main__":
             init_service_accounts()
             do_hidden()
             do_upload()
+
         elif conf.args['cmd'] == 'sync':
             log.info("Starting in sync mode")
             log.warning("Sync currently has a bug while displaying output to the console. "
@@ -967,7 +980,7 @@ if __name__ == "__main__":
                     log.info ("Added %s uploader to schedule, checking for directory changes with inotify ",uploader)
 
                 else:
-                    schedule.every(uploader_conf['check_interval']).minutes.do(scheduled_uploader, uploader, uploader_conf,uploader_conf['inotify'])
+                    schedule.every(uploader_conf['check_interval']).minutes.do(scheduled_uploader, uploader, uploader_conf)
                     log.info("Added %s uploader to schedule, checking available disk space every %d minutes ", uploader,uploader_conf['check_interval'])
 
             # add syncers to schedule
