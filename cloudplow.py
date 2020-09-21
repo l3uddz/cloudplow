@@ -6,6 +6,7 @@ import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process
 
+
 import requests
 import schedule
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -83,6 +84,7 @@ thread = Thread()
 uploader_delay = cache.get_cache('uploader_bans')
 syncer_delay = cache.get_cache('syncer_bans')
 plex_monitor_thread = None
+emby_monitor_thread = None
 sa_delay = cache.get_cache('sa_bans')
 
 
@@ -252,7 +254,7 @@ def run_process(task, manager_dict, **kwargs):
 
 # @decorators.timed
 def do_upload(remote=None):
-    global plex_monitor_thread, uploader_delay
+    global plex_monitor_thread, uploader_delay, emby_monitor_thread
     global sa_delay
 
 
@@ -745,7 +747,7 @@ def do_emby_monitor():
     if not emby.validate():
         log.error(
             "Aborting Emby Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
-        plex_monitor_thread = None
+        emby_monitor_thread = None
         return
     log.info("Emby + api were validated. Sleeping for 15 seconds before checking Rclone RC URL.")
     time.sleep(15)
@@ -755,7 +757,7 @@ def do_emby_monitor():
     rclone = RcloneThrottler(conf.configs['rclone']['url'])
     if not rclone.validate():
         log.error("Aborting Plex Media Server stream monitor due to failure to validate supplied Rclone RC URL.")
-        plex_monitor_thread = None
+        emby_monitor_thread = None
         return
     else:
         log.info("Rclone RC URL was validated. Stream monitoring for Plex Media Server will now begin.")
@@ -843,6 +845,17 @@ def do_emby_monitor():
 # SCHEDULED FUNCS
 ############################################################
 
+def inotify_uploader(uploader_name,uploader_settings,count):
+    source=conf.configs['remotes'][uploader_name]['upload_folder']
+    if path.check_file_operations(source):
+        do_upload(uploader_name)
+        do_upload()
+    else:
+        return
+
+
+
+
 def scheduled_uploader(uploader_name, uploader_settings):
     log.debug("Scheduled disk check triggered for uploader: %s", uploader_name)
     try:
@@ -854,6 +867,8 @@ def scheduled_uploader(uploader_name, uploader_settings):
 
         # clear any banned service accounts
         check_suspended_sa(uploader_name)
+
+
 
         # check used disk space
         used_space = path.get_size(rclone_settings['upload_folder'], uploader_settings['size_excludes'])
@@ -947,9 +962,14 @@ if __name__ == "__main__":
 
             # add uploaders to schedule
             for uploader, uploader_conf in conf.configs['uploader'].items():
-                schedule.every(uploader_conf['check_interval']).minutes.do(scheduled_uploader, uploader, uploader_conf)
-                log.info("Added %s uploader to schedule, checking available disk space every %d minutes", uploader,
-                         uploader_conf['check_interval'])
+                count=0
+                if uploader_conf['inotify']:
+                    schedule.every(1).seconds.do(inotify_uploader, uploader,uploader_conf,count)
+                    log.info ("Added %s uploader to schedule, checking for directory changes with inotify ",uploader)
+
+                else:
+                    schedule.every(uploader_conf['check_interval']).minutes.do(scheduled_uploader, uploader, uploader_conf,uploader_conf['inotify'])
+                    log.info("Added %s uploader to schedule, checking available disk space every %d minutes:inotify is %s ", uploader,uploader_conf['check_interval'],uploader_conf['Inotify'])
 
             # add syncers to schedule
             init_syncers()
