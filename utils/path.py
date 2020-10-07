@@ -3,6 +3,9 @@ import os
 from pathlib import Path
 
 from . import process
+from inotify_simple import INotify, flags
+inotify = INotify()
+import time
 
 try:
     from shlex import quote as cmd_quote
@@ -145,3 +148,23 @@ def get_size(path, excludes=None):
     except Exception:
         log.exception("Exception getting size of %r: ", path)
     return 0
+
+def check_file_operations(dir):
+    if os.path.isdir(dir)==False:
+        return False
+    watch_flag = flags.CREATE
+    wd = inotify.add_watch(dir, watch_flag)
+    check = inotify.read(10)
+    if (check == []):
+        return False
+    log.info("File Operation Detected")
+    sizeA = 1
+    sizeB = 0
+    while sizeA != sizeB:
+        sizeA = get_size(dir)
+        time.sleep(30)
+        sizeB = get_size(dir)
+        string="Size A:" + str(sizeA) + "Size B:"+ str(sizeB)
+        log.info(string)
+    log.info("File Operation Completed")
+    return True

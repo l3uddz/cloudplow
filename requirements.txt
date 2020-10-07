@@ -4,3 +4,6 @@ requests~=2.20.0
 GitPython~=2.1.10
 sqlitedict~=1.6.0
 apprise~=0.8.2
+path
+inotify_simple
+
