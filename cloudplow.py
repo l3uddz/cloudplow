@@ -250,7 +250,7 @@ def run_process(task, manager_dict, **kwargs):
 ############################################################
 
 
-# @decorators.timed
+@decorators.timed
 def do_upload(remote=None):
     global plex_monitor_thread, uploader_delay
     global sa_delay
@@ -643,11 +643,11 @@ def do_plex_monitor():
 
     # create the plex object
     plex = Plex(conf.configs['plex']['url'], conf.configs['plex']['token'])
-    # if not plex.validate():
-    #     log.error(
-    #         "Aborting Plex Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
-    #     plex_monitor_thread = None
-    #     return
+    if not plex.validate():
+        log.error(
+            "Aborting Plex Media Server stream monitor due to failure to validate supplied server URL and/or Token.")
+        plex_monitor_thread = None
+        return
 
     # sleep 15 seconds to allow rclone to start
     log.info("Plex Media Server URL + Token were validated. Sleeping for 15 seconds before checking Rclone RC URL.")
