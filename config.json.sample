@@ -24,7 +24,19 @@
         "poll_interval": 60,
         "max_streams_before_throttle": 1,
         "notifications": false,
-        "rclone": {
+     
+    },
+
+    "emby": {
+        "enabled": false,
+        "url": "http://localhost:32400",
+        "api": "",
+        "poll_interval": 60,
+        "max_streams_before_throttle": 1,
+        "notifications": false,  
+    },
+
+   "rclone": {
             "throttle_speeds": {
                 "0": "100M",
                 "1": "50M",
@@ -34,8 +46,7 @@
                 "5": "10M"
             },
             "url": "http://localhost:7949"
-        }
-    },
+        },
     "remotes": {
         "google": {
             "hidden_remote": "google:",
