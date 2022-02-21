@@ -68,27 +68,30 @@ class Uploader:
     # internals
     def __opened_files(self):
         open_files = path.opened_files(self.rclone_config['upload_folder'])
-        rclone_excludes = []
-        for item in open_files:
-            if not self.__is_opened_file_excluded(item):
-                rclone_excludes.append(item.replace(self.rclone_config['upload_folder'], ''))
-        return rclone_excludes
+        return [
+            item.replace(self.rclone_config['upload_folder'], '')
+            for item in open_files
+            if not self.__is_opened_file_excluded(item)
+        ]
 
     def __is_opened_file_excluded(self, file_path):
-        for item in self.uploader_config['opened_excludes']:
-            if item.lower() in file_path.lower():
-                return True
-        return False
+        return any(
+            item.lower() in file_path.lower()
+            for item in self.uploader_config['opened_excludes']
+        )
 
     def __logic(self, data):
         # loop sleep triggers
         for trigger_text, trigger_config in self.rclone_config['rclone_sleeps'].items():
             # check/reset trigger timeout
-            if trigger_text in self.trigger_tracks and self.trigger_tracks[trigger_text]['expires'] != '':
-                if time.time() >= self.trigger_tracks[trigger_text]['expires']:
-                    log.warning("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
-                                trigger_text)
-                    self.trigger_tracks[trigger_text] = {'count': 0, 'expires': ''}
+            if (
+                trigger_text in self.trigger_tracks
+                and self.trigger_tracks[trigger_text]['expires'] != ''
+                and time.time() >= self.trigger_tracks[trigger_text]['expires']
+            ):
+                log.warning("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
+                            trigger_text)
+                self.trigger_tracks[trigger_text] = {'count': 0, 'expires': ''}
 
             # check if trigger_text is in data
             if trigger_text.lower() in data.lower():

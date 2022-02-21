@@ -16,8 +16,7 @@ def active_branch():
     global repo
 
     try:
-        branch = repo.active_branch.name
-        return branch
+        return repo.active_branch.name
 
     except Exception as ex:
         log.exception("Exception retrieving current branch: ")

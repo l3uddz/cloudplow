@@ -18,6 +18,4 @@ class Cache:
         }
 
     def get_cache(self, cache_name):
-        if cache_name not in self.caches:
-            return None
-        return self.caches[cache_name]
+        return None if cache_name not in self.caches else self.caches[cache_name]

@@ -53,10 +53,14 @@ class Plex:
                     log.debug("There were no streams to check for server at %r", self.url)
                     return []
 
-                streams = []
-                for stream in result['MediaContainer']['Video' if 'Video' in result['MediaContainer'] else 'Metadata']:
-                    streams.append(PlexStream(stream))
-                return streams
+                return [
+                    PlexStream(stream)
+                    for stream in result['MediaContainer'][
+                        'Video'
+                        if 'Video' in result['MediaContainer']
+                        else 'Metadata'
+                    ]
+                ]
 
             else:
                 log.error(
@@ -71,11 +75,7 @@ class Plex:
 # helper classes (parsing responses etc...)
 class PlexStream:
     def __init__(self, stream):
-        if 'User' in stream:
-            self.user = stream['User']['title']
-        else:
-            self.user = 'Unknown'
-
+        self.user = stream['User']['title'] if 'User' in stream else 'Unknown'
         if 'Player' in stream:
             self.player = stream['Player']['product']
             self.ip = stream['Player']['remotePublicAddress']
@@ -87,11 +87,7 @@ class PlexStream:
             self.state = 'Unknown'
             self.local = None
 
-        if 'Session' in stream:
-            self.session_id = stream['Session']['id']
-        else:
-            self.session_id = 'Unknown'
-
+        self.session_id = stream['Session']['id'] if 'Session' in stream else 'Unknown'
         if 'Media' in stream:
             self.type = self.get_decision(stream['Media'])
         else:
@@ -110,11 +106,10 @@ class PlexStream:
 
         if 'title' not in stream or 'type' not in stream:
             self.title = 'Unknown'
+        elif stream['type'] == 'episode':
+            self.title = u"{} {}x{}".format(stream['grandparentTitle'], stream['parentIndex'], stream['index'])
         else:
-            if stream['type'] == 'episode':
-                self.title = u"{} {}x{}".format(stream['grandparentTitle'], stream['parentIndex'], stream['index'])
-            else:
-                self.title = stream['title']
+            self.title = stream['title']
 
     @staticmethod
     def get_decision(medias):
