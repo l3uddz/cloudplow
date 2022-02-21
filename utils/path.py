@@ -43,10 +43,8 @@ def find_files(folder, extension=None, depth=None):
             filepath = os.path.join(path, name)
             if not extension:
                 file_list.append(filepath)
-            else:
-                # file_extension = get_file_extension(filepath)
-                if filepath.lower().endswith(extension.lower()):
-                    file_list.append(filepath)
+            elif filepath.lower().endswith(extension.lower()):
+                file_list.append(filepath)
 
     return sorted(file_list, key=lambda x: x.count(os.path.sep), reverse=True)
 
@@ -99,18 +97,17 @@ def delete(path):
                     log.exception("Exception deleting '%s': ", item)
             else:
                 log.debug("Skipping deletion of '%s' as it does not exist", item)
+    elif os.path.exists(path):
+        log.debug("Removing %r", path)
+        try:
+            if not os.path.isdir(path):
+                os.remove(path)
+            else:
+                os.rmdir(path)
+        except Exception:
+            log.exception("Exception deleting '%s': ", path)
     else:
-        if os.path.exists(path):
-            log.debug("Removing %r", path)
-            try:
-                if not os.path.isdir(path):
-                    os.remove(path)
-                else:
-                    os.rmdir(path)
-            except Exception:
-                log.exception("Exception deleting '%s': ", path)
-        else:
-            log.debug("Skipping deletion of '%s' as it does not exist", path)
+        log.debug("Skipping deletion of '%s' as it does not exist", path)
 
 
 def remove_empty_dirs(path, depth):

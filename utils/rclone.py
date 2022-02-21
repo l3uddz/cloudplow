@@ -205,16 +205,9 @@ class RcloneSyncer:
             self.rclone_extras = {}
 
         # parse dry_run from kwargs
-        if 'dry_run' in kwargs:
-            self.dry_run = kwargs['dry_run']
-        else:
-            self.dry_run = False
-
+        self.dry_run = kwargs['dry_run'] if 'dry_run' in kwargs else False
         # parse use_copy from kwargs
-        if 'use_copy' in kwargs:
-            self.use_copy = kwargs['use_copy']
-        else:
-            self.use_copy = False
+        self.use_copy = kwargs['use_copy'] if 'use_copy' in kwargs else False
 
     def sync(self, cmd_wrapper):
         if not cmd_wrapper:
@@ -237,7 +230,7 @@ class RcloneSyncer:
 
         # exec
         process.execute(sync_agent_cmd, self._sync_logic)
-        return True if not self.delayed_check else False, self.delayed_check, self.delayed_trigger
+        return not self.delayed_check, self.delayed_check, self.delayed_trigger
 
     # internals
 
@@ -245,11 +238,14 @@ class RcloneSyncer:
         # loop sleep triggers
         for trigger_text, trigger_config in self.rclone_sleeps.items():
             # check/reset trigger timeout
-            if trigger_text in self.trigger_tracks and self.trigger_tracks[trigger_text]['expires'] != '':
-                if time.time() >= self.trigger_tracks[trigger_text]['expires']:
-                    log.warning("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
-                                trigger_text)
-                    self.trigger_tracks[trigger_text] = {'count': 0, 'expires': ''}
+            if (
+                trigger_text in self.trigger_tracks
+                and self.trigger_tracks[trigger_text]['expires'] != ''
+                and time.time() >= self.trigger_tracks[trigger_text]['expires']
+            ):
+                log.warning("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
+                            trigger_text)
+                self.trigger_tracks[trigger_text] = {'count': 0, 'expires': ''}
 
             # check if trigger_text is in data
             if trigger_text.lower() in data.lower():
@@ -309,11 +305,12 @@ class RcloneThrottler:
                     data = resp.json()
                     if 'transferring' in data and len(data['transferring']) > 0:
                         # Sum total speed of all active transfers to determine if greater than current_speed
-                        current_speed = sum([float(transfer['speed']) for transfer in data['transferring']])
-                        if ((current_speed/1000000)-10) > float(speed.rstrip('M')):
-                            return False
-                        else:
-                            return True
+                        current_speed = sum(
+                            float(transfer['speed'])
+                            for transfer in data['transferring']
+                        )
+
+                        return (current_speed/1000000)-10 <= float(speed.rstrip('M'))
             except Exception:
                 log.exception("Exception checking if throttle currently active")
 

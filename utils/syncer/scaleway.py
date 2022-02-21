@@ -222,6 +222,9 @@ class Scaleway:
     # internals
 
     def _wrap_command(self, command):
-        cmd = "%s --region=%s exec %s %s" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(command))
-        return cmd
+        return "%s --region=%s exec %s %s" % (
+            cmd_quote(self.tool_path),
+            cmd_quote(self.region),
+            cmd_quote(self.instance_id),
+            cmd_quote(command),
+        )

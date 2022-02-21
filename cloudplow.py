@@ -188,7 +188,13 @@ def check_suspended_uploaders(uploader_to_check=None):
         for uploader_name, suspension_expiry in dict(uploader_delay.items()).items():
             if time.time() < suspension_expiry:
                 # this remote is still delayed due to a previous abort due to triggers
-                use_logger = log.debug if not (uploader_to_check and uploader_name == uploader_to_check) else log.info
+                use_logger = (
+                    log.debug
+                    if not uploader_to_check
+                    or uploader_name != uploader_to_check
+                    else log.info
+                )
+
                 use_logger(
                     "%s is still suspended due to a previously aborted upload. Normal operation in %s at %s",
                     uploader_name, misc.seconds_to_string(int(suspension_expiry - time.time())),
@@ -216,7 +222,12 @@ def check_suspended_syncers(syncer_to_check=None):
         for syncer_name, suspension_expiry in dict(syncer_delay.items()).items():
             if time.time() < suspension_expiry:
                 # this syncer is still delayed due to a previous abort due to triggers
-                use_logger = log.debug if not (syncer_to_check and syncer_name == syncer_to_check) else log.info
+                use_logger = (
+                    log.debug
+                    if not syncer_to_check or syncer_name != syncer_to_check
+                    else log.info
+                )
+
                 use_logger(
                     "%s is still suspended due to a previously aborted sync. Normal operation in %s at %s",
                     syncer_name, misc.seconds_to_string(int(suspension_expiry - time.time())),
@@ -324,7 +335,7 @@ def do_upload(remote=None):
                         log.info("Lowest Remaining time till unban is %d", time_till_unban)
                         uploader_delay[uploader_remote] = time_till_unban
                     else:
-                        for i in range(0, available_accounts_size):
+                        for i in range(available_accounts_size):
                             uploader.set_service_account(available_accounts[i])
                             resp_delay, resp_trigger = uploader.upload()
                             if resp_delay:
@@ -382,7 +393,7 @@ def do_upload(remote=None):
                                 "Upload aborted due to trigger: %r being met, %s will continue automatic uploading "
                                 "normally in %d hours", resp_trigger, uploader_remote, resp_delay)
                             # add remote to uploader_delay
-                            uploader_delay[uploader_remote] = time.time() + ((60 * 60) * resp_delay)
+                            uploader_delay[uploader_remote] = time.time() + 60**2 * resp_delay
                             # send aborted upload notification
                             notify.send(
                                 message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d"
@@ -490,7 +501,7 @@ def do_sync(use_syncer=None):
                     continue
 
                 # send notification that sync is starting
-                if not sync_config['service'].lower() == 'local':
+                if sync_config['service'].lower() != 'local':
                     notify.send(message='Sync initiated for syncer: %s. %s %s instance...' % (
                         sync_name, 'Creating' if sync_config['instance_destroy'] else 'Starting',
                         sync_config['service']))
@@ -530,7 +541,7 @@ def do_sync(use_syncer=None):
                         message='Sync failed unexpectedly for syncer: %s. '
                                 'Manually check no instances are still running!' % sync_name)
 
-                elif not resp and resp_delay and resp_trigger:
+                elif not resp and resp_trigger:
                     # non 0 resp_delay result indicates a trigger was met, the result is how many hours to sleep
                     if sync_name not in syncer_delay:
                         # this syncer was not in the syncer delay dict, so lets put it there
@@ -538,7 +549,7 @@ def do_sync(use_syncer=None):
                             "Sync aborted due to trigger: %r being met, %s will continue automatic syncing normally in "
                             "%d hours", resp_trigger, sync_name, resp_delay)
                         # add syncer to syncer_delay
-                        syncer_delay[sync_name] = time.time() + ((60 * 60) * resp_delay)
+                        syncer_delay[sync_name] = time.time() + 60**2 * resp_delay
                         # send aborted sync notification
                         notify.send(
                             message="Sync was aborted for syncer: %s due to trigger %r. Syncs suspended for %d hours" %
@@ -562,18 +573,16 @@ def do_sync(use_syncer=None):
 
                 # destroy instance
                 resp = syncer.destroy(service=sync_config['service'], instance_id=instance_id)
-                if not resp and not sync_config['service'].lower() == 'local':
+                if not resp and sync_config['service'].lower() != 'local':
                     # send notification of failure to destroy/stop instance
                     notify.send(
                         message="Syncer: %s failed to %s its instance: %s. "
                                 "Manually check no instances are still running!" % (
                                     sync_name, 'destroy' if sync_config['instance_destroy'] else 'stop', instance_id))
-                else:
-                    # send notification of instance destroyed
-                    if not sync_config['service'].lower() == 'local':
-                        notify.send(message="Syncer: %s has %s its %s instance" % (
-                            sync_name, 'destroyed' if sync_config['instance_destroy'] else 'stopped',
-                            sync_config['service']))
+                elif sync_config['service'].lower() != 'local':
+                    notify.send(message="Syncer: %s has %s its %s instance" % (
+                        sync_name, 'destroyed' if sync_config['instance_destroy'] else 'stopped',
+                        sync_config['service']))
 
         except Exception:
             log.exception("Exception occurred while syncing: ")
@@ -655,10 +664,10 @@ def do_plex_monitor():
                       conf.configs['plex']['poll_interval'])
         else:
             # we had a response
-            stream_count = 0
-            for stream in streams:
-                if (stream.state == 'playing' or stream.state == 'buffering') and not stream.local:
-                    stream_count += 1
+            stream_count = sum(
+                stream.state in ['playing', 'buffering'] and not stream.local
+                for stream in streams
+            )
 
             # are we already throttled?
             if ((not throttled or (throttled and not rclone.throttle_active(throttle_speed))) and (

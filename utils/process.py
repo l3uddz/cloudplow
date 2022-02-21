@@ -27,14 +27,19 @@ def execute(command, callback=None, logs=True, shell=False):
 
     if not callback:
         return total_output
-    rc = process.poll()
-    return rc
+    return process.poll()
 
 
 def popen(command, shell=False):
     try:
-        data = subprocess.check_output(shlex.split(command) if not shell else command, shell=shell).decode().strip()
-        return data
+        return (
+            subprocess.check_output(
+                shlex.split(command) if not shell else command, shell=shell
+            )
+            .decode()
+            .strip()
+        )
+
     except Exception:
         log.exception("Exception while executing process: ")
     return None
