@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import logging
 import os
 import sys
@@ -519,7 +520,7 @@ def do_sync(use_syncer=None):
                 resp = syncer.setup(service=sync_config['service'], instance_id=instance_id,
                                     rclone_config=conf.configs['core']['rclone_config_path'])
                 if not resp:
-                    # send notification of failure to setup instance
+                    # send notification of failure to set up instance
                     notify.send(
                         message='Syncer: %s failed to setup a %s instance. '
                                 'Manually check no instances are still running!' % (
@@ -706,7 +707,7 @@ def do_plex_monitor():
 
                 elif misc.get_nearest_less_element(conf.configs['plex']['rclone']['throttle_speeds'],
                                                    stream_count) != throttle_speed:
-                    # throttle speed changed, probably due to more/less streams, re-throttle
+                    # throttle speed changed, probably due to more/fewer streams, re-throttle
                     throttle_speed = misc.get_nearest_less_element(conf.configs['plex']['rclone']['throttle_speeds'],
                                                                    stream_count)
                     log.info("Adjusting throttle speed for current upload to %s because there "
@@ -803,7 +804,7 @@ def scheduled_syncer(syncer_name):
 
 
 if __name__ == "__main__":
-    # show latest version info from git
+    # show the latest version info from git
     version.check_version()
 
     # run chosen mode
