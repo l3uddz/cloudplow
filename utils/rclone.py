@@ -30,21 +30,18 @@ class RcloneMover:
             log.debug("Moving '%s' to '%s'", self.config['move_from_remote'], self.config['move_to_remote'])
 
             # build cmd
-            cmd = "%s %s %s %s --config=%s" % (cmd_quote(self.rclone_binary_path),
-                                               'move',
-                                               cmd_quote(self.config['move_from_remote']),
-                                               cmd_quote(self.config['move_to_remote']),
-                                               cmd_quote(self.rclone_config_path))
+            cmd = f"{cmd_quote(self.rclone_binary_path)} move {cmd_quote(self.config['move_from_remote'])} {cmd_quote(self.config['move_to_remote'])} --config={cmd_quote(self.rclone_config_path)}"
+
             extras = self.__extras2string()
             if len(extras) > 2:
-                cmd += ' %s' % extras
+                cmd += f' {extras}'
             excludes = self.__excludes2string()
             if len(excludes) > 2:
-                cmd += ' %s' % excludes
+                cmd += f' {excludes}'
             if self.plex.get('enabled'):
                 r = re.compile(r"https?://(www\.)?")
                 rc_url = r.sub('', self.plex['rclone']['url']).strip().strip('/')
-                cmd += ' --rc --rc-addr=%s' % cmd_quote(rc_url)
+                cmd += f' --rc --rc-addr={cmd_quote(rc_url)}'
             if self.dry_run:
                 cmd += ' --dry-run'
 
@@ -63,9 +60,8 @@ class RcloneMover:
         if 'rclone_extras' not in self.config:
             return ''
 
-        return ' '.join(
-            "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in
-            self.config['rclone_extras'].items()).replace('=None', '').strip()
+        return ' '.join(f"{key}={cmd_quote(value) if isinstance(value, str) else value}" for (key, value) in
+                        self.config['rclone_extras'].items()).replace('=None', '').strip()
 
     def __excludes2string(self):
         if 'rclone_excludes' not in self.config:
@@ -137,29 +133,22 @@ class RcloneUploader:
     def upload(self, callback):
         try:
             log.debug("Uploading '%s' to '%s'", self.config['upload_folder'], self.config['upload_remote'])
-            log.debug("Rclone command set to '%s'", self.config['rclone_command'] if (
-                    'rclone_command' in self.config and self.config[
-                'rclone_command'].lower() != 'sync') else 'move')
+            log.debug("Rclone command set to '%s'", self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')
             # build cmd
-            cmd = "%s %s %s %s --config=%s" % (cmd_quote(self.rclone_binary_path),
-                                               cmd_quote(self.config['rclone_command'] if (
-                                                       'rclone_command' in self.config and self.config[
-                                                   'rclone_command'].lower() != 'sync') else 'move'),
-                                               cmd_quote(self.config['upload_folder']),
-                                               cmd_quote(self.config['upload_remote']),
-                                               cmd_quote(self.rclone_config_path))
+            cmd = f"{cmd_quote(self.rclone_binary_path)} {cmd_quote(self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')} {cmd_quote(self.config['upload_folder'])} {cmd_quote(self.config['upload_remote'])} --config={cmd_quote(self.rclone_config_path)}"
+
             if self.service_account is not None:
-                cmd += ' --drive-service-account-file %s' % cmd_quote(self.service_account)
+                cmd += f' --drive-service-account-file {cmd_quote(self.service_account)}'
             extras = self.__extras2string()
             if len(extras) > 2:
-                cmd += ' %s' % extras
+                cmd += f' {extras}'
             excludes = self.__excludes2string()
             if len(excludes) > 2:
-                cmd += ' %s' % excludes
+                cmd += f' {excludes}'
             if self.plex.get('enabled'):
                 r = re.compile(r"https?://(www\.)?")
                 rc_url = r.sub('', self.plex['rclone']['url']).strip().strip('/')
-                cmd += ' --rc --rc-addr=%s' % cmd_quote(rc_url)
+                cmd += f' --rc --rc-addr={cmd_quote(rc_url)}'
             if self.dry_run:
                 cmd += ' --dry-run'
 
@@ -174,9 +163,8 @@ class RcloneUploader:
 
     # internals
     def __extras2string(self):
-        return ' '.join(
-            "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in
-            self.config['rclone_extras'].items()).replace('=None', '').strip()
+        return ' '.join(f"{key}={cmd_quote(value) if isinstance(value, str) else value}" for (key, value) in
+                        self.config['rclone_extras'].items()).replace('=None', '').strip()
 
     def __excludes2string(self):
         return ' '.join(
@@ -216,12 +204,11 @@ class RcloneSyncer:
             return False, self.delayed_check, self.delayed_trigger
 
         # build sync command
-        cmd = 'rclone %s %s %s' % ('copy' if self.use_copy else 'sync', cmd_quote(self.from_config['sync_remote']),
-                                   cmd_quote(self.to_config['sync_remote']))
+        cmd = f"rclone {'copy' if self.use_copy else 'sync'} {cmd_quote(self.from_config['sync_remote'])} {cmd_quote(self.to_config['sync_remote'])}"
 
         extras = self.__extras2string()
         if len(extras) > 2:
-            cmd += ' %s' % extras
+            cmd += f' {extras}'
         if self.dry_run:
             cmd += ' --dry-run'
 
@@ -239,9 +226,9 @@ class RcloneSyncer:
         for trigger_text, trigger_config in self.rclone_sleeps.items():
             # check/reset trigger timeout
             if (
-                trigger_text in self.trigger_tracks
-                and self.trigger_tracks[trigger_text]['expires'] != ''
-                and time.time() >= self.trigger_tracks[trigger_text]['expires']
+                    trigger_text in self.trigger_tracks
+                    and self.trigger_tracks[trigger_text]['expires'] != ''
+                    and time.time() >= self.trigger_tracks[trigger_text]['expires']
             ):
                 log.warning("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
                             trigger_text)
@@ -276,9 +263,8 @@ class RcloneSyncer:
         return False
 
     def __extras2string(self):
-        return ' '.join(
-            "%s=%s" % (key, cmd_quote(value) if isinstance(value, str) else value) for (key, value) in
-            self.rclone_extras.items()).replace('=None', '').strip()
+        return ' '.join(f"{key}={cmd_quote(value) if isinstance(value, str) else value}" for (key, value) in
+                        self.rclone_extras.items()).replace('=None', '').strip()
 
 
 class RcloneThrottler:
@@ -300,7 +286,7 @@ class RcloneThrottler:
     def throttle_active(self, speed):
         if speed:
             try:
-                resp = requests.post(urljoin(self.url,'core/stats'),timeout=15,verify=False)
+                resp = requests.post(urljoin(self.url, 'core/stats'), timeout=15, verify=False)
                 if '{' in resp.text and '}' in resp.text:
                     data = resp.json()
                     if 'transferring' in data and len(data['transferring']) > 0:
@@ -310,7 +296,7 @@ class RcloneThrottler:
                             for transfer in data['transferring']
                         )
 
-                        return (current_speed/1000000)-10 <= float(speed.rstrip('M'))
+                        return (current_speed / 1000000) - 10 <= float(speed.rstrip('M'))
             except Exception:
                 log.exception("Exception checking if throttle currently active")
 

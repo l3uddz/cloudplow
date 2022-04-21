@@ -18,7 +18,7 @@ def active_branch():
     try:
         return repo.active_branch.name
 
-    except Exception as ex:
+    except Exception:
         log.exception("Exception retrieving current branch: ")
     return 'Unknown'
 
@@ -30,7 +30,7 @@ def latest_version():
         fetch_info = repo.remotes.origin.fetch()
         return str(fetch_info[0].commit)
 
-    except Exception as ex:
+    except Exception:
         log.exception("Exception retrieving the latest commit id: ")
     return 'Unknown'
 
@@ -42,7 +42,7 @@ def current_version():
         result = repo.active_branch.commit
         return str(result)
 
-    except Exception as ex:
+    except Exception:
         log.exception("Exception retrieving the current commit id: ")
     return 'Unknown'
 
@@ -57,7 +57,7 @@ def missing_commits(using_version):
                 break
             missing += 1
 
-    except Exception as ex:
+    except Exception:
         log.exception("Exception iterating commits: ")
     return missing
 

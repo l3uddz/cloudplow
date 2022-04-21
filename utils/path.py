@@ -69,12 +69,9 @@ def opened_files(path):
     files = []
 
     try:
-        process = os.popen('lsof -wFn +D %s | tail -n +2 | cut -c2-' % cmd_quote(path))
+        process = os.popen(f'lsof -wFn +D {cmd_quote(path)} | tail -n +2 | cut -c2-')
         data = process.read()
-        for item in data.split('\n'):
-            if not item or len(item) <= 3 or item.isdigit() or not os.path.isfile(item):
-                continue
-            files.append(item)
+        files.extend(item for item in data.split('\n') if item and len(item) > 3 and not item.isdigit() and os.path.isfile(item))
 
         return files
 
@@ -131,8 +128,8 @@ def get_size(path, excludes=None):
         cmd = "du -s --block-size=1G"
         if excludes:
             for item in excludes:
-                cmd += ' --exclude=%s' % cmd_quote(item)
-        cmd += ' %s | cut -f1' % cmd_quote(path)
+                cmd += f' --exclude={cmd_quote(item)}'
+        cmd += f' {cmd_quote(path)} | cut -f1'
         log.debug("Using: %s", cmd)
         # get size
         proc = os.popen(cmd)

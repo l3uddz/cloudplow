@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 class Nzbget:
     def __init__(self, url):
-        self.url = "%s/xmlrpc" % url
+        self.url = f"{url}/xmlrpc"
         self.xmlrpc = ServerProxy(self.url)
 
     def pause_queue(self):

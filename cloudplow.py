@@ -7,9 +7,7 @@ import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process
 
-import requests
 import schedule
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from utils import config, lock, path, decorators, version, misc
 from utils.cache import Cache
@@ -37,7 +35,6 @@ logging.getLogger('schedule').setLevel(logging.ERROR)
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("sqlitedict").setLevel(logging.WARNING)
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Set console logger
 console_handler = logging.StreamHandler(sys.stdout)
@@ -208,7 +205,7 @@ def check_suspended_uploaders(uploader_to_check=None):
                             uploader_name)
                 uploader_delay.pop(uploader_name, None)
                 # send notification that remote is no longer timed out
-                notify.send(message="Upload suspension has expired for remote: %s" % uploader_name)
+                notify.send(message=f"Upload suspension has expired for remote: {uploader_name}")
 
     except Exception:
         log.exception("Exception checking suspended uploaders: ")
@@ -241,7 +238,7 @@ def check_suspended_syncers(syncer_to_check=None):
                             syncer_name)
                 syncer_delay.pop(syncer_name, None)
                 # send notification that remote is no longer timed out
-                notify.send(message="Sync suspension has expired for syncer: %s" % syncer_name)
+                notify.send(message=f"Sync suspension has expired for syncer: {syncer_name}")
 
     except Exception:
         log.exception("Exception checking suspended syncers: ")
@@ -379,8 +376,7 @@ def do_upload(remote=None):
                                                     (uploader_remote, resp_trigger, resp_delay))
                             else:
                                 # send successful upload notification
-                                notify.send(
-                                    message="Upload was completed successfully for remote: %s" % uploader_remote)
+                                notify.send(message=f"Upload was completed successfully for remote: {uploader_remote}")
 
                                 # Remove ban for service account
                                 sa_delay[uploader_remote][available_accounts[i]] = None
@@ -411,7 +407,8 @@ def do_upload(remote=None):
                     else:
                         log.info("Upload completed successfully for uploader: %s", uploader_remote)
                         # send successful upload notification
-                        notify.send(message="Upload was completed successfully for remote: %s" % uploader_remote)
+                        notify.send(message=f"Upload was completed successfully for remote: {uploader_remote}")
+
                         # remove uploader from uploader_delays (as its no longer banned)
                         if uploader_remote in uploader_delay and uploader_delay.pop(uploader_remote, None) is not None:
                             # this uploader was in the delay dict, but upload was successful, lets remove it
@@ -457,27 +454,20 @@ def do_upload(remote=None):
                                  uploader_config['mover']['move_to_remote'])
 
                         # send notification that mover has started
-                        notify.send(
-                            message="Move has started for %s -> %s" % (uploader_config['mover']['move_from_remote'],
-                                                                       uploader_config['mover']['move_to_remote']))
+                        notify.send(message=f"Move has started for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
 
                         if mover.move():
                             log.info("Move completed successfully from %r -> %r",
                                      uploader_config['mover']['move_from_remote'],
                                      uploader_config['mover']['move_to_remote'])
                             # send notification move has finished
-                            notify.send(
-                                message="Move finished successfully for %s -> %s" % (
-                                    uploader_config['mover']['move_from_remote'],
-                                    uploader_config['mover']['move_to_remote']))
+                            notify.send(message=f"Move finished successfully for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
+
                         else:
                             log.error("Move failed from %r -> %r ....?", uploader_config['mover']['move_from_remote'],
                                       uploader_config['mover']['move_to_remote'])
                             # send notification move has failed
-                            notify.send(
-                                message="Move failed for %s -> %s" % (
-                                    uploader_config['mover']['move_from_remote'],
-                                    uploader_config['mover']['move_to_remote']))
+                            notify.send(message=f"Move failed for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
 
         except Exception:
             log.exception("Exception occurred while uploading: ")

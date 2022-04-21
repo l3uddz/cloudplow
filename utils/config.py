@@ -250,7 +250,6 @@ class Config(object):
             log.warning("No config file found, creating default config.")
             self.save(self.default_config)
 
-        cfg = {}
         log.debug("Upgrading config...")
         with open(self.settings['config'], 'r') as fp:
             cfg, upgraded = self.upgrade_settings(json.load(fp))
@@ -280,27 +279,18 @@ class Config(object):
         for name, data in self.base_settings.items():
             # Argrument priority: cmd < environment < default
             try:
-                value = None
                 # Command line argument
                 if self.args[name]:
                     value = self.args[name]
                     log.info("Using ARG setting %s=%s", name, value)
 
-                # Envirnoment variable
                 elif data['env'] in os.environ:
                     value = os.environ[data['env']]
-                    log.debug("Using ENV setting %s=%s" % (
-                        data['env'],
-                        value
-                    ))
+                    log.debug(f"Using ENV setting {data['env']}={value}")
 
-                # Default
                 else:
                     value = data['default']
-                    log.debug("Using default setting %s=%s" % (
-                        data['argv'],
-                        value
-                    ))
+                    log.debug(f"Using default setting {data['argv']}={value}")
 
                 setts[name] = value
 
@@ -333,31 +323,20 @@ class Config(object):
                             )
 
         # Config file
-        parser.add_argument(self.base_settings['config']['argv'],
-                            nargs='?',
-                            const=None,
-                            help='Config file location (default: %s)' % self.base_settings['config']['default']
-                            )
+        parser.add_argument(self.base_settings['config']['argv'], nargs='?', const=None,
+                            help=f"Config file location (default: {self.base_settings['config']['default']})")
 
         # Log file
-        parser.add_argument(self.base_settings['logfile']['argv'],
-                            nargs='?',
-                            const=None,
-                            help='Log file location (default: %s)' % self.base_settings['logfile']['default']
-                            )
+        parser.add_argument(self.base_settings['logfile']['argv'], nargs='?', const=None,
+                            help=f"Log file location (default: {self.base_settings['logfile']['default']})")
 
         # Cache file
-        parser.add_argument(self.base_settings['cachefile']['argv'],
-                            nargs='?',
-                            const=None,
-                            help='Cache file location (default: %s)' % self.base_settings['cachefile']['default']
-                            )
+        parser.add_argument(self.base_settings['cachefile']['argv'], nargs='?', const=None,
+                            help=f"Cache file location (default: {self.base_settings['cachefile']['default']})")
 
         # Logging level
-        parser.add_argument(self.base_settings['loglevel']['argv'],
-                            choices=('WARN', 'INFO', 'DEBUG'),
-                            help='Log level (default: %s)' % self.base_settings['loglevel']['default']
-                            )
+        parser.add_argument(self.base_settings['loglevel']['argv'], choices=('WARN', 'INFO', 'DEBUG'),
+                            help=f"Log level (default: {self.base_settings['loglevel']['default']})")
 
         if len(sys.argv) != 1:
             return vars(parser.parse_args())
