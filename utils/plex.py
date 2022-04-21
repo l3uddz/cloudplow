@@ -12,17 +12,15 @@ class Plex:
     def __init__(self, url, token):
         self.url = url
         self.token = token
-        self.headers = {
-            'X-Plex-Token': self.token,
-            'Accept': 'application/json',
-            'X-Plex-Provides': 'controller',
-            'X-Plex-Platform': platform.uname()[0],
-            'X-Plex-Platform-Version': platform.uname()[2],
-            'X-Plex-Product': 'cloudplow',
-            'X-Plex-Version': '0.9.5',
-            'X-Plex-Device': platform.platform(),
-            'X-Plex-Client-Identifier': str(hex(getnode()))
-        }
+        self.headers = {'X-Plex-Token': self.token,
+                        'Accept': 'application/json',
+                        'X-Plex-Provides': 'controller',
+                        'X-Plex-Platform': platform.uname()[0],
+                        'X-Plex-Platform-Version': platform.uname()[2],
+                        'X-Plex-Product': 'cloudplow',
+                        'X-Plex-Version': '0.9.5',
+                        'X-Plex-Device': platform.platform(),
+                        'X-Plex-Client-Identifier': hex(getnode())}
 
     def validate(self):
         try:
@@ -107,7 +105,8 @@ class PlexStream:
         if 'title' not in stream or 'type' not in stream:
             self.title = 'Unknown'
         elif stream['type'] == 'episode':
-            self.title = u"{} {}x{}".format(stream['grandparentTitle'], stream['parentIndex'], stream['index'])
+            self.title = f"{stream['grandparentTitle']} {stream['parentIndex']}x{stream['index']}"
+
         else:
             self.title = stream['title']
 
@@ -131,7 +130,7 @@ class PlexStream:
                     transcode_type += " & "
                 transcode_type += "audio"
             transcode_type += ")"
-            stream_type = "transcode {}".format(transcode_type)
+            stream_type = f"transcode {transcode_type}"
         else:
             stream_type = self.type
 
