@@ -1,5 +1,6 @@
 import logging
 import re
+import glob
 import time
 
 from . import path
@@ -36,7 +37,7 @@ class Uploader:
                 log.info("Excluding these files from being uploaded because they were open: %r", files_to_exclude)
                 # add files_to_exclude to rclone_config
                 for item in files_to_exclude:
-                    rclone_config['rclone_excludes'].append(re.escape(item))
+                    rclone_config['rclone_excludes'].append(glob.escape(item))
 
         # do upload
         if self.service_account is not None:
