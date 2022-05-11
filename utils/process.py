@@ -20,7 +20,8 @@ def execute(command, callback=None, logs=True, shell=False):
             if logs:
                 log.info(output)
             if callback:
-                if cancel := callback(output):
+                cancel = callback(output)
+                if cancel:
                     if logs:
                         log.info("Callback requested termination, terminating...")
                         log.debug(f"Callback output {cancel}")
