@@ -35,7 +35,8 @@ class UnionfsHiddenFolder:
                     log.info("Cleaning %d hidden file(s) from remote: %s", len(self.hidden_files), name)
                     future_to_remote_file = {}
                     for hidden_file in self.hidden_files:
-                        if remote_file := self.__hidden2remote(remote, hidden_file):
+                        remote_file = self.__hidden2remote(remote, hidden_file)
+                        if remote_file:
                             future_to_remote_file[executor.submit(rclone.delete_file, remote_file)] = remote_file
                         else:
                             log.error("Failed mapping file '%s' to a remote file", hidden_file)
