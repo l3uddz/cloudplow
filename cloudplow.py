@@ -493,9 +493,7 @@ def do_sync(use_syncer=None):
 
                 # send notification that sync is starting
                 if sync_config['service'].lower() != 'local':
-                    notify.send(message='Sync initiated for syncer: %s. %s %s instance...' % (
-                        sync_name, 'Creating' if sync_config['instance_destroy'] else 'Starting',
-                        sync_config['service']))
+                    notify.send(message=f"Sync initiated for syncer: {sync_name}. {'Creating' if sync_config['instance_destroy'] else 'Starting'} {sync_config['service']} instance...")
 
                 # startup instance
                 resp, instance_id = syncer.startup(service=sync_config['service'], name=sync_name)
@@ -518,7 +516,7 @@ def do_sync(use_syncer=None):
                     continue
 
                 # send notification of sync start
-                notify.send(message='Sync has begun for syncer: %s' % sync_name)
+                notify.send(message=f'Sync has begun for syncer: {sync_name}')
 
                 # do sync
                 resp, resp_delay, resp_trigger = syncer.sync(service=sync_config['service'], instance_id=instance_id,
@@ -556,7 +554,7 @@ def do_sync(use_syncer=None):
                 else:
                     log.info("Syncing completed successfully for syncer: %s", sync_name)
                     # send successful sync notification
-                    notify.send(message="Sync was completed successfully for syncer: %s" % sync_name)
+                    notify.send(message=f"Sync was completed successfully for syncer: {sync_name}")
                     # remove syncer from syncer_delay(as its no longer banned)
                     if sync_name in syncer_delay and syncer_delay.pop(sync_name, None) is not None:
                         # this syncer was in the delay dict, but sync was successful, lets remove it
@@ -571,9 +569,7 @@ def do_sync(use_syncer=None):
                                 "Manually check no instances are still running!" % (
                                     sync_name, 'destroy' if sync_config['instance_destroy'] else 'stop', instance_id))
                 elif sync_config['service'].lower() != 'local':
-                    notify.send(message="Syncer: %s has %s its %s instance" % (
-                        sync_name, 'destroyed' if sync_config['instance_destroy'] else 'stopped',
-                        sync_config['service']))
+                    notify.send(message=f"Syncer: {sync_name} has {'destroyed' if sync_config['instance_destroy'] else 'stopped'} its {sync_config['service']} instance")
 
         except Exception:
             log.exception("Exception occurred while syncing: ")
