@@ -42,7 +42,7 @@ class Scaleway:
             return False, None
 
         # check if instance exists
-        cmd = "%s ps -a" % cmd_quote(self.tool_path)
+        cmd = f"{cmd_quote(self.tool_path)} ps -a"
         resp = process.popen(cmd)
         if not resp or 'zone' not in resp.lower():
             log.error("Unexpected response while checking if instance %s exists: %s", kwargs['name'], resp)
@@ -50,13 +50,9 @@ class Scaleway:
 
         if self.instance_destroy or kwargs['name'].lower() not in resp.lower():
             # create instance
-            cmd = "%s --region=%s run -d --name=%s --ipv6 --commercial-type=%s %s" % (
-                cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['name']), cmd_quote(self.type),
-                cmd_quote(self.image))
-            log.debug("Using: %s", cmd)
+            cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} run -d --name={cmd_quote(kwargs['name'])} --ipv6 --commercial-type={cmd_quote(self.type)} {cmd_quote(self.image)}"
 
-            log.debug("Creating new instance...")
-            resp = process.popen(cmd)
+            resp = self.start_instance(cmd, "Creating new instance...")
             if not resp or 'failed' in resp.lower():
                 log.error("Unexpected response while creating instance: %s", resp)
                 return False, self.instance_id
@@ -65,12 +61,9 @@ class Scaleway:
             log.info("Created new instance: %r", self.instance_id)
         else:
             # start existing instance
-            cmd = "%s --region=%s start %s" % (
-                cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['name']))
-            log.debug("Using: %s", cmd)
+            cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} start {cmd_quote(kwargs['name'])}"
 
-            log.debug("Starting instance...")
-            resp = process.popen(cmd)
+            resp = self.start_instance(cmd, "Starting instance...")
             if not resp or 'failed' in resp.lower():
                 log.error("Unexpected response while creating instance: %s", resp)
                 return False, kwargs['name']
@@ -81,8 +74,8 @@ class Scaleway:
         # wait for instance to finish booting
         log.info("Waiting for instance to finish booting...")
         time.sleep(60)
-        cmd = "%s --region=%s exec -w %s %s" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote('uname -a'))
+        cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} exec -w {cmd_quote(self.instance_id)} {cmd_quote('uname -a')}"
+
         log.debug("Using: %s", cmd)
 
         resp = process.popen(cmd)
@@ -93,6 +86,12 @@ class Scaleway:
 
         log.info("Instance has finished booting, uname: %r", resp)
         return True, self.instance_id
+
+    def start_instance(self, cmd, arg1):
+        log.debug("Using: %s", cmd)
+
+        log.debug(arg1)
+        return process.popen(cmd)
 
     def setup(self, **kwargs):
         if not self.instance_id:
@@ -105,16 +104,15 @@ class Scaleway:
 
         # install unzip
         cmd_exec = "apt-get -qq update && apt-get -y -qq install unzip && which unzip"
-        cmd = "%s --region=%s exec %s %s" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
+        cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} exec {cmd_quote(self.instance_id)} {cmd_quote(cmd_exec)}"
+
         log.debug("Using: %s", cmd)
 
         log.debug("Installing rclone to instance: %r", self.instance_id)
         resp = process.popen(cmd)
         if not resp or '/usr/bin/unzip' not in resp.lower():
-            log.error("Unexpected response while installing unzip: %s", resp)
-            self.destroy()
-            return False
+            return self.error_handling("Unexpected response while installing unzip: %s", resp)
+
         log.info("Installed unzip")
 
         # install rclone to instance
@@ -122,34 +120,36 @@ class Scaleway:
                    "unzip -oq rclone-current-linux-amd64.zip && cd rclone-*-linux-amd64 && " \
                    "cp -rf rclone /usr/bin/ && cd ~ && rm -rf rclone-* && chown root:root /usr/bin/rclone && " \
                    "chmod 755 /usr/bin/rclone && mkdir -p /root/.config/rclone && which rclone"
-        cmd = "%s --region=%s exec %s %s" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id), cmd_quote(cmd_exec))
+        cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} exec {cmd_quote(self.instance_id)} {cmd_quote(cmd_exec)}"
+
         log.debug("Using: %s", cmd)
 
         log.debug("Installing rclone to instance: %r", self.instance_id)
         resp = process.popen(cmd)
         if not resp or '/usr/bin/rclone' not in resp.lower():
-            log.error("Unexpected response while installing rclone: %s", resp)
-            self.destroy()
-            return False
+            return self.error_handling("Unexpected response while installing rclone: %s", resp)
+
         log.info("Installed rclone")
 
         # copy rclone.conf to instance
-        cmd = "%s --region=%s cp %s %s:/root/.config/rclone/" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(kwargs['rclone_config']),
-            cmd_quote(self.instance_id))
+        cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} cp {cmd_quote(kwargs['rclone_config'])} {cmd_quote(self.instance_id)}:/root/.config/rclone/"
+
         log.debug("Using: %s", cmd)
 
         log.debug("Copying rclone config %r to instance: %r", kwargs['rclone_config'], self.instance_id)
         resp = process.popen(cmd)
         if resp is None or len(resp) >= 2:
-            log.error("Unexpected response while copying rclone config: %s", resp)
-            self.destroy()
-            return False
+            return self.error_handling("Unexpected response while copying rclone config: %s", resp)
+
         log.info("Copied across rclone.conf")
 
         log.info("Successfully setup instance: %r", self.instance_id)
         return True
+
+    def error_handling(self, arg0, resp):
+        log.error(arg0, resp)
+        self.destroy()
+        return False
 
     def destroy(self, **kwargs):
         if not self.instance_id:
@@ -158,8 +158,8 @@ class Scaleway:
 
         if self.instance_destroy:
             # destroy the instance
-            cmd = "%s --region=%s rm -f %s" % (
-                cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id))
+            cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} rm -f {cmd_quote(self.instance_id)}"
+
             log.debug("Using: %s", cmd)
 
             log.debug("Destroying instance: %r", self.instance_id)
@@ -171,8 +171,8 @@ class Scaleway:
             log.info("Destroyed instance: %r", self.instance_id)
         else:
             # stop the instance
-            cmd = "%s --region=%s stop %s" % (
-                cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id))
+            cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} stop {cmd_quote(self.instance_id)}"
+
             log.debug("Using: %s", cmd)
 
             log.debug("Stopping instance: %r", self.instance_id)
@@ -205,9 +205,8 @@ class Scaleway:
         #     cmd_quote(os.path.dirname(kwargs['rclone_config'])))
 
         # Use exec cat > rclone config until cp is resolved
-        cmd = "%s --region=%s exec %s cat /root/.config/rclone/rclone.conf > %s" % (
-            cmd_quote(self.tool_path), cmd_quote(self.region), cmd_quote(self.instance_id),
-            cmd_quote(kwargs['rclone_config']))
+        cmd = f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} exec {cmd_quote(self.instance_id)} cat /root/.config/rclone/rclone.conf > {cmd_quote(kwargs['rclone_config'])}"
+
         log.debug("Using: %s", cmd)
 
         log.debug("Copying rclone config from instance %r to: %r", self.instance_id, kwargs['rclone_config'])
@@ -222,9 +221,4 @@ class Scaleway:
     # internals
 
     def _wrap_command(self, command):
-        return "%s --region=%s exec %s %s" % (
-            cmd_quote(self.tool_path),
-            cmd_quote(self.region),
-            cmd_quote(self.instance_id),
-            cmd_quote(command),
-        )
+        return f"{cmd_quote(self.tool_path)} --region={cmd_quote(self.region)} exec {cmd_quote(self.instance_id)} {cmd_quote(command)}"
