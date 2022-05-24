@@ -4,8 +4,9 @@ from urllib.parse import urljoin
 from uuid import getnode
 
 import requests
-
+import urllib3
 log = logging.getLogger('plex')
+urllib3.disable_warnings()
 
 
 class Plex:

@@ -4,9 +4,8 @@ import os
 import time
 from urllib.parse import urljoin
 import re
-
 import requests
-
+import urllib3
 from . import process, misc
 
 try:
@@ -15,6 +14,8 @@ except ImportError:
     from pipes import quote as cmd_quote
 
 log = logging.getLogger('rclone')
+
+urllib3.disable_warnings()
 
 
 class RcloneMover:
@@ -133,7 +134,9 @@ class RcloneUploader:
     def upload(self, callback):
         try:
             log.debug("Uploading '%s' to '%s'", self.config['upload_folder'], self.config['upload_remote'])
-            log.debug("Rclone command set to '%s'", self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')
+            log.debug("Rclone command set to '%s'", self.config['rclone_command'] if (
+                        'rclone_command' in self.config and self.config[
+                    'rclone_command'].lower() != 'sync') else 'move')
             # build cmd
             cmd = f"{cmd_quote(self.rclone_binary_path)} {cmd_quote(self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')} {cmd_quote(self.config['upload_folder'])} {cmd_quote(self.config['upload_remote'])} --config={cmd_quote(self.rclone_config_path)}"
 
