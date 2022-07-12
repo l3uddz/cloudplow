@@ -314,7 +314,7 @@ class RcloneThrottler:
                 data = resp.json()
                 if 'error' in data:
                     log.error("Failed to throttle %s: %s", self.url, data['error'])
-                elif 'rate' in data and data['rate'] == speed:
+                elif 'rate' in data and speed in data['rate']:
                     log.warning("Successfully throttled %s to %s.", self.url, speed)
                     success = True
 
