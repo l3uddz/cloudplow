@@ -21,6 +21,7 @@
   - [Hidden](#hidden)
   - [Notifications](#notifications)
   - [NZBGet](#nzbget)
+  - [Sabnzbd](#sabnzbd)
   - [Plex](#plex)
   - [Remotes](#remotes)
   - [Uploader](#uploader)
@@ -143,6 +144,11 @@ Cloudplow has 3 main functions:
     "nzbget": {
         "enabled": false,
         "url": "https://user:pass@nzbget.domain.com"
+    },
+    "sabnzbd": {
+        "enabled": false,
+        "url": "https://sabnzbd.domain.com",
+        "api-key": "1314234234"
     },
     "plex": {
         "enabled": true,
@@ -543,6 +549,19 @@ Cloudplow can pause the NZBGet download queue when an upload starts; and then re
 
 `url` - Your NZBGet URL. Can be either `http://user:pass@localhost:6789` or `https://user:pass@nzbget.domain.com`.
 
+## Sabnzbd
+
+Cloudplow can pause the Sabnzbd download queue when an upload starts; and then resume it upon the upload finishing.
+
+```
+"sabnzbd": {
+    "enabled": false,
+    "url": "https://sabnzbd.domain.com"
+    "apikey": "1314234234"
+},
+```
+
+`enabled` - `true` to enable.
 ## Plex
 
 Cloudplow can throttle Rclone uploads during active, playing Plex streams (paused streams are ignored).

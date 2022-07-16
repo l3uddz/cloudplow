@@ -17,6 +17,11 @@
         "enabled": false,
         "url": "https://user:pass@nzbget.domain.com"
     },
+    "sabnzbd": {
+        "enabled": false,
+        "url": "https://sabnzbd.domain.com",
+        "apikey": "1314234234"
+    },
     "plex": {
         "enabled": false,
         "url": "http://localhost:32400",

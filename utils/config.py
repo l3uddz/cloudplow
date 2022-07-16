@@ -67,6 +67,12 @@ class Config(object):
         'nzbget': {
             'enabled': False,
             'url': 'https://user:password@nzbget.domain.com'
+        },
+        # sabnzbd settings
+        'sabnzbd': {
+            'enabled': False,
+            'url': 'https://sabnzbd.domain.com',
+            'apikey': ''
         }
     }
 
