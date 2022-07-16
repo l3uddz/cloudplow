@@ -151,7 +151,7 @@ class Scaleway:
         self.destroy()
         return False
 
-    def destroy(self, **kwargs):
+    def destroy(self):
         if not self.instance_id:
             log.error("Destroy was called, but no instance_id was found, aborting...")
             return False

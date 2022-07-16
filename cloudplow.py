@@ -109,7 +109,7 @@ def init_service_accounts():
             # one at a time when starting the uploader. If upload completes successfully, do not attempt
             # to use the other accounts
             accounts = {os.path.join(os.path.normpath(uploader_config['service_account_path']),
-                        sa_file): None for sa_file in
+                                     sa_file): None for sa_file in
                         os.listdir(os.path.normpath(uploader_config['service_account_path'])) if
                         sa_file.endswith(".json")}
             current_accounts = sa_delay[uploader_remote]
@@ -189,8 +189,7 @@ def check_suspended_uploaders(uploader_to_check=None):
                 # this remote is still delayed due to a previous abort due to triggers
                 use_logger = (
                     log.debug
-                    if not uploader_to_check
-                    or uploader_name != uploader_to_check
+                    if not uploader_to_check or uploader_name != uploader_to_check
                     else log.info
                 )
 
@@ -294,7 +293,8 @@ def do_upload(remote=None):
                 if conf.configs['plex']['enabled'] and plex_monitor_thread is None:
                     # Only disable throttling if 'can_be_throttled' is both present in uploader_config and is set to False.
                     if 'can_be_throttled' in uploader_config and not uploader_config['can_be_throttled']:
-                        log.debug("Skipping check for Plex stream due to throttling disabled in remote: %s", uploader_remote)
+                        log.debug("Skipping check for Plex stream due to throttling disabled in remote: %s",
+                                  uploader_remote)
                     # Otherwise, assume throttling is desired.
                     else:
                         plex_monitor_thread = thread.start(do_plex_monitor, 'plex-monitor')
@@ -310,7 +310,7 @@ def do_upload(remote=None):
 
                 # pause the sabnzbd queue before starting the upload, if enabled
                 if conf.configs['sabnzbd']['enabled']:
-                    sabnzbd = Sabnzbd(conf.configs['sabnzbd']['url'],conf.configs['sabnzbd']['apikey'])
+                    sabnzbd = Sabnzbd(conf.configs['sabnzbd']['url'], conf.configs['sabnzbd']['apikey'])
                     if sabnzbd.pause_queue():
                         sabnzbd_paused = True
                         log.info("Paused the Sabnzbd download queue, upload commencing!")
@@ -404,7 +404,7 @@ def do_upload(remote=None):
                                 "Upload aborted due to trigger: %r being met, %s will continue automatic uploading "
                                 "normally in %d hours", resp_trigger, uploader_remote, resp_delay)
                             # add remote to uploader_delay
-                            uploader_delay[uploader_remote] = time.time() + 60**2 * resp_delay
+                            uploader_delay[uploader_remote] = time.time() + 60 ** 2 * resp_delay
                             # send aborted upload notification
                             notify.send(
                                 message="Upload was aborted for remote: %s due to trigger %r. Uploads suspended for %d"
@@ -475,20 +475,23 @@ def do_upload(remote=None):
                                  uploader_config['mover']['move_to_remote'])
 
                         # send notification that mover has started
-                        notify.send(message=f"Move has started for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
+                        notify.send(
+                            message=f"Move has started for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
 
                         if mover.move():
                             log.info("Move completed successfully from %r -> %r",
                                      uploader_config['mover']['move_from_remote'],
                                      uploader_config['mover']['move_to_remote'])
                             # send notification move has finished
-                            notify.send(message=f"Move finished successfully for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
+                            notify.send(
+                                message=f"Move finished successfully for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
 
                         else:
                             log.error("Move failed from %r -> %r ....?", uploader_config['mover']['move_from_remote'],
                                       uploader_config['mover']['move_to_remote'])
                             # send notification move has failed
-                            notify.send(message=f"Move failed for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
+                            notify.send(
+                                message=f"Move failed for {uploader_config['mover']['move_from_remote']} -> {uploader_config['mover']['move_to_remote']}")
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
@@ -514,7 +517,8 @@ def do_sync(use_syncer=None):
 
                 # send notification that sync is starting
                 if sync_config['service'].lower() != 'local':
-                    notify.send(message=f"Sync initiated for syncer: {sync_name}. {'Creating' if sync_config['instance_destroy'] else 'Starting'} {sync_config['service']} instance...")
+                    notify.send(
+                        message=f"Sync initiated for syncer: {sync_name}. {'Creating' if sync_config['instance_destroy'] else 'Starting'} {sync_config['service']} instance...")
 
                 # startup instance
                 resp, instance_id = syncer.startup(service=sync_config['service'], name=sync_name)
@@ -559,7 +563,7 @@ def do_sync(use_syncer=None):
                             "Sync aborted due to trigger: %r being met, %s will continue automatic syncing normally in "
                             "%d hours", resp_trigger, sync_name, resp_delay)
                         # add syncer to syncer_delay
-                        syncer_delay[sync_name] = time.time() + 60**2 * resp_delay
+                        syncer_delay[sync_name] = time.time() + 60 ** 2 * resp_delay
                         # send aborted sync notification
                         notify.send(
                             message="Sync was aborted for syncer: %s due to trigger %r. Syncs suspended for %d hours" %
@@ -590,7 +594,8 @@ def do_sync(use_syncer=None):
                                 "Manually check no instances are still running!" % (
                                     sync_name, 'destroy' if sync_config['instance_destroy'] else 'stop', instance_id))
                 elif sync_config['service'].lower() != 'local':
-                    notify.send(message=f"Syncer: {sync_name} has {'destroyed' if sync_config['instance_destroy'] else 'stopped'} its {sync_config['service']} instance")
+                    notify.send(
+                        message=f"Syncer: {sync_name} has {'destroyed' if sync_config['instance_destroy'] else 'stopped'} its {sync_config['service']} instance")
 
         except Exception:
             log.exception("Exception occurred while syncing: ")

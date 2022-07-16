@@ -1,4 +1,5 @@
-import urllib, json
+import urllib
+
 
 class Sabnzbd(object):
 
@@ -12,22 +13,19 @@ class Sabnzbd(object):
 
         if output:
             kwargs['output'] = 'json'
-        url = '%s/api?%s' % (
-            self.url,
-            urllib.parse.urlencode(kwargs)
-        )
+        url = f'{self.url}/api?{urllib.parse.urlencode(kwargs)}'
 
         try:
-           result = urllib.request.urlopen(url)
-           if output:
-              print("Result is ", result.reason)
-           if mode == "pause":
-              self.paused = True
-           if mode == "resume":   
-              self.resumed = True
+            result = urllib.request.urlopen(url)
+            if output:
+                print("Result is ", result.reason)
+            if mode == "pause":
+                self.paused = True
+            if mode == "resume":
+                self.resumed = True
         except urllib.error.HTTPError as error:
-           print("Failed to " + mode +" with error code " + str(error.code)) # 404, 500, etc
-           return None
+            print(f"Failed to {mode} with error code {str(error.code)}")
+            return None
 
     def pause_queue(self):
         self.paused = False
