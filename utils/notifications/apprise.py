@@ -4,6 +4,7 @@ import logging
 
 log = logging.getLogger('apprise')
 
+
 class Apprise:
     NAME = "Apprise"
 
