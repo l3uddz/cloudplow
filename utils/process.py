@@ -5,10 +5,11 @@ import subprocess
 log = logging.getLogger("process")
 
 
-def execute(command, callback=None, logs=True, shell=False):
+def execute(command, callback=None, env=None, logs=True, shell=False):
     total_output = ''
     process = subprocess.Popen(command if shell else shlex.split(command),
                                shell=shell,
+                               env=env,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT)
 

@@ -135,13 +135,19 @@ class RcloneUploader:
         try:
             log.debug("Uploading '%s' to '%s'", self.config['upload_folder'], self.config['upload_remote'])
             log.debug("Rclone command set to '%s'", self.config['rclone_command'] if (
-                      'rclone_command' in self.config and self.config[
-                      'rclone_command'].lower() != 'sync') else 'move')
+                      'rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')
             # build cmd
             cmd = f"{cmd_quote(self.rclone_binary_path)} {cmd_quote(self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')} {cmd_quote(self.config['upload_folder'])} {cmd_quote(self.config['upload_remote'])} --config={cmd_quote(self.rclone_config_path)}"
+            subprocess_env = os.environ.copy()
 
             if self.service_account is not None:
-                cmd += f' --drive-service-account-file {cmd_quote(self.service_account)}'
+                if self.config['upstream_remotes'] is not None:
+                    for remote in self.config['upstream_remotes']:
+                        remote_env = f'RCLONE_CONFIG_{remote.upper()}_SERVICE_ACCOUNT_FILE'
+                        subprocess_env[remote_env] = self.service_account
+                    log.debug(subprocess_env)
+                else:
+                    cmd += f' --drive-service-account-file {cmd_quote(self.service_account)}'
             extras = self.__extras2string()
             if len(extras) > 2:
                 cmd += f' {extras}'
@@ -157,7 +163,7 @@ class RcloneUploader:
 
             # exec
             log.debug("Using: %s", cmd)
-            return_code = process.execute(cmd, callback)
+            return_code = process.execute(cmd, callback, subprocess_env)
             return True, return_code
         except Exception:
             log.exception("Exception occurred while uploading '%s' to remote: %s", self.config['upload_folder'],

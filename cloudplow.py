@@ -371,8 +371,8 @@ def do_upload(remote=None):
                                     # during upload
                                     check_suspended_sa(sa_delay[uploader_remote])
 
-                                    unbanTime = misc.get_lowest_remaining_time(sa_delay[uploader_remote])
-                                    if unbanTime is not None:
+                                    unban_time = misc.get_lowest_remaining_time(sa_delay[uploader_remote])
+                                    if unban_time is not None:
                                         log.info(
                                             "Upload aborted due to trigger: %r being met, %s will continue automatic "
                                             "uploading normally in %d hours", resp_trigger, uploader_remote, resp_delay)
