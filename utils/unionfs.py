@@ -104,7 +104,6 @@ class UnionfsHiddenFolder:
         return hidden_files
 
     def __folders(self):
-        hidden_folders = []
         try:
             hidden_folders = path.find_folders(self.unionfs_fuse, '_HIDDEN~')
             log.info("Found %d hidden folders in %r", len(hidden_folders), self.unionfs_fuse)
