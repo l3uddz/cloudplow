@@ -780,7 +780,10 @@ If multiple uploader tasks are specified, the tasks will run sequentially (vs in
         "size_excludes": [
             "downloads/*"
         ],
-        "service_account_path":"/home/user/config/cloudplow/service_accounts/"
+        "service_account_path":"/home/user/config/cloudplow/service_accounts/",
+        "upstream_remotes": [
+            "some-remote"
+        ]
       }
 }
 ```
@@ -807,6 +810,7 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 
   - This is currently not supported with sync operations.
 
+`"upstream_remotes"`: List of upstream remotes (crypt or union) that are going to get the Service Account rotation.
 
 ### Mover
 
