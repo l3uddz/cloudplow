@@ -18,14 +18,6 @@ log = logging.getLogger('rclone')
 urllib3.disable_warnings()
 
 
-def var_exists(var):
-    try:
-        val = var
-    except NameError:
-        return None
-    return val
-
-
 class RcloneMover:
     def __init__(self, config, rclone_binary_path, rclone_config_path, plex, dry_run=False):
         self.config = config
