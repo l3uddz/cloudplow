@@ -141,13 +141,14 @@ class RcloneUploader:
             subprocess_env = os.environ.copy()
 
             if self.service_account is not None:
-                if self.config['upstream_remotes'] is not None:
+                if 'upstream_remotes' in dir(self.config):
                     for remote in self.config['upstream_remotes']:
                         remote_env = f'RCLONE_CONFIG_{remote.upper()}_SERVICE_ACCOUNT_FILE'
                         subprocess_env[remote_env] = self.service_account
                     log.debug(subprocess_env)
                 else:
                     cmd += f' --drive-service-account-file {cmd_quote(self.service_account)}'
+
             extras = self.__extras2string()
             if len(extras) > 2:
                 cmd += f' {extras}'
