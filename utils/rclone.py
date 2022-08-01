@@ -18,6 +18,14 @@ log = logging.getLogger('rclone')
 urllib3.disable_warnings()
 
 
+def var_exists(var):
+    try:
+        val = var
+    except NameError:
+        return None
+    return val
+
+
 class RcloneMover:
     def __init__(self, config, rclone_binary_path, rclone_config_path, plex, dry_run=False):
         self.config = config
@@ -141,7 +149,7 @@ class RcloneUploader:
             subprocess_env = os.environ.copy()
 
             if self.service_account is not None:
-                if self.config['upstream_remotes'] is not None:
+                if var_exists(self.config['upstream_remotes']):
                     for remote in self.config['upstream_remotes']:
                         remote_env = f'RCLONE_CONFIG_{remote.upper()}_SERVICE_ACCOUNT_FILE'
                         subprocess_env[remote_env] = self.service_account
