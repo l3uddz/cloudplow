@@ -149,7 +149,7 @@ class RcloneUploader:
             subprocess_env = os.environ.copy()
 
             if self.service_account is not None:
-                if var_exists(self.config['upstream_remotes']):
+                if var_exists(self.config['upstream_remotes']) is not None:
                     for remote in self.config['upstream_remotes']:
                         remote_env = f'RCLONE_CONFIG_{remote.upper()}_SERVICE_ACCOUNT_FILE'
                         subprocess_env[remote_env] = self.service_account
