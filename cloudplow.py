@@ -495,6 +495,8 @@ def do_upload(remote=None):
 
         except Exception:
             log.exception("Exception occurred while uploading: ")
+            notify.send(
+                message=f"Exception occurred while uploading: ")
 
     log.info("Finished upload")
 
