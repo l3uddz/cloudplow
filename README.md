@@ -780,10 +780,7 @@ If multiple uploader tasks are specified, the tasks will run sequentially (vs in
         "size_excludes": [
             "downloads/*"
         ],
-        "service_account_path":"/home/user/config/cloudplow/service_accounts/",
-        "upstream_remotes": [
-            "some-remote"
-        ]
+        "service_account_path":"/home/user/config/cloudplow/service_accounts/"
       }
 }
 ```
@@ -809,8 +806,6 @@ In the example above, the uploader references `"google"` from the `remotes` sect
 `"service_account_path"`: Path that will be scanned for Google Drive service account keys (\*.json) to be used when performing upload operations.
 
   - This is currently not supported with sync operations.
-
-`"upstream_remotes"`: List of upstream remotes (crypt or union) that are going to get the Service Account rotation.
 
 ### Mover
 
