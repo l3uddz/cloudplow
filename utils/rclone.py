@@ -6,6 +6,8 @@ from urllib.parse import urljoin
 import re
 import requests
 import urllib3
+import subprocess
+import jsonpickle
 from . import process, misc
 
 try:
@@ -141,18 +143,61 @@ class RcloneUploader:
             subprocess_env = os.environ.copy()
 
             if self.service_account is not None:
+
+                rclone_data = subprocess.check_output('rclone config dump', shell=True)
+                rclone_remotes = jsonpickle.decode(rclone_data)
+                config_remote = self.config['upload_remote'].split(":")[0]
+
+                def find_crypt_upstream(crypt_remote):
+                    return rclone_remotes[crypt_remote]['remote'].split(":")[0]
+
+                def find_chunker_upstream(chunker_remote):
+                    return rclone_remotes[chunker_remote]['remote'].split(":")[0]
+
+                parsed_remotes = []
                 try:
-                    upstream_remotes = self.config['upstream_remotes']
-                except Exception:
-                    upstream_remotes = None
-                if upstream_remotes is not None:
-                    log.debug("Using Upstream Remotes")
-                    for remote in self.config['upstream_remotes']:
+                    remote_type = rclone_remotes[config_remote]['type']
+                    if remote_type == "crypt":
+                        parsed_remotes.append(find_crypt_upstream(config_remote))
+                    elif remote_type == "chunker":
+                        parsed_remotes.append(find_chunker_upstream(config_remote))
+                    elif remote_type == "drive":
+                        parsed_remotes.append(config_remote)
+                    elif remote_type == "union":
+                        for upstream_remote in rclone_remotes[config_remote]['upstreams'].split(' '):
+                            remote_string = upstream_remote.split(":")[0]
+                            try:
+                                upstream_remote_type = rclone_remotes[remote_string]['type']
+
+                                if upstream_remote_type == "drive":
+                                    parsed_remotes.append(upstream_remote.split(":")[0])
+                                elif upstream_remote_type == "crypt":
+                                    parsed_remotes.append(find_crypt_upstream(remote_string))
+                                elif remote_type == "chunker":
+                                    parsed_remotes.append(find_chunker_upstream(config_remote))
+                                else:
+                                    log.warning(f'{remote_string} is an unsupported type: {rclone_remotes[remote_string]["type"]}.')
+                            except KeyError:
+                                log.error(f'Upstream remote {remote_string} does not exist in rclone.')
+                                exit(1)
+
+                    else:
+                        log.warning(f'{config_remote} has an unsupported type: {rclone_remotes[config_remote]["type"]}.')
+
+                except KeyError:
+                    log.error(f'{config_remote} is an invalid remote.')
+                    exit(1)
+
+                finally:
+                    log.debug("Finished parsing rclone remotes.")
+
+                if parsed_remotes:
+                    for remote in list(dict.fromkeys(parsed_remotes)):
                         remote_env = f'RCLONE_CONFIG_{remote.upper()}_SERVICE_ACCOUNT_FILE'
                         subprocess_env[remote_env] = self.service_account
                     log.debug(subprocess_env)
                 else:
-                    cmd += f' --drive-service-account-file {cmd_quote(self.service_account)}'
+                    log.warning('No remotes were added to ENV.')
 
             extras = self.__extras2string()
             if len(extras) > 2:
