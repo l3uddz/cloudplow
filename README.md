@@ -52,7 +52,7 @@ Cloudplow has 3 main functions:
 
 1. Ubuntu/Debian OS (could work in other OSes with some tweaks).
 
-2. Python 3.5 or higher (`sudo apt install python3 python3-pip`).
+2. Python 3.6 or higher (`sudo apt install python3 python3-pip`).
 
 3. Required Python modules (see below).
 
@@ -64,43 +64,43 @@ Cloudplow has 3 main functions:
    sudo git clone https://github.com/l3uddz/cloudplow /opt/cloudplow
    ```
 
-1. Fix permissions of the Cloudplow folder (replace `user`/`group` with your info; run `id` to check).
+2. Fix permissions of the Cloudplow folder (replace `user`/`group` with your info; run `id` to check).
 
    ```
    sudo chown -R user:group /opt/cloudplow
    ```
 
-1. Go into the Cloudplow folder.
+3. Go into the Cloudplow folder.
 
    ```
    cd /opt/cloudplow
    ```
 
-1. Install Python PIP.
+4. Install Python PIP.
 
    ```
    sudo apt-get install python3-pip
    ```
 
-1. Install the required python modules.
+5. Install the required python modules.
 
    ```
    sudo python3 -m pip install -r requirements.txt
    ```
 
-1. Create a shortcut for Cloudplow.
+6. Create a shortcut for Cloudplow.
 
    ```
    sudo ln -s /opt/cloudplow/cloudplow.py /usr/local/bin/cloudplow
    ```
 
-1. Generate a basic `config.json` file.
+7. Generate a basic `config.json` file.
 
    ```
    cloudplow run
    ```
 
-1. Configure the `config.json` file.
+8. Configure the `config.json` file.
 
    ```
    nano config.json
