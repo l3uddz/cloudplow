@@ -24,7 +24,7 @@ class Uploader:
 
     def set_service_account(self, sa_file):
         self.service_account = sa_file
-        log.info("Using service account: %r", sa_file)
+        log.info(f"Using service account: {sa_file}")
 
     def upload(self):
         rclone_config = self.rclone_config.copy()
@@ -33,7 +33,7 @@ class Uploader:
         if self.uploader_config['exclude_open_files']:
             files_to_exclude = self.__opened_files()
             if len(files_to_exclude):
-                log.info("Excluding these files from being uploaded because they were open: %r", files_to_exclude)
+                log.info(f"Excluding these files from being uploaded because they were open: {files_to_exclude}")
                 # add files_to_exclude to rclone_config
                 for item in files_to_exclude:
                     rclone_config['rclone_excludes'].append(glob.escape(item))
@@ -46,7 +46,7 @@ class Uploader:
             rclone = RcloneUploader(self.name, rclone_config, self.rclone_binary_path, self.rclone_config_path,
                                     self.plex, self.dry_run)
 
-        log.info("Uploading '%s' to remote: %s", rclone_config['upload_folder'], self.name)
+        log.info(f"Uploading '{rclone_config['upload_folder']}' to remote: {self.name}")
         self.delayed_check = 0
         self.delayed_trigger = None
         self.trigger_tracks = {}
@@ -58,7 +58,7 @@ class Uploader:
         
         log.debug("return_code is: %s", return_code)
         if upload_status and return_code == 0:
-            log.info("Finished uploading to remote: %s", self.name)
+            log.info(f"Finished uploading to remote: {self.name}")
         else:
             return
 
@@ -66,8 +66,7 @@ class Uploader:
 
     def remove_empty_dirs(self):
         path.remove_empty_dirs(self.rclone_config['upload_folder'], self.rclone_config['remove_empty_dir_depth'])
-        log.info("Removed empty directories from '%s' with mindepth: %d", self.rclone_config['upload_folder'],
-                 self.rclone_config['remove_empty_dir_depth'])
+        log.info(f"Removed empty directories from '{self.rclone_config['upload_folder']}' with min depth: {self.rclone_config['remove_empty_dir_depth']}")
         return
 
     # internals
@@ -94,8 +93,7 @@ class Uploader:
                 and self.trigger_tracks[trigger_text]['expires'] != ''
                 and time.time() >= self.trigger_tracks[trigger_text]['expires']
             ):
-                log.warning("Tracking of trigger: %r has expired, resetting occurrence count and timeout",
-                            trigger_text)
+                log.warning(f"Tracking of trigger: {trigger_text} has expired, resetting occurrence count and timeout")
                 self.trigger_tracks[trigger_text] = {'count': 0, 'expires': ''}
 
             # check if trigger_text is in data
@@ -104,23 +102,15 @@ class Uploader:
                 if trigger_text not in self.trigger_tracks or self.trigger_tracks[trigger_text]['count'] == 0:
                     # set initial tracking info for trigger
                     self.trigger_tracks[trigger_text] = {'count': 1, 'expires': time.time() + trigger_config['timeout']}
-                    log.warning("Tracked first occurrence of trigger: %r. Expiring in %d seconds at %s", trigger_text,
-                                trigger_config['timeout'], time.strftime('%Y-%m-%d %H:%M:%S',
-                                                                         time.localtime(
-                                                                             self.trigger_tracks[trigger_text][
-                                                                                 'expires'])))
+                    log.warning(f"Tracked first occurrence of trigger: {trigger_text}. Expiring in {trigger_config['timeout']} seconds at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.trigger_tracks[trigger_text]['expires']))}")
                 else:
                     # trigger_text WAS seen before increase count
                     self.trigger_tracks[trigger_text]['count'] += 1
-                    log.warning("Tracked trigger: %r has occurred %d/%d times within %d seconds", trigger_text,
-                                self.trigger_tracks[trigger_text]['count'], trigger_config['count'],
-                                trigger_config['timeout'])
+                    log.warning(f"Tracked trigger: {trigger_text} has occurred {self.trigger_tracks[trigger_text]['count']}/{trigger_config['count']} times within {trigger_config['timeout']} seconds")
 
                     # check if trigger_text was found the required amount of times to abort
                     if self.trigger_tracks[trigger_text]['count'] >= trigger_config['count']:
-                        log.warning(
-                            "Tracked trigger %r has reached the maximum limit of %d occurrences within %d seconds,"
-                            " aborting upload...", trigger_text, trigger_config['count'], trigger_config['timeout'])
+                        log.warning(f"Tracked trigger {trigger_text} has reached the maximum limit of {trigger_config['count']} occurrences within {trigger_config['timeout']} seconds, aborting upload...")
                         self.delayed_check = trigger_config['sleep']
                         self.delayed_trigger = trigger_text
                         return True

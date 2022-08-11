@@ -24,7 +24,7 @@ class Sabnzbd(object):
             if mode == "resume":
                 self.resumed = True
         except urllib.error.HTTPError as error:
-            print(f"Failed to {mode} with error code {str(error.code)}")
+            print(f"Failed to {mode} with error code {error.code}")
             return None
 
     def pause_queue(self):

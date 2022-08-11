@@ -5,7 +5,7 @@ import sys
 try:
     from git import Repo
 except ImportError:
-    sys.exit("You are missing the GitPython requirement.")
+    sys.exit("You are missing the GitPython requirement or executing from the wrong working directory.")
 
 log = logging.getLogger("git")
 

@@ -26,30 +26,13 @@ def get_file_hash(filepath):
     try:
         file_size = os.path.getsize(filepath)
     except Exception:
-        log.exception("Exception getting file size of %r: ", filepath)
+        log.exception(f"Exception getting file size of {filepath}: ")
     # set basic string to use for hash
     key = "{filename}-{size}".format(filename=os.path.basename(filepath), size=file_size)
     return hashlib.md5(key.encode('utf-8')).hexdigest()
 
 
-def find_files(folder, extension=None, depth=None):
-    file_list = []
-    start_count = folder.count(os.sep)
-    for path, subdirs, files in os.walk(folder, topdown=True):
-        for name in files:
-            if depth and path.count(os.sep) - start_count >= depth:
-                del subdirs[:]
-                continue
-            filepath = os.path.join(path, name)
-            if not extension:
-                file_list.append(filepath)
-            elif filepath.lower().endswith(extension.lower()):
-                file_list.append(filepath)
-
-    return sorted(file_list, key=lambda x: x.count(os.path.sep), reverse=True)
-
-
-def find_folders(folder, extension=None, depth=None):
+def find_items(folder, extension=None, depth=None):
     folder_list = []
     start_count = folder.count(os.sep)
     for path, subdirs, files in os.walk(folder, topdown=True):
@@ -76,7 +59,7 @@ def opened_files(path):
         return files
 
     except Exception:
-        log.exception("Exception retrieving open files from %r: ", path)
+        log.exception(f"Exception retrieving open files from {path}: ")
     return []
 
 

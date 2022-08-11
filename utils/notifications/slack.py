@@ -35,5 +35,5 @@ class Slack:
             return resp.status_code == 200
 
         except Exception:
-            log.exception("Error sending notification to %r", self.webhook_url)
+            log.exception(f"Error sending notification to {self.webhook_url}")
         return False

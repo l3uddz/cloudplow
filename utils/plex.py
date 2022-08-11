@@ -28,13 +28,13 @@ class Plex:
             request_url = urljoin(self.url, 'status/sessions')
             r = requests.get(request_url, headers=self.headers, timeout=15, verify=False)
             if r.status_code == 200 and r.headers['Content-Type'] == 'application/json':
-                log.debug("Server responded with status_code=%r, content: %r", r.status_code, r.json())
+                log.debug(f"Server responded with status_code={r.status_code}, content: {r.json()}")
                 return True
             else:
-                log.error("Server responded with status_code=%r, content: %r", r.status_code, r.content)
+                log.error(f"Server responded with status_code={r.status_code}, content: {r.content}")
                 return False
         except Exception:
-            log.exception("Exception validating server token=%r, url=%r: ", self.token, self.url)
+            log.exception(f"Exception validating server token={self.token}, url={self.url}: ")
             return False
 
     def get_streams(self):
@@ -43,13 +43,13 @@ class Plex:
             r = requests.get(request_url, headers=self.headers, timeout=15, verify=False)
             if r.status_code == 200 and r.headers['Content-Type'] == 'application/json':
                 result = r.json()
-                log.debug("Server responded with status_code=%r, content: %r", r.status_code, r.content)
+                log.debug(f"Server responded with status_code={r.status_code}, content: {r.content}")
 
                 if 'MediaContainer' not in result:
-                    log.error("Failed to retrieve streams from server at %r", self.url)
+                    log.error(f"Failed to retrieve streams from server at {self.url}")
                     return None
                 elif 'Video' not in result['MediaContainer'] and 'Metadata' not in result['MediaContainer']:
-                    log.debug("There were no streams to check for server at %r", self.url)
+                    log.debug(f"There were no streams to check for server at {self.url}")
                     return []
 
                 return [
@@ -62,12 +62,10 @@ class Plex:
                 ]
 
             else:
-                log.error(
-                    "Server url or token was invalid, token=%r, request_url=%r, status_code=%r, content: %r",
-                    self.token, request_url, r.status_code, r.content)
+                log.error(f"Server url or token was invalid, token={self.token}, request_url={request_url}, status_code={r.status_code}, content: {r.content}")
                 return None
         except Exception:
-            log.exception("Exception retrieving streams from request_url=%r, token=%r: ", request_url, self.token)
+            log.exception(f"Exception retrieving streams from request_url={request_url}, token={self.token}: ")
             return None
 
 

@@ -187,9 +187,9 @@ class Config(object):
                     merged[k] = v
                     sub_upgraded = True
                     if not key:
-                        log.info("Added %r config option: %s", str(k), str(v))
+                        log.info(f"Added {k} config option: {v}")
                     else:
-                        log.info("Added %r to config option %r: %s", str(k), str(key), str(v))
+                        log.info(f"Added {k} to config option {key}: {v}")
                     continue
 
                 # iterate children
@@ -205,7 +205,7 @@ class Config(object):
                 if v not in settings2:
                     merged.append(v)
                     sub_upgraded = True
-                    log.info("Added to config option %r: %s", str(key), str(v))
+                    log.info(f"Added to config option {key}: {v}")
                     continue
 
         return merged, sub_upgraded
@@ -218,7 +218,7 @@ class Config(object):
             if name in os.environ:
                 # Use JSON decoder to get same behaviour as config file
                 fields_env[name] = json.JSONDecoder().decode(os.environ[name])
-                log.info("Using ENV setting %s=%s", name, fields_env[name])
+                log.info(f"Using ENV setting {name}={fields_env[name]}")
 
         # Update in-memory config with environment settings
         currents.update(fields_env)
@@ -240,11 +240,11 @@ class Config(object):
             if name in os.environ:
                 # Use JSON decoder to get same behaviour as config file
                 fields_env[name] = json.JSONDecoder().decode(os.environ[name])
-                log.info("Using ENV setting %s=%s", name, fields_env[name])
+                log.info(f"Using ENV setting {name}={fields_env[name]}")
 
         # Only rewrite config file if new fields added
         if len(fields):
-            log.info("Upgraded config. Added %d new field(s): %r", len(fields), fields)
+            log.info(f"Upgraded config. Added {len(fields)} new field(s): {fields}")
             self.save(cfg)
 
         # Update in-memory config with environment settings
@@ -273,11 +273,7 @@ class Config(object):
     def save(self, cfg):
         with open(self.settings['config'], 'w') as fp:
             json.dump(cfg, fp, indent=4, sort_keys=True)
-
-            log.info(
-                "Your config was upgraded. You may check the changes here: %r",
-                self.settings['config']
-            )
+            log.info(f"Your config was upgraded. You may check the changes here: {self.settings['config']}")
 
         exit(0)
 
@@ -289,7 +285,7 @@ class Config(object):
                 # Command line argument
                 if self.args[name]:
                     value = self.args[name]
-                    log.info("Using ARG setting %s=%s", name, value)
+                    log.info(f"Using ARG setting {name}={value}")
 
                 elif data['env'] in os.environ:
                     value = os.environ[data['env']]
@@ -302,7 +298,7 @@ class Config(object):
                 setts[name] = value
 
             except Exception:
-                log.exception("Exception retrieving setting value: %r" % name)
+                log.exception(f"Exception retrieving setting value: {name}")
 
         return setts
 

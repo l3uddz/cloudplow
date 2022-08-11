@@ -30,9 +30,7 @@ def execute(command, callback=None, env=None, logs=True, shell=False):
             else:
                 total_output += "%s\n" % output
 
-    if not callback:
-        return total_output
-    return process.poll()
+    return process.poll() if callback else total_output
 
 
 def popen(command, shell=False):

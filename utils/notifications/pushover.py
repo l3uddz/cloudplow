@@ -32,5 +32,5 @@ class Pushover:
             return resp.status_code == 200
 
         except Exception:
-            log.exception("Error sending notification to %r", self.user_token)
+            log.exception(f"Error sending notification to {self.user_token}")
         return False
