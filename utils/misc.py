@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import re
 import time
@@ -18,22 +19,22 @@ def seconds_to_string(seconds):
         hours, minutes = divmod(minutes, 60)
         days, hours = divmod(hours, 24)
         if days:
-            resp += '%d days' % days
+            resp += f'{days} days'
         if hours:
             if len(resp):
                 resp += ', '
-            resp += '%d hours' % hours
+            resp += f'{hours} hours'
         if minutes:
             if len(resp):
                 resp += ', '
-            resp += '%d minutes' % minutes
+            resp += f'{minutes} minutes'
         if seconds:
             if len(resp):
                 resp += ' and '
-            resp += '%d seconds' % seconds
+            resp += f'{seconds} seconds'
     except Exception:
-        log.exception("Exception occurred converting %d seconds to readable string: ", seconds)
-        resp = '%d seconds' % seconds
+        log.exception(f"Exception occurred converting {seconds} seconds to readable string: ")
+        resp = f'{seconds} seconds'
     return resp
 
 
@@ -42,10 +43,8 @@ def merge_dicts(*dicts):
     d = {}
     for dict in dicts:
         for key in dict:
-            try:
+            with contextlib.suppress(KeyError):
                 d[key] = dict[key]
-            except KeyError:
-                pass
     return d
 
 

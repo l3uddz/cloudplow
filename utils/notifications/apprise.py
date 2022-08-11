@@ -28,5 +28,5 @@ class Apprise:
             )
 
         except Exception:
-            log.exception("Error sending notification to %r", self.url)
+            log.exception(f"Error sending notification to {self.url}")
         return False

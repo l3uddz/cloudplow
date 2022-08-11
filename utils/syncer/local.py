@@ -21,10 +21,9 @@ class Local:
         self.kwargs = kwargs
         self.instance_id = None
         self.rclone_config_path = None
-        self.syncer_name = kwargs['syncer_name'] if 'syncer_name' in kwargs else 'Unknown Syncer'
+        self.syncer_name = kwargs.get('syncer_name', 'Unknown Syncer')
 
-        log.info("Initialized Local syncer agent for %r - %s -> %s using tool: %r", self.syncer_name,
-                 self.sync_from_config['sync_remote'], self.sync_to_config['sync_remote'], self.tool_path)
+        log.info(f"Initialized Local syncer agent for {self.syncer_name} - {self.sync_from_config['sync_remote']} -> {self.sync_to_config['sync_remote']} using tool: {self.tool_path}")
         return
 
     def startup(self, **kwargs):
@@ -68,9 +67,9 @@ class Local:
         rclone = RcloneSyncer(self.sync_from_config, self.sync_to_config, **kwargs)
 
         # start sync
-        log.info("Starting sync for instance: %r", self.instance_id)
+        log.info(f"Starting sync for instance: {self.instance_id}")
         resp, delayed_check, delayed_trigger = rclone.sync(self._wrap_command)
-        log.info("Finished syncing for instance: %r", self.instance_id)
+        log.info(f"Finished syncing for instance: {self.instance_id}")
 
         return resp, delayed_check, delayed_trigger
 

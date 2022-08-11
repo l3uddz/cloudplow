@@ -30,7 +30,7 @@ class RcloneMover:
 
     def move(self):
         try:
-            log.debug("Moving '%s' to '%s'", self.config['move_from_remote'], self.config['move_to_remote'])
+            log.debug(f"Moving '{self.config['move_from_remote']}' to '{self.config['move_to_remote']}'")
 
             # build cmd
             cmd = f"{cmd_quote(self.rclone_binary_path)} move {cmd_quote(self.config['move_from_remote'])} {cmd_quote(self.config['move_to_remote'])} --config={cmd_quote(self.rclone_config_path)}"
@@ -49,13 +49,13 @@ class RcloneMover:
                 cmd += ' --dry-run'
 
             # exec
-            log.debug("Using: %s", cmd)
+            log.debug(f"Using: {cmd}")
             process.execute(cmd, logs=True)
             return True
 
         except Exception:
-            log.exception("Exception occurred while moving '%s' to '%s':", self.config['move_from_remote'],
-                          self.config['move_to_remote'])
+            log.exception(f"Exception occurred while moving '{self.config['move_from_remote']}' to '{self.config['move_to_remote']}':")
+
         return False
 
     # internals
@@ -63,19 +63,13 @@ class RcloneMover:
         if 'rclone_extras' not in self.config:
             return ''
 
-        return ' '.join(f"{key}={cmd_quote(value) if isinstance(value, str) else value}" for (key, value) in
-                        self.config['rclone_extras'].items()).replace('=None', '').strip()
+        return ' '.join(f"{key}={cmd_quote(value) if isinstance(value, str) else value}" for (key, value) in self.config['rclone_extras'].items()).replace('=None', '').strip()
 
     def __excludes2string(self):
         if 'rclone_excludes' not in self.config:
             return ''
 
-        return ' '.join(
-            "--exclude=%s" % (
-                cmd_quote(glob.escape(value) if value.startswith(os.path.sep) else value) if isinstance(value,
-                                                                                                        str) else value)
-            for value in
-            self.config['rclone_excludes']).replace('=None', '').strip()
+        return ' '.join(f"--exclude={cmd_quote(glob.escape(value) if value.startswith(os.path.sep) else value) if isinstance(value,str) else value}" for value in self.config['rclone_excludes']).replace('=None', '').strip()
 
 
 class RcloneUploader:
@@ -91,53 +85,37 @@ class RcloneUploader:
 
     def delete_file(self, path):
         try:
-            log.debug("Deleting file '%s' from remote %s", path, self.name)
-            # build cmd
-            cmd = "%s delete %s --config=%s --user-agent=%s" % (cmd_quote(self.rclone_binary_path), cmd_quote(path),
-                                                                cmd_quote(self.rclone_config_path), cmd_quote(
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'))
+            log.debug(f"Deleting file '{path}' from remote {self.name}")
+            cmd = f"{cmd_quote(self.rclone_binary_path)} delete {cmd_quote(path)} --config={cmd_quote(self.rclone_config_path)} --user-agent={cmd_quote('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36')}"
+
             if self.dry_run:
                 cmd += ' --dry-run'
-
-            # exec
-            log.debug("Using: %s", cmd)
+            log.debug(f"Using: {cmd}")
             resp = process.execute(cmd, logs=False)
-            if 'Failed to delete' in resp:
-                return False
-
-            return True
+            return 'Failed to delete' not in resp
         except Exception:
-            log.exception("Exception deleting file '%s' from remote %s: ", path, self.name)
+            log.exception(f"Exception deleting file '{path}' from remote {self.name}: ")
         return False
 
     def delete_folder(self, path):
         try:
-            log.debug("Deleting folder '%s' from remote %s", path, self.name)
-            # build cmd
-            cmd = "%s rmdir %s --config=%s --user-agent=%s" % (cmd_quote(self.rclone_binary_path), cmd_quote(path),
-                                                               cmd_quote(self.rclone_config_path), cmd_quote(
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'))
+            log.debug(f"Deleting folder '{path}' from remote {self.name}")
+            cmd = f"{cmd_quote(self.rclone_binary_path)} rmdir {cmd_quote(path)} --config={cmd_quote(self.rclone_config_path)} --user-agent={cmd_quote('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36')}"
+
             if self.dry_run:
                 cmd += ' --dry-run'
-
-            # exec
             log.debug("Using: %s", cmd)
             resp = process.execute(cmd, logs=False)
-            if 'Failed to rmdir' in resp:
-                return False
-
-            return True
+            return 'Failed to rmdir' not in resp
         except Exception:
-            log.exception("Exception deleting folder '%s' from remote %s: ", path, self.name)
+            log.exception(f"Exception deleting folder '{path}' from remote {self.name}: ")
+
         return False
 
     def upload(self, callback):
         try:
-            log.debug("Uploading '%s' to '%s'", self.config['upload_folder'], self.config['upload_remote'])
-            log.debug("Rclone command set to '%s'", self.config['rclone_command'] if (
-                      'rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')
+            log.debug(f"Uploading '{self.config['upload_folder']}' to '{self.config['upload_remote']}'")
+            log.debug(f"Rclone command set to '{self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move'}'")
             # build cmd
             cmd = f"{cmd_quote(self.rclone_binary_path)} {cmd_quote(self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move')} {cmd_quote(self.config['upload_folder'])} {cmd_quote(self.config['upload_remote'])} --config={cmd_quote(self.rclone_config_path)}"
             subprocess_env = os.environ.copy()
@@ -149,38 +127,69 @@ class RcloneUploader:
                 config_remote = self.config['upload_remote'].split(":")[0]
 
                 def find_crypt_upstream(crypt_remote):
-                    return rclone_remotes[crypt_remote]['remote'].split(":")[0]
+                    crypt_remote_upstream = rclone_remotes[crypt_remote]['remote'].split(":")[0]
+                    try:
+                        crypt_upstream_remote_type = rclone_remotes[crypt_remote_upstream]['type']
+                        if crypt_upstream_remote_type == "drive":
+                            return [crypt_remote_upstream]
+                        elif crypt_upstream_remote_type == "union":
+                            return find_union_upstreams(crypt_remote_upstream)
+                        elif crypt_upstream_remote_type == "chunker":
+                            return find_chunker_upstream(crypt_remote_upstream)
+                        else:
+                            log.warning(f'{crypt_remote_upstream} is an unsupported type: {rclone_remotes[crypt_remote_upstream]["type"]}.')
+                            return []
+                    except KeyError:
+                        log.error(f'Upstream remote {crypt_remote_upstream} does not exist in rclone.')
+                        exit(1)
 
                 def find_chunker_upstream(chunker_remote):
-                    return rclone_remotes[chunker_remote]['remote'].split(":")[0]
+                    chunker_remote_upstream = rclone_remotes[chunker_remote]['remote'].split(":")[0]
+                    try:
+                        chunker_upstream_remote_type = rclone_remotes[chunker_remote_upstream]['type']
+                        if chunker_upstream_remote_type == "drive":
+                            return [chunker_remote_upstream]
+                        elif chunker_upstream_remote_type == "union":
+                            return find_union_upstreams(chunker_remote_upstream)
+                        elif chunker_upstream_remote_type == "crypt":
+                            return find_crypt_upstream(chunker_remote_upstream)
+                        else:
+                            log.warning(f'{chunker_remote_upstream} is an unsupported type: {rclone_remotes[chunker_remote_upstream]["type"]}.')
+                            return []
+                    except KeyError:
+                        log.error(f'Upstream remote {chunker_remote_upstream} does not exist in rclone.')
+                        exit(1)
+
+                def find_union_upstreams(union_remote):
+                    union_parsed_upstream = []
+                    for upstream_remote in rclone_remotes[union_remote]['upstreams'].split(' '):
+                        remote_string = upstream_remote.split(":")[0]
+                        try:
+                            upstream_remote_type = rclone_remotes[remote_string]['type']
+                            if upstream_remote_type == "drive":
+                                union_parsed_upstream.append(upstream_remote.split(":")[0])
+                            elif upstream_remote_type == "crypt":
+                                union_parsed_upstream.extend(find_crypt_upstream(remote_string))
+                            elif remote_type == "chunker":
+                                union_parsed_upstream.extend(find_chunker_upstream(union_remote))
+                            else:
+                                log.warning(f'{remote_string} is an unsupported type: {rclone_remotes[remote_string]["type"]}.')
+                        except KeyError:
+                            log.error(f'Upstream remote {remote_string} does not exist in rclone.')
+                            exit(1)
+                    return union_parsed_upstream
 
                 parsed_remotes = []
                 try:
                     remote_type = rclone_remotes[config_remote]['type']
                     if remote_type == "crypt":
-                        parsed_remotes.append(find_crypt_upstream(config_remote))
+                        parsed_remotes.extend(find_crypt_upstream(config_remote))
                     elif remote_type == "chunker":
-                        parsed_remotes.append(find_chunker_upstream(config_remote))
+                        parsed_remotes.extend(find_chunker_upstream(config_remote))
                     elif remote_type == "drive":
                         parsed_remotes.append(config_remote)
                     elif remote_type == "union":
-                        for upstream_remote in rclone_remotes[config_remote]['upstreams'].split(' '):
-                            remote_string = upstream_remote.split(":")[0]
-                            try:
-                                upstream_remote_type = rclone_remotes[remote_string]['type']
-
-                                if upstream_remote_type == "drive":
-                                    parsed_remotes.append(upstream_remote.split(":")[0])
-                                elif upstream_remote_type == "crypt":
-                                    parsed_remotes.append(find_crypt_upstream(remote_string))
-                                elif remote_type == "chunker":
-                                    parsed_remotes.append(find_chunker_upstream(config_remote))
-                                else:
-                                    log.warning(f'{remote_string} is an unsupported type: {rclone_remotes[remote_string]["type"]}.')
-                            except KeyError:
-                                log.error(f'Upstream remote {remote_string} does not exist in rclone.')
-                                exit(1)
-
+                        parsed_remotes.extend(find_union_upstreams(config_remote))
                     else:
                         log.warning(f'{config_remote} has an unsupported type: {rclone_remotes[config_remote]["type"]}.')
 
@@ -189,7 +198,7 @@ class RcloneUploader:
                     exit(1)
 
                 finally:
-                    log.debug("Finished parsing rclone remotes.")
+                    log.debug(f"Parsed remotes: {parsed_remotes}")
 
                 if parsed_remotes:
                     for remote in list(dict.fromkeys(parsed_remotes)):
@@ -247,15 +256,11 @@ class RcloneSyncer:
         self.delayed_trigger = None
 
         # parse rclone_extras from kwargs
-        if 'rclone_extras' in kwargs:
-            self.rclone_extras = kwargs['rclone_extras']
-        else:
-            self.rclone_extras = {}
-
+        self.rclone_extras = kwargs.get('rclone_extras', {})
         # parse dry_run from kwargs
-        self.dry_run = kwargs['dry_run'] if 'dry_run' in kwargs else False
+        self.dry_run = kwargs.get('dry_run', False)
         # parse use_copy from kwargs
-        self.use_copy = kwargs['use_copy'] if 'use_copy' in kwargs else False
+        self.use_copy = kwargs.get('use_copy', False)
 
     def sync(self, cmd_wrapper):
         if not cmd_wrapper:
