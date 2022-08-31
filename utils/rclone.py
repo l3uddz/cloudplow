@@ -228,7 +228,9 @@ class RcloneUploader:
         except Exception:
             log.exception("Exception occurred while uploading '%s' to remote: %s", self.config['upload_folder'],
                           self.name)
-        return False
+            return_code = 9999
+
+        return False, return_code
 
     # internals
     def __extras2string(self):
