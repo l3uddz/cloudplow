@@ -50,23 +50,26 @@ class Uploader:
         self.delayed_check = 0
         self.delayed_trigger = ""
         self.trigger_tracks = {}
+        success = False
         upload_status, return_code = rclone.upload(self.__logic)
 
         log.debug("return_code is: %s", return_code)
 
         if return_code == 7:
+            success = True
             log.info("Received 'Max Transfer Reached' signal from Rclone.")
             self.delayed_trigger = "Rclone's 'Max Transfer Reached' signal"
             self.delayed_check = 25
 
         if upload_status and return_code == 0:
+            success = True
             log.info(f"Finished uploading to remote: {self.name}")
         elif return_code == 9999:
             self.delayed_trigger = "Rclone exception occured"
         else:
             self.delayed_trigger = f"Unhandled situation: Exit code: {return_code} - Upload Status: {upload_status}"
 
-        return self.delayed_check, self.delayed_trigger
+        return self.delayed_check, self.delayed_trigger, success
 
     def remove_empty_dirs(self):
         path.remove_empty_dirs(self.rclone_config['upload_folder'], self.rclone_config['remove_empty_dir_depth'])
