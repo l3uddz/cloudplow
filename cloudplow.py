@@ -328,7 +328,7 @@ def do_upload(remote=None):
                     else:
                         for i in range(available_accounts_size):
                             uploader.set_service_account(available_accounts[i])
-                            resp_delay, resp_trigger = uploader.upload()
+                            resp_delay, resp_trigger, resp_success = uploader.upload()
                             if resp_delay:
                                 current_data = sa_delay[uploader_remote]
                                 current_data[available_accounts[i]] = time.time() + ((60 * 60) * resp_delay)
@@ -358,14 +358,20 @@ def do_upload(remote=None):
                                         # send aborted upload notification
                                         notify.send(message=f"Upload was aborted for remote: {uploader_remote} due to trigger {resp_trigger}. Uploads suspended for {resp_delay} hours")
                             else:
-                                # send successful upload notification
-                                notify.send(message=f"Upload was completed successfully for remote: {uploader_remote}")
+                                if resp_success:
+                                    log.info(f"Upload completed successfully for uploader: {uploader_remote}")
+                                    # send successful upload notification
+                                    notify.send(message=f"Upload was completed successfully for remote: {uploader_remote}")
+                                else:
+                                    log.info(f"Upload not completed successfully for uploader: {uploader_remote}")
+                                    # send unsuccessful upload notification
+                                    notify.send(message=f"Upload was not completed successfully for remote: {uploader_remote}")
 
                                 # Remove ban for service account
                                 sa_delay[uploader_remote][available_accounts[i]] = None
                                 break
                 else:
-                    resp_delay, resp_trigger = uploader.upload()
+                    resp_delay, resp_trigger, resp_success = uploader.upload()
                     if resp_delay:
                         if uploader_remote not in uploader_delay:
                             # this uploader was not already in the delay dict, so lets put it there
@@ -380,9 +386,14 @@ def do_upload(remote=None):
                             # send aborted upload notification
                             notify.send(message=f"Upload was aborted for remote: {uploader_remote} due to trigger {resp_trigger}.")
                     else:
-                        log.info(f"Upload completed successfully for uploader: {uploader_remote}")
-                        # send successful upload notification
-                        notify.send(message=f"Upload was completed successfully for remote: {uploader_remote}")
+                        if resp_success:
+                            log.info(f"Upload completed successfully for uploader: {uploader_remote}")
+                            # send successful upload notification
+                            notify.send(message=f"Upload was completed successfully for remote: {uploader_remote}")
+                        else:
+                            log.info(f"Upload not completed successfully for uploader: {uploader_remote}")
+                            # send unsuccessful upload notification
+                            notify.send(message=f"Upload was not completed successfully for remote: {uploader_remote}")
 
                         # remove uploader from uploader_delays (as its no longer banned)
                         if uploader_remote in uploader_delay and uploader_delay.pop(uploader_remote, None) is not None:
