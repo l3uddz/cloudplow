@@ -48,19 +48,23 @@ class Uploader:
 
         log.info(f"Uploading '{rclone_config['upload_folder']}' to remote: {self.name}")
         self.delayed_check = 0
-        self.delayed_trigger = None
+        self.delayed_trigger = ""
         self.trigger_tracks = {}
         upload_status, return_code = rclone.upload(self.__logic)
+
+        log.debug("return_code is: %s", return_code)
+
         if return_code == 7:
             log.info("Received 'Max Transfer Reached' signal from Rclone.")
             self.delayed_trigger = "Rclone's 'Max Transfer Reached' signal"
             self.delayed_check = 25
-        
-        log.debug("return_code is: %s", return_code)
+
         if upload_status and return_code == 0:
             log.info(f"Finished uploading to remote: {self.name}")
+        elif return_code == 9999:
+            self.delayed_trigger = "Rclone exception occured"
         else:
-            return
+            self.delayed_trigger = f"Unhandled situation: Exit code: {return_code} - Upload Status: {upload_status}"
 
         return self.delayed_check, self.delayed_trigger
 
