@@ -15,7 +15,7 @@ class Uploader:
         self.rclone_config = rclone_config
         self.trigger_tracks = {}
         self.delayed_check = 0
-        self.delayed_trigger = None
+        self.delayed_trigger = ""
         self.rclone_binary_path = rclone_binary_path
         self.rclone_config_path = rclone_config_path
         self.plex = plex
@@ -48,7 +48,6 @@ class Uploader:
 
         log.info(f"Uploading '{rclone_config['upload_folder']}' to remote: {self.name}")
         self.delayed_check = 0
-        self.delayed_trigger = ""
         self.trigger_tracks = {}
         success = False
         upload_status, return_code = rclone.upload(self.__logic)
@@ -61,7 +60,13 @@ class Uploader:
             self.delayed_trigger = "Rclone's 'Max Transfer Reached' signal"
             self.delayed_check = 25
 
-        if upload_status and return_code == 0:
+        elif return_code == -9:
+            success = True
+            log.info("Trigger reached configuration limit.")
+            self.delayed_trigger = "Trigger reached limit"
+            self.delayed_check = 25
+
+        elif upload_status and return_code == 0:
             success = True
             log.info(f"Finished uploading to remote: {self.name}")
         elif return_code == 9999:
