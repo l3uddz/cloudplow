@@ -286,8 +286,10 @@ def do_upload(remote=None):
                     if nzbget.pause_queue():
                         nzbget_paused = True
                         log.info("Paused the Nzbget download queue, upload commencing!")
+                        notify.send(message="Paused the Nzbget download queue, upload commencing!")
                     else:
                         log.error("Failed to pause the Nzbget download queue, upload commencing anyway...")
+                        notify.send(message="Failed to pause the Nzbget download queue, upload commencing anyway...")
 
                 # pause the sabnzbd queue before starting the upload, if enabled
                 if conf.configs['sabnzbd']['enabled']:
@@ -295,9 +297,11 @@ def do_upload(remote=None):
                     if sabnzbd.pause_queue():
                         sabnzbd_paused = True
                         log.info("Paused the Sabnzbd download queue, upload commencing!")
+                        notify.send(message="Paused the Sabnzbd download queue, upload commencing!")
                     else:
                         print(sabnzbd.pause_queue())
                         log.error("Failed to pause the Sabnzbd download queue, upload commencing anyway...")
+                        notify.send(message="Failed to pause the Sabnzbd download queue, upload commencing anyway...")
 
                 uploader = Uploader(uploader_remote,
                                     uploader_config,
@@ -409,15 +413,19 @@ def do_upload(remote=None):
                     if nzbget.resume_queue():
                         nzbget_paused = False
                         log.info("Resumed the Nzbget download queue!")
+                        notify.send(message="Resumed the Nzbget download queue!")
                     else:
                         log.error("Failed to resume the Nzbget download queue??")
+                        notify.send(message="Failed to resume the Nzbget download queue??")
                 # resume the Sabnzbd queue, if enabled
                 if conf.configs['sabnzbd']['enabled'] and sabnzbd is not None and sabnzbd_paused:
                     if sabnzbd.resume_queue():
                         sabnzbd_paused = False
                         log.info("Resumed the Sabnzbd download queue!")
+                        notify.send(message="Resumed the Sabnzbd download queue!")
                     else:
                         log.error("Failed to resume the Sabnzbd download queue??")
+                        notify.send(message="Failed to resume the Sabnzbd download queue??")
 
                 # move from staging remote to main ?
                 if 'mover' in uploader_config and 'enabled' in uploader_config['mover']:
