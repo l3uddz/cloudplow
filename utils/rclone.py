@@ -122,7 +122,7 @@ class RcloneUploader:
 
             if self.service_account is not None:
 
-                rclone_data = subprocess.check_output('rclone config dump', shell=True)
+                rclone_data = subprocess.check_output(f'rclone config dump --config={cmd_quote(self.rclone_config_path)}', shell=True)
                 rclone_remotes = jsonpickle.decode(rclone_data)
                 config_remote = self.config['upload_remote'].split(":")[0]
 
