@@ -75,7 +75,6 @@ class PlexStream:
         self.user = stream['User']['title'] if 'User' in stream else 'Unknown'
         if 'Player' in stream:
             self.player = stream['Player']['product']
-            self.ip = stream['Player']['remotePublicAddress']
             self.state = stream['Player']['state']
             self.local = stream['Player']['local']
         else:
