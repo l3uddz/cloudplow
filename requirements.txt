@@ -1,8 +1,8 @@
 lockfile~=0.12.2
-schedule~=0.4.3
-requests~=2.20.0
-GitPython~=2.1.10
-sqlitedict~=1.6.0
-apprise~=0.8.2
-jsonpickle~=2.2.0
-urllib3~=1.24.3
+schedule==1.2.0
+requests==2.31.0
+GitPython==3.1.32
+sqlitedict==2.1.0
+apprise
+jsonpickle==3.0.1
+urllib3==2.0.4
