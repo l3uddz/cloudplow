@@ -76,7 +76,7 @@ class Uploader:
         else:
             self.delayed_trigger = f"Unhandled situation: Exit code: {return_code} - Upload Status: {upload_status}"
 
-        return self.delayed_check, self.delayed_trigger, success
+        return 0 if self.delayed_check is None else self.delayed_check, self.delayed_trigger, success
 
     def remove_empty_dirs(self):
         path.remove_empty_dirs(self.rclone_config['upload_folder'], self.rclone_config['remove_empty_dir_depth'])
