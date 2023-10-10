@@ -1,7 +1,7 @@
 lockfile~=0.12.2
 schedule==1.2.0
 requests==2.31.0
-GitPython==3.1.32
+GitPython==3.1.37
 sqlitedict==2.1.0
 apprise
 jsonpickle==3.0.1
