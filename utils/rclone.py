@@ -20,6 +20,47 @@ log = logging.getLogger('rclone')
 urllib3.disable_warnings()
 
 
+def _verify_remote_path_case(rclone_binary_path, rclone_config_path, remote_path):
+    """Verify a remote path exists with exact case by listing its parent directory.
+
+    Uses 'rclone lsf --dirs-only' to get the actual directory names from the remote,
+    then does a case-sensitive comparison in Python. This catches case mismatches even
+    when the remote protocol (e.g. SMB) is case-insensitive, because the server returns
+    actual names and the comparison happens locally in Python where str.__eq__ is always
+    case-sensitive.
+    """
+    path = remote_path.rstrip('/')
+    remote_prefix, remote_dir = path.split(':', 1)
+    if '/' not in remote_dir:
+        return True  # root-level path, nothing to verify
+
+    parent = path.rsplit('/', 1)[0]
+    target = path.rsplit('/', 1)[1]
+
+    try:
+        result = subprocess.run(
+            [rclone_binary_path, 'lsf', parent, '--dirs-only',
+             '--config', rclone_config_path],
+            capture_output=True, text=True, timeout=30
+        )
+        listed = [d.rstrip('/') for d in result.stdout.splitlines()]
+        if target not in listed:
+            log.error(
+                "Remote path case mismatch: '%s' not found in '%s'. "
+                "Found: %s. Aborting to prevent silent copy to wrong directory.",
+                target, parent, listed
+            )
+            return False
+    except subprocess.TimeoutExpired:
+        log.error("Timeout verifying remote path: %s", remote_path)
+        return False
+    except Exception:
+        log.exception("Exception verifying remote path: %s", remote_path)
+        return False
+
+    return True
+
+
 class RcloneMover:
     def __init__(self, config, rclone_binary_path, rclone_config_path, plex, dry_run=False):
         self.config = config
@@ -114,6 +155,13 @@ class RcloneUploader:
 
     def upload(self, callback):
         try:
+            # Verify remote paths exist with exact case before uploading
+            for key in ('upload_remote', 'sync_remote'):
+                if key in self.config:
+                    if not _verify_remote_path_case(self.rclone_binary_path, self.rclone_config_path, self.config[key]):
+                        log.error("Aborting upload: %s path failed case verification: %s", key, self.config[key])
+                        return False, 1
+
             log.debug(f"Uploading '{self.config['upload_folder']}' to '{self.config['upload_remote']}'")
             log.debug(f"Rclone command set to '{self.config['rclone_command'] if ('rclone_command' in self.config and self.config['rclone_command'].lower() != 'sync') else 'move'}'")
             # build cmd
@@ -269,6 +317,13 @@ class RcloneSyncer:
             log.error(
                 "You must provide a cmd_wrapper method to wrap the rclone sync command for the desired sync agent")
             return False, self.delayed_check, self.delayed_trigger
+
+        # Verify remote paths exist with exact case before syncing
+        for label, config in [('from', self.from_config), ('to', self.to_config)]:
+            if 'sync_remote' in config:
+                if not _verify_remote_path_case('rclone', '', config['sync_remote']):
+                    log.error("Aborting sync: %s sync_remote failed case verification: %s", label, config['sync_remote'])
+                    return False, self.delayed_check, self.delayed_trigger
 
         # build sync command
         cmd = f"rclone {'copy' if self.use_copy else 'sync'} {cmd_quote(self.from_config['sync_remote'])} {cmd_quote(self.to_config['sync_remote'])}"
