@@ -28,6 +28,9 @@ def _verify_remote_path_case(rclone_binary_path, rclone_config_path, remote_path
     when the remote protocol (e.g. SMB) is case-insensitive, because the server returns
     actual names and the comparison happens locally in Python where str.__eq__ is always
     case-sensitive.
+
+    If the path does not exist and stdin is a TTY (interactive run), the user is prompted
+    to create it. If stdin is not a TTY (daemon/service mode), the operation is aborted.
     """
     path = remote_path.rstrip('/')
     remote_prefix, remote_dir = path.split(':', 1)
@@ -46,11 +49,29 @@ def _verify_remote_path_case(rclone_binary_path, rclone_config_path, remote_path
         listed = [d.rstrip('/') for d in result.stdout.splitlines()]
         if target not in listed:
             log.error(
-                "Remote path case mismatch: '%s' not found in '%s'. "
-                "Found: %s. Aborting to prevent silent copy to wrong directory.",
+                "Remote path not found: '%s' does not exist in '%s'. "
+                "Found: %s",
                 target, parent, listed
             )
-            return False
+
+            # Check if we can prompt the user (interactive mode vs daemon)
+            if os.isatty(0):
+                print(f"\n*** Remote path does not exist: {remote_path}")
+                if listed:
+                    print(f"    Directories found in '{parent}': {listed}")
+                response = input(f"    Create '{remote_path}' now? [y/N]: ").strip().lower()
+                if response == 'y':
+                    return _create_remote_path(rclone_binary_path, rclone_config_path, remote_path)
+                else:
+                    log.error("User declined to create path. Aborting.")
+                    return False
+            else:
+                log.error(
+                    "Running in non-interactive mode (daemon/service). "
+                    "Cannot prompt to create missing path. Aborting."
+                )
+                return False
+
     except subprocess.TimeoutExpired:
         log.error("Timeout verifying remote path: %s", remote_path)
         return False
@@ -59,6 +80,26 @@ def _verify_remote_path_case(rclone_binary_path, rclone_config_path, remote_path
         return False
 
     return True
+
+
+def _create_remote_path(rclone_binary_path, rclone_config_path, remote_path):
+    """Create a remote directory using rclone mkdir."""
+    try:
+        result = subprocess.run(
+            [rclone_binary_path, 'mkdir', remote_path,
+             '--config', rclone_config_path],
+            capture_output=True, text=True, timeout=30
+        )
+        if result.returncode == 0:
+            log.info("Successfully created remote path: %s", remote_path)
+            print(f"    ✓ Created: {remote_path}")
+            return True
+        else:
+            log.error("Failed to create remote path: %s — %s", remote_path, result.stderr.strip())
+            return False
+    except Exception:
+        log.exception("Exception creating remote path: %s", remote_path)
+        return False
 
 
 class RcloneMover:
