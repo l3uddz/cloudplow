@@ -66,11 +66,11 @@ def _verify_remote_path_case(rclone_binary_path, rclone_config_path, remote_path
                     log.error("User declined to create path. Aborting.")
                     return False
             else:
-                log.error(
-                    "Running in non-interactive mode (daemon/service). "
-                    "Cannot prompt to create missing path. Aborting."
+                log.warning(
+                    "Remote path '%s' was not found. Creating it automatically.",
+                    remote_path
                 )
-                return False
+                return _create_remote_path(rclone_binary_path, rclone_config_path, remote_path)
 
     except subprocess.TimeoutExpired:
         log.error("Timeout verifying remote path: %s", remote_path)
